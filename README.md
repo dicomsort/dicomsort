@@ -6,9 +6,9 @@ a directory tree based upon the header fields selected.
 
 This software has the following dependencies:
 
-*[wxPython 2.8](http://www.wxpython.org/download.php)
+* [wxPython 2.8](http://www.wxpython.org/download.php)
 
-*[pydicom](http://code.google.com/p/pydicom/)
+* [pydicom](http://code.google.com/p/pydicom/)
 
 
 Currently, this software performs decently day-to-day but has much room for
