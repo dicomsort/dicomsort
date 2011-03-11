@@ -4,6 +4,7 @@ a directory tree based upon the header fields selected.
 This software has the following dependencies:
     * [wxPython 2.8] (http://www.wxpython.org/download.php)
     * [pydicom] (http://code.google.com/p/pydicom/) 
+    * [.markdown](http://daringfireball.net/projects/markdown/) -- `gem install rdiscount`
 
 Currently, this software performs decently day-to-day but has much room for
 improvement.
