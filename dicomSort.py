@@ -11,11 +11,6 @@ import string
 import sys
 import random
 
-#wx.PyLog()
-
-#dicom.debug(True)
-
-#print sys.stdout
 class ModFileConfig(wx.FileConfig):
 
     def __init__(self,app,vendor,filename):
@@ -29,6 +24,7 @@ class ModFileConfig(wx.FileConfig):
                 res.append(self.GetNextEntry(i)[1])
             
         return res
+
 
 
 class App:
