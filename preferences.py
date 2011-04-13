@@ -70,11 +70,18 @@ class PreferenceDialog(wx.Dialog):
 				choices = widget.GetItems()
 				choices.insert(0,selection)
 				self.widgetNames[name] = choices
-			else:
+			el:ese:
 				value = widget.GetValue()
 				self.widgetNames[name] = value
 		self.config.write()
 		self.EndModal(0)
+
+class CheckListItem(wx.CheckListBox):
+
+	def __init__(self,parent,id=-1,size=(250,300),choices=[]):
+		wx.CheckListBox.__init__(self,parent,id,size,choices)
+		
+		
 
 class MyApp(wx.App):
 	def OnInit(self):
