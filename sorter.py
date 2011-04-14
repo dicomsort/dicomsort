@@ -9,17 +9,21 @@ class PathGen:
 		# Description_of_series_Series0001
 		self.dFormat = ['%(SeriesDescription)s_Series%(SeriesNumber)04d',]
 		# Image (0001)
-		self.fFormat = '%(CustomImageType)s (%(InstanceNumber)04d)'
+		self.fFormat = '%(ImageType)s (%(InstanceNumber)04d)'
+		self.ImageType
 
-		self.defaultDict = {'CustomImageType':'Image'};
+	def _getCustomImageType(self,dcm):
+		return 'Image'
 
 	def ConstructDict(self,dcm,fstring):
 		fields = re.findall('(?<=%\().*?(?=\))',fstring)
 
-		res = self.defaultDict;
+		override = 
 
 		for field in fields:
-			if hasattr(dcm,field):
+			if self.override.haskey(field):
+				res[field] = self.override[field]()
+			elif hasattr(dcm,field):
 				res[field] = getattr(dcm,field)
 
 		return res
