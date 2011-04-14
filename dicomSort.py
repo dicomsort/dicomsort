@@ -133,7 +133,7 @@ class App:
         self.anon.lb = wx.CheckListBox(self.anon.panel, -1,size=(250,300),choices=[])
         
         vbox.Add(self.anon.lb, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 20)
-        
+
         self.anon.defbtn = wx.Button(self.anon.panel, -1, "Revert to Defaults")
         
         self.anon.Bind(wx.EVT_BUTTON, self.setDefault,id=self.anon.defbtn.GetId())
@@ -528,123 +528,6 @@ class WorkerThread(Thread):
         
         parameters = app.lb.sel.GetItems()
       
-        seriesNumberTag = app.dcm.dir("seriesnum")
-        
-        if(len(seriesNumberTag)):
-            seriesNumberTag = seriesNumberTag[0]
-        else:
-            seriesNumberTag = ''
-            
-        seriesDescTag = app.dcm.dir("seriesdesc")
-        
-        if(len(seriesDescTag)):
-            seriesDescTag = seriesDescTag[0]
-        else:
-            seriesDescTag = ''
-            
-        seriesTime = app.dcm.dir("seriestime")
-        
-        if(len(seriesTime)):
-            seriesTime = seriesTime[0]
-        else:
-            seriesTime = ''
-            
-        instanceTag = app.dcm.dir("instancenum")[0]
-        type = app.dcm.dir("imagetype")[0]
-        
-        count = 0
-      
-        for root, dirs, files in os.walk(app.path.GetValue()):
-          
-            for f in files:
-                if(f[0] != '.'):
-                           
-                    filePath = os.path.join(root,f)
-                  
-                    dcm = dicom.ReadFile(filePath.encode("UTF-8"))
-                    
-                    output = outputPath
-                    
-                    try:
-                    
-                        if(seriesNumberTag):
-                            seriesNum = str(eval("dcm."+seriesNumberTag))
-                            seriesNum = app.consecNum(seriesNum,4)
-                        else:
-                            seriesNum = ''
-                            
-                        if(seriesDescTag):
-                            seriesDesc = str(eval("dcm."+seriesDescTag))
-                            seriesDesc = app.chars2.sub('',app.chars.sub('_',seriesDesc))
-                        else:
-                            seriesDesc = ''
-                            
-                        if(seriesDesc == '' and seriesNum == ''):
-                            seriesNum = random.randint(1,1000)
-
-                        for category in parameters:
-                      
-                            a = str(eval("dcm."+category))
-                          
-                            nextdir = app.chars2.sub('',app.chars.sub('-',a))
-                          
-                            output = os.path.join(output, nextdir)
-                          
-                        if(seriesDesc == ''):
-                            output = os.path.join(output, 'Series'+seriesNum)
-                        else:
-                            output = os.path.join(output, seriesDesc+'_Series'+seriesNum)
-                      
-                        if not os.path.isdir(output):
-                            os.makedirs(output)
-                          
-                        if(app.checksameName.GetValue()):
-                            filename = f
-                        else:
-                            instNum = str(eval("dcm."+instanceTag))
-                            instNum = app.consecNum(instNum,4)
-                            
-                            phaseSet = set(['P',]);
-                            magSet = set(['FFE','M']);
-                          
-                            #if(type == 'ORIGINAL\\PRIMARY\\M_FFE\\M\\FFE'):
-                            #    filename = 'Mag ('+instNum+')'
-                            #elif(type == 'ORIGINAL\\PRIMARY\\VELOCITY MAP\\P\\PCA'):
-                            #    filename = 'Phase ('+instNum+')'
-                            #elif(type == 'ORIGINAL\\PRIMARY\\P\\RETRO\\DIS2D'):
-                            #    filename = 'Phase ('+instNum+')'
-                            #else:
-                            #    filename = 'Image ('+instNum+')'
-                            
-                            if len(phaseSet.intersection(set(dcm.get(type)))):
-                                filename = ''.join(['Phase (',str(instNum),')'])
-                            elif len(magSet.intersection(set(dcm.get(type)))) > 1:
-                                filename = ''.join(['Mag (',str(instNum),')'])
-                            else:
-                                filename = ''.join(['Image (',str(instNum),')'])
-                                                       
-                        output = os.path.join(output,filename)
-                    except:
-                        pass
-                    
-                    # NOW WE TAKE CARE IF ANONYMOUS:
-                    if(app.checkprivate.GetValue()):
-                        for field in app.currentAnon:
-                            subsets = eval("dcm."+field)
-                            setattr(dcm,field,'')
-                                
-                        dcm.SaveAs(output)
-                        
-                    else:
-                        try:
-                            shutil.copy(filePath,output)
-                        except:
-                            # Copy with original filename to directory
-                            shutil.copy(filePath,os.path.join(outputPath,f))
-                  
-                    del dcm
-                    
-                    count += 1
 
                     wx.PostEvent(self._notify_window, ResultEvent(count))
                     

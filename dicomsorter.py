@@ -14,29 +14,36 @@ def isdicom(filename):
 		return False
 
 class Dicom():
-	def __init__(self,filename):
+	def __init__(self,filename,dcm=None):
 		"""
 		Takes a dicom filename in and returns instance that can be used to sort
 		"""
 		# Be sure to do encoding because Windows sucks
-		self.filename = os.path.abspath(filename.encode("UTF-8"))
+		self.filename = filename.encode("UTF-8")
 
 		# Load the DICOM object
-		self.dicom = dicom.ReadFile(self.filename)
+		if dcm:
+			self.dicom = dcm
+		else:
+			self.dicom = dicom.ReadFile(self.filename)
 
 		# Specify which field-types to override
-		self.overrides = {'ImageType':self._get_image_type,
+		self.default_overrides = {'ImageType':self._get_image_type,
 						  'SeriesDescription':self._get_series_description}
 
-		# Don't anonymize initially unless specified
-		self.anonymized = False
+		# Combine with anons - Empty but provides the option to have defaults
+		anondict = dict()
+		self.overrides = dict(self.default_overrides, **anondict);
 
 	def __getitem__(self,attr):
 		"""
 		Points the reference to the property unless an override is specified
 		"""
 		try:
-			return self.overrides[attr]()
+			item = self.overrides[attr]
+			if not isinstance(item,str):
+				return item()
+			return item
 		except KeyError:
 			return getattr(self.dicom,attr)
 
@@ -63,29 +70,38 @@ class Dicom():
 		else:
 			return 'Image'
 
-	def get_destination(self,root,dFormat=['%(SeriesDescription)s',],
-						fFormat='%(ImageType)s (%(InstanceNumber)04d)'):
-		directory = os.path.join(root,*dFormat)
-		return os.path.join(directory,fFormat) % self
+	def get_destination(self,root,dirFormat,fileFormat):
+		directory = os.path.join(root,*dirFormat)
+		return os.path.join(directory,fileFormat) % self
+
+	def set_anon_rules(self,anondict):
+		# Appends the rules to the overrides so that we can alter them
+		if isinstance(anondict,dict):
+			self.anondict = anondict
+		else:
+			raise Exception('Anon rules must be a dictionary')
+
+		# Update the override dictionary
+		self.overrides = dict(self.default_overrides,**anondict)
+
+	def is_anonymous(self):
+		return self.default_overrides != self.overrides
+
+	def check_dir(self,dest):
+		dest = os.path.dirname(dest)
+		if not os.path.exists(dest):
+			os.makedirs(dest)
 
 	def sort(self,root,dirFields,fnameString):
 		destination = self.get_destination(root,dirFields,fnameString)
 
-		if self.anonymized:
+		self.check_dir(destination)
+
+		if self.is_anonymous():
 			self.dicom.SaveAs(destination)
 		else:
-			shutil.copyfile(self.filename,destination)
-
-	def anonymize(self,anondict=None):
-		if not anondict:
-			anondict = {'PatientsName':'ANONYMOUS',
-						'PatientID':'id',
-						'PatientsBirthDate':''}
-
-		self.anonymized = True 
-
-		for field in fields.keys():
-			setattr(self.dicom,field,fields[field])
+			print self.filename
+			shutil.copy(self.filename,destination)
 
 class DicomSorter():
 	def __init__(self,pathname=None):
@@ -96,20 +112,51 @@ class DicomSorter():
 		self.pathname = pathname
 
 		self.folders	= []
-		self.filename	=  
+		self.filename	= '%(ImageType)s (%(InstanceNumber)04d)' 
 
 		# Include the series subdirectory by default
 		self.includeSeries = True
 		self.seriesDefault = '%(SeriesDescription)s'
 
+		# Don't anonymize by default
+		self.anondict = dict()
+
+		self.keep_filename = False
+
+	def set_anon_rules(self,anondict):
+		# Appends the rules to the overrides so that we can alter them
+		if isinstance(anondict,dict):
+			self.anondict = anondict
+		else:
+			raise Exception('Anon rules must be a dictionary')
+
+	def get_folder_format(self):
+		# Make a local copy
+		folderList = self.folders[:]
+
+		if self.includeSeries:
+			folderList.append(self.seriesDefault)
+
+		return folderList			
+
 	def sort(self,outputDir):
-		
-	
+		# This should be moved to a worker thread
+
+		dirFormat = self.get_folder_format()
+
+		for root,dir,files in os.walk(self.pathname):
+			for file in files[2:]:
+				filename = os.path.join(root,file)
+				dcm = isdicom(filename)
+				if dcm:
+					dcm = Dicom(filename,dcm)
+					dcm.set_anon_rules(self.anondict)
+					if self.keep_filename:
+						dcm.sort(outputDir,dirFormat,file)
+					else:
+						dcm.sort(outputDir,dirFormat,self.filename)
 
 	def set_include_series_auto(self,val):
-		if val not True and val not False:
-			raise Exception('Valid values include True or False')
-
 		self.includeSeries = val
 
 	def get_available_fields(self):
