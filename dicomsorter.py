@@ -2,6 +2,11 @@ import os
 import dicom
 import re
 import shutil
+import itertools
+from threading import *
+
+def grouper(iterable,n):
+	return map(None, *[iter(iterable),] * n)
 
 def clean_path(path):
 	badchars = '[\\\:\*\?\"\<\>\| ]+'
@@ -103,6 +108,39 @@ class Dicom():
 			print self.filename
 			shutil.copy(self.filename,destination)
 
+class Sorter(Thread):
+	def __init__(self,files,outDir,dirFormat,fileFormat,anon=dict(),keep_filename=False):
+		self.dirFormat = dirFormat
+		self.fileFormat = fileFormat
+		self.fileList = files
+		self.anondict  = anon
+		self.keep_filename = keep_filename
+		self.outDir = outDir
+
+		Thread.__init__(self)
+		self.start()
+
+	def run(self):
+
+		files = self.fileList
+
+		root = os.path.dirname(files[0])
+
+		for file in files:
+			if file == None:
+				continue
+
+			dcm = isdicom(file)
+			if dcm:
+				dcm = Dicom(file,dcm)
+				dcm.set_anon_rules(self.anondict)
+				if self.keep_filename:
+					dcm.sort(self.outDir,self.dirFormat,file)
+				else:
+					dcm.sort(self.outDir,self.dirFormat,self.fileFormat)
+
+		print 'thread complete'
+
 class DicomSorter():
 	def __init__(self,pathname=None):
 		# Use current directory by default
@@ -144,17 +182,24 @@ class DicomSorter():
 
 		dirFormat = self.get_folder_format()
 
+		fileList = list()
+
 		for root,dir,files in os.walk(self.pathname):
 			for file in files[2:]:
-				filename = os.path.join(root,file)
-				dcm = isdicom(filename)
-				if dcm:
-					dcm = Dicom(filename,dcm)
-					dcm.set_anon_rules(self.anondict)
-					if self.keep_filename:
-						dcm.sort(outputDir,dirFormat,file)
-					else:
-						dcm.sort(outputDir,dirFormat,self.filename)
+				fileList.append(os.path.join(root,file))
+
+		numberOfThreads = 8
+		numberOfFiles = len(fileList)
+
+		numberPerThread = int(round(float(numberOfFiles)/float(numberOfThreads)))
+
+		fileGroups = grouper(fileList,numberPerThread)
+
+		dirFormat = self.get_folder_format()
+
+		for group in fileGroups:
+			s = Sorter(group,outputDir,dirFormat,self.filename,self.anondict,self.keep_filename)
+			print 'Spawned thread'
 
 	def set_include_series_auto(self,val):
 		self.includeSeries = val
