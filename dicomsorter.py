@@ -105,7 +105,6 @@ class Dicom():
 		if self.is_anonymous():
 			self.dicom.SaveAs(destination)
 		else:
-			print self.filename
 			shutil.copy(self.filename,destination)
 
 class Sorter(Thread):
@@ -138,8 +137,6 @@ class Sorter(Thread):
 					dcm.sort(self.outDir,self.dirFormat,file)
 				else:
 					dcm.sort(self.outDir,self.dirFormat,self.fileFormat)
-
-		print 'thread complete'
 
 class DicomSorter():
 	def __init__(self,pathname=None):
@@ -188,7 +185,7 @@ class DicomSorter():
 			for file in files[2:]:
 				fileList.append(os.path.join(root,file))
 
-		numberOfThreads = 8
+		numberOfThreads = 2
 		numberOfFiles = len(fileList)
 
 		numberPerThread = int(round(float(numberOfFiles)/float(numberOfThreads)))
@@ -197,9 +194,12 @@ class DicomSorter():
 
 		dirFormat = self.get_folder_format()
 
+		s = list()
+
 		for group in fileGroups:
 			s = Sorter(group,outputDir,dirFormat,self.filename,self.anondict,self.keep_filename)
-			print 'Spawned thread'
+			# We want to wait until we are completely done
+			s.join()
 
 	def set_include_series_auto(self,val):
 		self.includeSeries = val
