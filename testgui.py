@@ -1,10 +1,6 @@
 import gui
 import wx
+import wx.py
 
-def callback(evnt):
-	print evnt.path
-
-app = wx.App(0)
-f = gui.MainFrame(None,-1,'TestGUI')
-f.Show()
+app = gui.DicomSort(1)
 app.MainLoop()
