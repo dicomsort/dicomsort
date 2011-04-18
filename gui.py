@@ -8,9 +8,6 @@ import wx.py
 
 PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
 
-
-
-
 class DicomSort(wx.App):
     def __init__(self,debug=0):
         wx.App.__init__(self)
