@@ -39,8 +39,11 @@ class MainFrame(wx.Frame):
 
         # Get config from parent
         self.config = configobj.ConfigObj('dicomSort.ini')
+        # Set interpolation to false since we use formatted strings
+        self.config.interpolation = False
+
         self.prefDlg = settings.PreferenceDlg(None,-1,"DicomSort Preferences",
-                            config = self.config)
+                            config = self.config, size=(400,400))
 
     def _initialize_components(self):
         global DEBUG
@@ -59,15 +62,57 @@ class MainFrame(wx.Frame):
         self.pathEditor.Bind(EVT_PATH,self.fill_list)
 
     def Sort(self,*evnt):
-        print 'Sorting...'
-        anonDict = self.prefDlg.anonList.GetAnonDict()
+        self.anonymize = 0 
+
+        if self.anonymize:
+            print 'Retrieving anonymizing dictionary...'
+            anonTab = self.prefDlg.pages[0]
+            anonDict = anonTab.anonList.GetAnonDict()
+            self.dicomSorter.SetAnonRules(anonDict)
+        else:
+            self.dicomSorter.SetAnonRules(dict())
+
+        # TODO: Get folder format
+        dFormat = []
+
+        # TODO: Keep Series
+        keepSeries = True
+
+        fFormat = self.config['FilenameFormat']['FilenameString']
+
+        # TODO: Get "keepOriginalFilename"
+        original = False
+
+        self.dicomSorter.filename = fFormat
+        self.dicomSorter.folders = dFormat
+        self.dicomSorter.keep_filename = original
+        self.dicomSorter.includeSeries = keepSeries
+
+        outputDir = self.SelectOutputDir()
+
+        if outputDir == None:
+            return
         
+        self.dicomSorter.Sort(outputDir)
+
+    def SelectOutputDir(self):
+        # TODO: Set default path
+        dlg = wx.DirDialog(None,"Please select an output directory")
+
+        if dlg.ShowModal() == wx.ID_OK:
+            outputDir = dlg.GetPath()
+        else:
+            outputDir = None
+
+        dlg.Destroy()
+
+        return outputDir
 
     def OnPreferences(self,*evnt):
         self.config = self.prefDlg.ShowModal()
 
     def OnQuit(self,*evnt):
-        return
+        sys.exit()
 
     def OnAbout(self,*evnt):
         return
@@ -111,8 +156,18 @@ class MainFrame(wx.Frame):
 
     def fill_list(self,evnt):
         self.dicomSorter.pathname = evnt.path
-        fields = self.dicomSorter.get_available_fields()
+        fields = self.dicomSorter.GetAvailableFields()
         self.selector.set_options(fields)
+
+        # This is clunky
+        # TODO: Change PrefDlg to a dict
+        self.prefDlg.pages[0].SetDicomFields(fields)
+
+        self.Notify(PopulateEvent,fields=fields)
+
+    def Notify(self,evntType,**kwargs):
+        event = evntType(**kwargs)
+        wx.PostEvent(self,event)
 
 
 class PathEdit(wx.Panel):
