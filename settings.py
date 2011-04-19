@@ -1,10 +1,16 @@
 import wx
 import anonymize
 import wx.py
+import configobj
 
 class PreferenceDlg(wx.Dialog):
 
     def __init__(self,*args,**kwargs):
+        if kwargs.has_key('config'):
+            self.config = kwargs.pop('config')
+        else:
+            self.config = configobj.ConfigObj('dicomSort.ini')
+
         wx.Dialog.__init__(self,*args,**kwargs)
 
         self.pages = []
@@ -32,29 +38,53 @@ class PreferenceDlg(wx.Dialog):
         vbox.Add(hbox,0,wx.ALIGN_RIGHT | wx.TOP, 5)
         self.SetSizer(vbox)
 
-
     def add_module(self,panel,title):
-        self.pages.append(panel(self.nb))
+        self.pages.append(panel(self.nb,self.config))
         self.nb.AddPage(self.pages[-1],title)
 
     def close(self,*evnt):
-        for page in self.pages:
-            page.close()
+        [page.apply() for page in self.pages]
+
+        # return the config object PRIOR to saving to file
+        return self.config
 
     def apply(self,*evnt):
-        return
+        # Actually write the config to file
+        self.close().write()
 
-class FileNamePanel(wx.Panel):
+class PreferencePanel(wx.Panel):
 
-    def __init__(self,*args,**kwargs):
-        wx.Panel.__init__(self,*args,**kwargs)
+    def __init__(self,parent,shortname,config):
+        wx.Panel.__init__(self,parent,-1)
+        self.shortname = shortname
+        self.config = config
 
-class AnonymousPanel(wx.Panel):
+    def GetState(self):
+        raise TypeError('Abstract Method!')
 
-    def __init__(self,*args,**kwargs):
-        wx.Panel.__init__(self,*args,**kwargs)
+    def apply(self,*evnt):
+        self.config[self.shortname] = self.GetState()
+
+class FileNamePanel(PreferencePanel):
+
+    def __init__(self,parent,config):
+        PreferencePanel.__init__(self,parent,'FilenameFormat',config)
+
+    def GetState(self):
+        #TODO: Actually make this point to a value
+        return {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)'}
+
+class AnonymousPanel(PreferencePanel):
+
+    def __init__(self,parent,config):
+        PreferencePanel.__init__(self,parent,'Anonymization',config)
 
         self.create()
+
+    def GetState(self):
+        dat =  {'Fields':self.anonList.GetCheckedStrings(0),
+                'Replacements':self.anonList.GetReplacements()}
+        return dat
 
     def create(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -82,23 +112,19 @@ class AnonymousPanel(wx.Panel):
         vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 15)
         self.SetSizer(vbox)
 
-    def apply(self,*evnt):
-        return
-
-    def close(self,*evnt):
-        return
-
 
 app = wx.App(0)
 
-debug = wx.Frame(None,-1,'DEBUGGER',size=(700,500),pos=(700,0))
+debug = wx.Frame(None,-1,'DEBUGGER',size=(700,500),pos=(0,0))
 crust = wx.py.crust.Crust(debug)
 debug.Show()
 
-p = PreferenceDlg(None,-1,"DICOM sort preferences",size=(400,500))
+p = PreferenceDlg(None,-1,"DICOM sort preferences",size=(400,500),pos=(708,0))
 p.Show()
 
 anonList = p.pages[0].anonList
+
+conf = wx.Config()
 
 app.SetTopWindow(p)
 
