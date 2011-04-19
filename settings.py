@@ -12,17 +12,27 @@ class PreferenceDlg(wx.Dialog):
             self.config = configobj.ConfigObj('dicomSort.ini')
 
         wx.Dialog.__init__(self,*args,**kwargs)
-
         self.pages = []
-
         self.create()
+
+        # Initialize from Config on Create
+        self.UpdateFromConfig(self.config)
+
+    def UpdateFromConfig(self,config=None):
+        if config == None:
+            config = self.config
+
+        [page.UpdateFromConfig(config) for page in self.pages]
+
+    def Show(self,*args):
+        # Call superclass constructor
+        disp('showing')
+        wx.Dialog.Show(self,*args)
 
     def create(self):
         self.nb = wx.Notebook(self)
         self.add_module(AnonymousPanel,'Anonymized Fields')
         self.add_module(FileNamePanel,'Filename Format')
-
-        self.Bind(wx.EVT_CLOSE, self.close)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(self.nb, 1, wx.EXPAND)
@@ -30,10 +40,13 @@ class PreferenceDlg(wx.Dialog):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         self.cancel = wx.Button(self,-1,'Cancel')
-        self.ok = wx.Button(self,-1,'Apply')
+        self.apply = wx.Button(self,-1,'Apply')
+
+        self.cancel.Bind(wx.EVT_BUTTON,self.OnCancel)
+        self.apply.Bind(wx.EVT_BUTTON,self.OnApply)
 
         hbox.Add(self.cancel,0,wx.ALIGN_RIGHT, 10)
-        hbox.Add(self.ok,0,wx.ALIGN_RIGHT | wx.LEFT, 10)
+        hbox.Add(self.apply,0,wx.ALIGN_RIGHT | wx.LEFT, 10)
 
         vbox.Add(hbox,0,wx.ALIGN_RIGHT | wx.TOP, 5)
         self.SetSizer(vbox)
@@ -42,15 +55,22 @@ class PreferenceDlg(wx.Dialog):
         self.pages.append(panel(self.nb,self.config))
         self.nb.AddPage(self.pages[-1],title)
 
-    def close(self,*evnt):
-        [page.apply() for page in self.pages]
+    def OnApply(self,*evnt):
+        [page.StoreState() for page in self.pages]
 
-        # return the config object PRIOR to saving to file
+        # For now don't write this to the file because it's a local default
+        self.Close()
         return self.config
 
-    def apply(self,*evnt):
-        # Actually write the config to file
-        self.close().write()
+    def OnCancel(self,*evnt):
+        # Return configobj that we came in with
+        self.Close()
+        self.UpdateFromConfig(self.config)
+        return self.config
+
+    def ShowModal(self,*args):
+        wx.Dialog.ShowModal(self,*args)
+        return self.config
 
 class PreferencePanel(wx.Panel):
 
@@ -62,13 +82,36 @@ class PreferencePanel(wx.Panel):
     def GetState(self):
         raise TypeError('Abstract Method!')
 
-    def apply(self,*evnt):
-        self.config[self.shortname] = self.GetState()
+    def SaveState(self,*evnt):
+        # Load since last saved version
+        tmpconfig = configobj.ConfigObj(self.config.filename)
+        self.StoreState(config=tmpconfig)
+
+        # Write just the change from this panel
+        tmpconfig.write()
+
+    def UpdateFromConfig(self,config=None):
+        raise TypeError('Abstract Method!')
+
+    def RevertState(self,*evnt):
+        # Load a temporary copy
+        tmpconfig = configobj.ConfigObj(self.config.filename)
+        self.config[self.shortname] = tmpconfig[self.shortname]
+        # TODO: See if all of these configobjs need to be closed()
+
+    def StoreState(self, config=None):
+        if config == None:
+            config = self.config
+
+        config[self.shortname] = self.GetState()
 
 class FileNamePanel(PreferencePanel):
 
     def __init__(self,parent,config):
         PreferencePanel.__init__(self,parent,'FilenameFormat',config)
+
+    def UpdateFromConfig(self,config):
+        data = config[self.shortname]
 
     def GetState(self):
         #TODO: Actually make this point to a value
@@ -86,6 +129,28 @@ class AnonymousPanel(PreferencePanel):
                 'Replacements':self.anonList.GetReplacements()}
         return dat
 
+    def RevertState(self,*evnt):
+        # Update self.config
+        PreferencePanel.RevertState(self)
+        savedConfig = configobj.ConfigObj(self.config.filename)
+        self.UpdateFromConfig(savedConfig)
+
+    def SetDicomFields(self,values):
+        self.anonList.SetStringItems(values)
+        self.UpdateFromConfig(self.config)
+
+    def UpdateFromConfig(self,config):
+        data = config[self.shortname]
+
+        # The fields that we care about are "Fields" and "Replacements"
+        fields = data['Fields']
+        self.anonList.UnCheckAll()
+        self.anonList.CheckStrings(fields,col=0)
+
+        # Now put in substitutes
+        self.anonList.ClearColumn(1)
+        self.anonList.SetReplacements(data['Replacements'])
+
     def create(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -101,7 +166,8 @@ class AnonymousPanel(PreferencePanel):
 
         self.store = wx.Button(self, -1, "Set as Default", size=(120,-1))
         self.revert = wx.Button(self, -1, "Revert to Defaults",size=(120,-1))
-        #self.revert.Bind(wx.EVT_BUTTON, self.anonList.reset_to_defaults)
+        self.revert.Bind(wx.EVT_BUTTON, self.RevertState)
+        self.store.Bind(wx.EVT_BUTTON, self.SaveState)
 
         opts = wx.ALIGN_RIGHT | wx.TOP | wx.LEFT
 
@@ -112,22 +178,22 @@ class AnonymousPanel(PreferencePanel):
         vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 15)
         self.SetSizer(vbox)
 
+if __name__ == "__main__":
+    app = wx.App(0)
 
-app = wx.App(0)
+    debug = wx.Frame(None,-1,'DEBUGGER',size=(700,500),pos=(0,0))
+    crust = wx.py.crust.Crust(debug)
+    debug.Show()
 
-debug = wx.Frame(None,-1,'DEBUGGER',size=(700,500),pos=(0,0))
-crust = wx.py.crust.Crust(debug)
-debug.Show()
+    p = PreferenceDlg(None,-1,"DICOM sort preferences",size=(400,500),pos=(708,0))
+    p.Show()
 
-p = PreferenceDlg(None,-1,"DICOM sort preferences",size=(400,500),pos=(708,0))
-p.Show()
+    anonList = p.pages[0].anonList
 
-anonList = p.pages[0].anonList
+    conf = wx.Config()
 
-conf = wx.Config()
+    app.SetTopWindow(p)
 
-app.SetTopWindow(p)
-
-app.MainLoop()
+    app.MainLoop()
 
 
