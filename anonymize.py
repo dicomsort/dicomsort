@@ -2,7 +2,6 @@ import sys
 import wx
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin,CheckListCtrlMixin,TextEditMixin
 
-
 class AutoWidthCheckListCtrl(wx.ListCtrl,ListCtrlAutoWidthMixin,
         CheckListCtrlMixin,TextEditMixin):
 
@@ -39,6 +38,12 @@ class AutoWidthCheckListCtrl(wx.ListCtrl,ListCtrlAutoWidthMixin,
     def CheckItems(self,itemIndex):
         [self.CheckItem(index) for index in itemIndex]
 
+    def GetCheckedItems(self,col=None):
+        return [self.GetItemList(r,col) for r in self.GetCheckedIndexes()]
+
+    def GetCheckedStrings(self,col=None):
+        return [self.GetStringItem(r,col) for r in self.GetCheckedIndexes()]
+
     def GetItemList(self,column = None):
         if column == None:
             return [self.GetItemList(c) for c in range(self.ColumnCount)]
@@ -71,15 +76,25 @@ class AnonymizeList(AutoWidthCheckListCtrl):
 
         self.SetColumnEditable(1)
 
-    def SetChoices(self,choices):
-        for choice in choices:
-            index = self.InsertStringItem(sys.maxint,choice[1])
+    def GetReplacements(self):
+        res = dict()
 
-            if choice[0] == 1:
-                self.CheckItem(index)
+        for row in self.GetChangedIndex():
+            res[self.GetStringItem(row,0)] = self.GetStringItem(row,1)
+
+        return res
 
     def LoadDefaults(self,config):
         return
+
+    def GetAnonDict(self):
+
+        anonDict = dict()
+
+        for key,val in self.GetCheckedStrings():
+            anonDict[key] = val
+
+        return anonDict
 
     def SaveDefaults(self,cofig):
         anonFields = self.GetAnonymousFields()
