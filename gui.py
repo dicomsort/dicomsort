@@ -5,8 +5,12 @@ import re
 import wx
 import wx.lib.newevent
 import wx.py
+import configobj
+import settings
 
-PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
+# Event Definitions
+PathEvent,      EVT_PATH            = wx.lib.newevent.NewEvent()
+PopulateEvent,  EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
 
 class DicomSort(wx.App):
     def __init__(self,debug=0):
@@ -22,7 +26,6 @@ class DicomSort(wx.App):
 
         self.SetTopWindow(self.frame)
 
-
 class MainFrame(wx.Frame):
 
     def __init__(self,*args,**kwargs):
@@ -33,6 +36,11 @@ class MainFrame(wx.Frame):
 
         # Use os.getcwd() for now
         self.dicomSorter = dicomsorter.DicomSorter()
+
+        # Get config from parent
+        self.config = configobj.ConfigObj('dicomSort.ini')
+        self.prefDlg = settings.PreferenceDlg(None,-1,"DicomSort Preferences",
+                            config = self.config)
 
     def _initialize_components(self):
         global DEBUG
@@ -52,6 +60,11 @@ class MainFrame(wx.Frame):
 
     def Sort(self,*evnt):
         print 'Sorting...'
+        anonDict = self.prefDlg.anonList.GetAnonDict()
+        
+
+    def OnPreferences(self,*evnt):
+        self.config = self.prefDlg.ShowModal()
 
     def OnQuit(self,*evnt):
         return
@@ -71,7 +84,7 @@ class MainFrame(wx.Frame):
             else:
                 menuitem = wx.MenuItem(menu,-1,'\t'.join(item[0:2]))
                 if item[2] != '':
-                    self.Bind(wx.EVT_MENU,item[2])
+                    self.Bind(wx.EVT_MENU,item[2],menuitem)
 
                 menu.AppendItem(menuitem)
 
@@ -83,7 +96,7 @@ class MainFrame(wx.Frame):
         file = [['&Open Directory','Ctrl+O',self.pathEditor.browse_paths],
                 ['&Sort Images','Ctrl+S',self.Sort],
                 '----',
-                ['&Preferences...','Ctrl+,',''],
+                ['&Preferences...','Ctrl+,',self.OnPreferences],
                 '----',
                 ['&Exit','Ctrl+W',self.OnQuit]]
 
@@ -101,16 +114,6 @@ class MainFrame(wx.Frame):
         fields = self.dicomSorter.get_available_fields()
         self.selector.set_options(fields)
 
-class AnonymizerList(wx.CheckListBox):
-
-    def __init__(self,parent,id=-1,size=(250,300),choices=[]):
-        wx.CheckListBox.__init__(self,parent,id,size,choices)
-
-    def revert(self):
-        return
-
-    def set_as_default(self):
-        return
 
 class PathEdit(wx.Panel):
 
