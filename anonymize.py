@@ -30,6 +30,9 @@ class AutoWidthCheckListCtrl(wx.ListCtrl,ListCtrlAutoWidthMixin,
         self.DeleteAllItems()
 
         for item in items:
+            if isinstance(item,str):
+                item = [item,]
+
             row = self.InsertStringItem(sys.maxint,item[0])
 
             for col in range(1,len(item)):
@@ -40,6 +43,9 @@ class AutoWidthCheckListCtrl(wx.ListCtrl,ListCtrlAutoWidthMixin,
 
     def GetCheckedItems(self,col=None):
         return [self.GetItemList(r,col) for r in self.GetCheckedIndexes()]
+
+    def UnCheckAll(self):
+        [self.CheckItem(index,False) for index in range(self.ItemCount)]
 
     def GetCheckedStrings(self,col=None):
         return [self.GetStringItem(r,col) for r in self.GetCheckedIndexes()]
@@ -84,9 +90,6 @@ class AnonymizeList(AutoWidthCheckListCtrl):
 
         return res
 
-    def LoadDefaults(self,config):
-        return
-
     def GetAnonDict(self):
 
         anonDict = dict()
@@ -96,15 +99,38 @@ class AnonymizeList(AutoWidthCheckListCtrl):
 
         return anonDict
 
-    def SaveDefaults(self,cofig):
-        anonFields = self.GetAnonymousFields()
+    def ClearColumn(self,col):
+        [self.SetStringItem(i,col,'') for i in range(self.ItemCount)]
 
-        anonRep = dict()
+    def FindStrings(self,strings,col=0):
+        strings = [unicode(string) for string in strings]
 
-        for index in self.GetChangedIndex():
-            anonRep[self.GetDicomField(index)] = self.GetItem(index,1).Text
+        fields = [item.Text for item in self.GetItemList(col)]
 
-        return anonFields,anonRep
+        inds = list()
+
+        for string in strings:
+            try:
+                inds.append(fields.index(unicode(string)))
+            except ValueError:
+                inds.append(None)
+
+        return inds
+
+    def SetReplacements(self,dictionary):
+        keys = dictionary.keys()
+        inds = self.FindStrings(keys,0)
+
+        for i,row in enumerate(inds):
+            if row == None:
+                continue
+
+            self.SetStringItem(row,1,dictionary[keys[i]])
+
+    def CheckStrings(self,strings,col=0):
+        print self.FindStrings(strings,col)
+        inds = [ind for ind in self.FindStrings(strings,col) if ind != None]
+        self.CheckItems(inds)
 
     def GetDicomField(self,row):
         return self.GetItem(row,0).Text
