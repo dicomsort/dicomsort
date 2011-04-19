@@ -8,6 +8,10 @@ import wx.py
 import configobj
 import settings
 
+#TODO: Add status bar that include: Percentage of Transfer, Number of Threads
+#TODO: Add sort/anonymize buttons
+#TODO: Generate Interface between field chooser and dirFormat strings
+
 # Event Definitions
 PathEvent,      EVT_PATH            = wx.lib.newevent.NewEvent()
 PopulateEvent,  EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
