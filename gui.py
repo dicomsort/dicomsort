@@ -8,6 +8,13 @@ import wx.py
 import configobj
 import settings
 
+defaultConfig = {'Anonymization':
+                        {'Fields':['PatientsName','PatientID'],
+                        'Replacements':
+                            {'PatientsName':'ANONYMOUS'}},
+                 'FilenameFormat':
+                        {'Filename':'%(ImageType)s (%(InstanceNumber)04d)'}}
+
 def throw_error(message,title='Error'):
     dlg = wx.MessageDialog(None,message,title,wx.OK | wx.ICON_ERROR)
     dlg.ShowModal()
@@ -38,7 +45,6 @@ class DicomSort(wx.App):
 class MainFrame(wx.Frame):
 
     def __init__(self,*args,**kwargs):
-
         wx.Frame.__init__(self,*args,**kwargs)
         self._initialize_components()
         self._initialize_menus()
@@ -50,6 +56,12 @@ class MainFrame(wx.Frame):
         self.config = configobj.ConfigObj('dicomSort.ini')
         # Set interpolation to false since we use formatted strings
         self.config.interpolation = False
+
+        # Check to see if we need to populate the config file
+        if len(self.config.keys()) == 0:
+            global defaultConfig
+            self.config.update(defaultConfig)
+            self.config.write()
 
         self.prefDlg = settings.PreferenceDlg(None,-1,"DicomSort Preferences",
                             config = self.config, size=(400,400))
