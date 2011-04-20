@@ -79,7 +79,7 @@ class Dicom():
 		directory = os.path.join(root,*dirFormat)
 		return os.path.join(directory,fileFormat) % self
 
-	def set_anon_rules(self,anondict):
+	def SetAnonRules(self,anondict):
 		# Appends the rules to the overrides so that we can alter them
 		if isinstance(anondict,dict):
 			self.anondict = anondict
@@ -132,7 +132,7 @@ class Sorter(Thread):
 			dcm = isdicom(file)
 			if dcm:
 				dcm = Dicom(file,dcm)
-				dcm.set_anon_rules(self.anondict)
+				dcm.SetAnonRules(self.anondict)
 				if self.keep_filename:
 					dcm.sort(self.outDir,self.dirFormat,file)
 				else:
@@ -158,14 +158,14 @@ class DicomSorter():
 
 		self.keep_filename = False
 
-	def set_anon_rules(self,anondict):
+	def SetAnonRules(self,anondict):
 		# Appends the rules to the overrides so that we can alter them
 		if isinstance(anondict,dict):
 			self.anondict = anondict
 		else:
 			raise Exception('Anon rules must be a dictionary')
 
-	def get_folder_format(self):
+	def GetFolderFormat(self):
 		# Make a local copy
 		folderList = self.folders[:]
 
@@ -174,10 +174,10 @@ class DicomSorter():
 
 		return folderList			
 
-	def sort(self,outputDir):
+	def Sort(self,outputDir):
 		# This should be moved to a worker thread
 
-		dirFormat = self.get_folder_format()
+		dirFormat = self.GetFolderFormat()
 
 		fileList = list()
 
@@ -192,7 +192,7 @@ class DicomSorter():
 
 		fileGroups = grouper(fileList,numberPerThread)
 
-		dirFormat = self.get_folder_format()
+		dirFormat = self.GetFolderFormat()
 
 		s = list()
 
@@ -201,10 +201,10 @@ class DicomSorter():
 			# We want to wait until we are completely done
 			s.join()
 
-	def set_include_series_auto(self,val):
+	def SetIncludeSeriesAuto(self,val):
 		self.includeSeries = val
 
-	def get_available_fields(self):
+	def GetAvailableFields(self):
 		for root,dirs,files in os.walk(self.pathname):
 			for file in files[2:]:
 				filename = os.path.join(root,file)

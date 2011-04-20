@@ -5,13 +5,21 @@ import re
 import wx
 import wx.lib.newevent
 import wx.py
-
-PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
+import configobj
+import settings
 
 def throw_error(message,title='Error'):
     dlg = wx.MessageDialog(None,message,title,wx.OK | wx.ICON_ERROR)
     dlg.ShowModal()
     dlg.Destroy()
+
+#TODO: Add status bar that include: Percentage of Transfer, Number of Threads
+#TODO: Add sort/anonymize buttons
+#TODO: Generate Interface between field chooser and dirFormat strings
+
+# Event Definitions
+PathEvent,      EVT_PATH            = wx.lib.newevent.NewEvent()
+PopulateEvent,  EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
 
 class DicomSort(wx.App):
     def __init__(self,debug=0):
@@ -27,7 +35,6 @@ class DicomSort(wx.App):
 
         self.SetTopWindow(self.frame)
 
-
 class MainFrame(wx.Frame):
 
     def __init__(self,*args,**kwargs):
@@ -38,6 +45,14 @@ class MainFrame(wx.Frame):
 
         # Use os.getcwd() for now
         self.dicomSorter = dicomsorter.DicomSorter()
+
+        # Get config from parent
+        self.config = configobj.ConfigObj('dicomSort.ini')
+        # Set interpolation to false since we use formatted strings
+        self.config.interpolation = False
+
+        self.prefDlg = settings.PreferenceDlg(None,-1,"DicomSort Preferences",
+                            config = self.config, size=(400,400))
 
     def _initialize_components(self):
         global DEBUG
@@ -56,10 +71,57 @@ class MainFrame(wx.Frame):
         self.pathEditor.Bind(EVT_PATH,self.fill_list)
 
     def Sort(self,*evnt):
-        print 'Sorting...'
+        self.anonymize = 0 
+
+        if self.anonymize:
+            print 'Retrieving anonymizing dictionary...'
+            anonTab = self.prefDlg.pages[0]
+            anonDict = anonTab.anonList.GetAnonDict()
+            self.dicomSorter.SetAnonRules(anonDict)
+        else:
+            self.dicomSorter.SetAnonRules(dict())
+
+        # TODO: Get folder format
+        dFormat = []
+
+        # TODO: Keep Series
+        keepSeries = True
+
+        fFormat = self.config['FilenameFormat']['FilenameString']
+
+        # TODO: Get "keepOriginalFilename"
+        original = False
+
+        self.dicomSorter.filename = fFormat
+        self.dicomSorter.folders = dFormat
+        self.dicomSorter.keep_filename = original
+        self.dicomSorter.includeSeries = keepSeries
+
+        outputDir = self.SelectOutputDir()
+
+        if outputDir == None:
+            return
+        
+        self.dicomSorter.Sort(outputDir)
+
+    def SelectOutputDir(self):
+        # TODO: Set default path
+        dlg = wx.DirDialog(None,"Please select an output directory")
+
+        if dlg.ShowModal() == wx.ID_OK:
+            outputDir = dlg.GetPath()
+        else:
+            outputDir = None
+
+        dlg.Destroy()
+
+        return outputDir
+
+    def OnPreferences(self,*evnt):
+        self.config = self.prefDlg.ShowModal()
 
     def OnQuit(self,*evnt):
-        return
+        sys.exit()
 
     def OnAbout(self,*evnt):
         return
@@ -76,7 +138,7 @@ class MainFrame(wx.Frame):
             else:
                 menuitem = wx.MenuItem(menu,-1,'\t'.join(item[0:2]))
                 if item[2] != '':
-                    self.Bind(wx.EVT_MENU,item[2])
+                    self.Bind(wx.EVT_MENU,item[2],menuitem)
 
                 menu.AppendItem(menuitem)
 
@@ -88,7 +150,7 @@ class MainFrame(wx.Frame):
         file = [['&Open Directory','Ctrl+O',self.pathEditor.browse_paths],
                 ['&Sort Images','Ctrl+S',self.Sort],
                 '----',
-                ['&Preferences...','Ctrl+,',''],
+                ['&Preferences...','Ctrl+,',self.OnPreferences],
                 '----',
                 ['&Exit','Ctrl+W',self.OnQuit]]
 
@@ -104,7 +166,7 @@ class MainFrame(wx.Frame):
     def fill_list(self,evnt):
         self.dicomSorter.pathname = evnt.path
         try:
-            fields = self.dicomSorter.get_available_fields()
+            fields = self.dicomSorter.GetAvailableFields()
         except dicomsorter.DicomFolderError:
             errMsg = ''.join([evnt.path,' contains no DICOMs'])
             throw_error(errMsg,'No DICOMs Present')
@@ -112,16 +174,16 @@ class MainFrame(wx.Frame):
 
         self.selector.set_options(fields)
 
-class AnonymizerList(wx.CheckListBox):
+        # This is clunky
+        # TODO: Change PrefDlg to a dict
+        self.prefDlg.pages[0].SetDicomFields(fields)
 
-    def __init__(self,parent,id=-1,size=(250,300),choices=[]):
-        wx.CheckListBox.__init__(self,parent,id,size,choices)
+        self.Notify(PopulateEvent,fields=fields)
 
-    def revert(self):
-        return
+    def Notify(self,evntType,**kwargs):
+        event = evntType(**kwargs)
+        wx.PostEvent(self,event)
 
-    def set_as_default(self):
-        return
 
 class PathEdit(wx.Panel):
 
