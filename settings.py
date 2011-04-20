@@ -26,7 +26,7 @@ class PreferenceDlg(wx.Dialog):
 
     def Show(self,*args):
         # Call superclass constructor
-        disp('showing')
+        print 'showing...'
         wx.Dialog.Show(self,*args)
 
     def create(self):
