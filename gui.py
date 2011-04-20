@@ -8,8 +8,10 @@ import wx.py
 
 PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
 
-
-
+def throw_error(message,title='Error'):
+    dlg = wx.MessageDialog(None,message,title,wx.OK | wx.ICON_ERROR)
+    dlg.ShowModal()
+    dlg.Destroy()
 
 class DicomSort(wx.App):
     def __init__(self,debug=0):
@@ -101,7 +103,13 @@ class MainFrame(wx.Frame):
 
     def fill_list(self,evnt):
         self.dicomSorter.pathname = evnt.path
-        fields = self.dicomSorter.get_available_fields()
+        try:
+            fields = self.dicomSorter.get_available_fields()
+        except dicomsorter.DicomFolderError:
+            errMsg = ''.join([evnt.path,' contains no DICOMs'])
+            throw_error(errMsg,'No DICOMs Present')
+            return
+
         self.selector.set_options(fields)
 
 class AnonymizerList(wx.CheckListBox):
@@ -134,10 +142,7 @@ class PathEdit(wx.Panel):
             self.notify()
         else:
             errorMsg = 'The Directory %(a)s does not exist!' % {'a':path}
-            dlg = wx.MessageDialog(None,errorMsg,'Invalid Location',
-                                    wx.OK | wx.ICON_ERROR)
-            dlg.ShowModal()
-            dlg.Destroy()
+            throw_error(errorMsg,'Invalid Location')
 
     def _initialize_controls(self):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
