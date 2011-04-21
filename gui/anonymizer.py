@@ -1,3 +1,4 @@
+import configobj
 import wx
 import gui
 import preferences 
