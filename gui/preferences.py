@@ -37,8 +37,12 @@ class PreferencePanel(wx.Panel):
         config[self.shortname] = self.GetState()
 
 
-import anonymizer
+    def UpdateFromConfig(self,config=None):
+        raise TypeError('Abstract Method!')
 
+
+        config[self.shortname] = self.GetState()
+import anonymizer
 
 class FileNamePanel(PreferencePanel):
 
@@ -117,25 +121,10 @@ class PreferenceDlg(wx.Dialog):
         self.UpdateFromConfig(self.config)
         return self.config
 
+
     def ShowModal(self,*args):
         wx.Dialog.ShowModal(self,*args)
         return self.config
-
-    def UpdateFromConfig(self,config=None):
-        raise TypeError('Abstract Method!')
-
-    def RevertState(self,*evnt):
-        # Load a temporary copy
-        tmpconfig = configobj.ConfigObj(self.config.filename)
-        self.config[self.shortname] = tmpconfig[self.shortname]
-        # TODO: See if all of these configobjs need to be closed()
-
-    def StoreState(self, config=None):
-        if config == None:
-            config = self.config
-
-        config[self.shortname] = self.GetState()
-
 
 
 
