@@ -1,7 +1,6 @@
 import configobj
 import wx
 import gui
-import preferences 
 
 class AnonymizeList(gui.CheckListCtrl):
 
@@ -53,6 +52,8 @@ class AnonymizeList(gui.CheckListCtrl):
 
     #def GetAnonymousFields(self):
     #    return [self.GetDicomField(i) for i in self.GetAnonymousIndex()]
+
+import preferences
 
 class AnonymousPanel(preferences.PreferencePanel):
 

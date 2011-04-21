@@ -1,8 +1,56 @@
 import wx
 import gui
-import anonymizer
 import wx.py
 import configobj
+
+class PreferencePanel(wx.Panel):
+
+    def __init__(self,parent,shortname,config):
+        wx.Panel.__init__(self,parent,-1)
+        self.shortname = shortname
+        self.config = config
+
+    def GetState(self):
+        raise TypeError('Abstract Method!')
+
+    def SaveState(self,*evnt):
+        # Load since last saved version
+        tmpconfig = configobj.ConfigObj(self.config.filename)
+        self.StoreState(config=tmpconfig)
+
+        # Write just the change from this panel
+        tmpconfig.write()
+
+    def UpdateFromConfig(self,config=None):
+        raise TypeError('Abstract Method!')
+
+    def RevertState(self,*evnt):
+        # Load a temporary copy
+        tmpconfig = configobj.ConfigObj(self.config.filename)
+        self.config[self.shortname] = tmpconfig[self.shortname]
+        # TODO: See if all of these configobjs need to be closed()
+
+    def StoreState(self, config=None):
+        if config == None:
+            config = self.config
+
+        config[self.shortname] = self.GetState()
+
+
+import anonymizer
+
+
+class FileNamePanel(PreferencePanel):
+
+    def __init__(self,parent,config):
+        PreferencePanel.__init__(self,parent,'FilenameFormat',config)
+
+    def UpdateFromConfig(self,config):
+        data = config[self.shortname]
+
+    def GetState(self):
+        #TODO: Actually make this point to a value
+        return {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)'}
 
 class PreferenceDlg(wx.Dialog):
 
@@ -73,24 +121,6 @@ class PreferenceDlg(wx.Dialog):
         wx.Dialog.ShowModal(self,*args)
         return self.config
 
-class PreferencePanel(wx.Panel):
-
-    def __init__(self,parent,shortname,config):
-        wx.Panel.__init__(self,parent,-1)
-        self.shortname = shortname
-        self.config = config
-
-    def GetState(self):
-        raise TypeError('Abstract Method!')
-
-    def SaveState(self,*evnt):
-        # Load since last saved version
-        tmpconfig = configobj.ConfigObj(self.config.filename)
-        self.StoreState(config=tmpconfig)
-
-        # Write just the change from this panel
-        tmpconfig.write()
-
     def UpdateFromConfig(self,config=None):
         raise TypeError('Abstract Method!')
 
@@ -106,17 +136,7 @@ class PreferencePanel(wx.Panel):
 
         config[self.shortname] = self.GetState()
 
-class FileNamePanel(PreferencePanel):
 
-    def __init__(self,parent,config):
-        PreferencePanel.__init__(self,parent,'FilenameFormat',config)
-
-    def UpdateFromConfig(self,config):
-        data = config[self.shortname]
-
-    def GetState(self):
-        #TODO: Actually make this point to a value
-        return {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)'}
 
 
 if __name__ == "__main__":

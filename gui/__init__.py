@@ -1,6 +1,9 @@
+import configobj
+import dicomsorter
 import sys
 import wx
 import wx.lib.newevent
+import wx.py
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from wx.lib.mixins.listctrl import CheckListCtrlMixin,TextEditMixin
 configFile = 'dicomSort.ini'
@@ -294,7 +297,7 @@ class DicomSort(wx.App):
 
     def __init__(self,*args):
         wx.App.__init__(self,*args)
-        self.frame = wx.Frame(None,-1,"DicomSort",size=(500,500))
+        self.frame = MainFrame(None,-1,"DicomSort",size=(500,500))
         self.frame.Show()
 
     def MainLoop(self,*args):
@@ -306,7 +309,7 @@ class DebugApp(DicomSort):
     """
 
     def __init__(self,*args):
-        super('DebugApp',self).__init__(*args)
+        super(DebugApp,self).__init__(*args)
         self.debug = wx.Frame(None,-1,'DEBUGGER',size=(700,500))
         self.crust = wx.py.crust.Crust(self.debug)
         self.debug.Show()
@@ -316,5 +319,163 @@ class DebugApp(DicomSort):
 
     def MainLoop(self,*args):
         # Call superclass MainLoop
-        super('DebugApp',self).MainLoop(*args)
+        super(DebugApp,self).MainLoop(*args)
         self.debug.Destroy()
+
+from gui import preferences
+
+class MainFrame(wx.Frame):
+
+    def __init__(self,*args,**kwargs):
+        wx.Frame.__init__(self,*args,**kwargs)
+        self._initialize_components()
+        self._initialize_menus()
+
+        # Use os.getcwd() for now
+        self.dicomSorter = dicomsorter.DicomSorter()
+
+        # Get config from parent
+        self.config = configobj.ConfigObj('dicomSort.ini')
+        # Set interpolation to false since we use formatted strings
+        self.config.interpolation = False
+
+        # Check to see if we need to populate the config file
+        if len(self.config.keys()) == 0:
+            global defaultConfig
+            self.config.update(defaultConfig)
+            self.config.write()
+
+        self.prefDlg = preferences.PreferenceDlg(None,-1,"DicomSort Preferences",
+                            config = self.config, size=(400,400))
+
+    def _initialize_components(self):
+        global DEBUG
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        self.pathEditor = PathEditCtrl(self,-1)
+        vbox.Add(self.pathEditor,0,wx.EXPAND)
+
+        self.selector = FieldSelector(self,titles=['DICOM Properties',
+                                                   'Properties to Use'])
+        vbox.Add(self.selector,1,wx.EXPAND)
+
+        self.SetSizer(vbox)
+
+        self.pathEditor.Bind(EVT_PATH,self.fill_list)
+
+    def Sort(self,*evnt):
+        self.anonymize = 0 
+
+        if self.anonymize:
+            print 'Retrieving anonymizing dictionary...'
+            anonTab = self.prefDlg.pages[0]
+            anonDict = anonTab.anonList.GetAnonDict()
+            self.dicomSorter.SetAnonRules(anonDict)
+        else:
+            self.dicomSorter.SetAnonRules(dict())
+
+        # TODO: Get folder format
+        dFormat = []
+
+        # TODO: Keep Series
+        keepSeries = True
+
+        fFormat = self.config['FilenameFormat']['FilenameString']
+
+        # TODO: Get "keepOriginalFilename"
+        original = False
+
+        self.dicomSorter.filename = fFormat
+        self.dicomSorter.folders = dFormat
+        self.dicomSorter.keep_filename = original
+        self.dicomSorter.includeSeries = keepSeries
+
+        outputDir = self.SelectOutputDir()
+
+        if outputDir == None:
+            return
+        
+        self.dicomSorter.Sort(outputDir)
+
+    def SelectOutputDir(self):
+        # TODO: Set default path
+        dlg = wx.DirDialog(None,"Please select an output directory")
+
+        if dlg.ShowModal() == wx.ID_OK:
+            outputDir = dlg.GetPath()
+        else:
+            outputDir = None
+
+        dlg.Destroy()
+
+        return outputDir
+
+    def OnPreferences(self,*evnt):
+        self.config = self.prefDlg.ShowModal()
+
+    def OnQuit(self,*evnt):
+        sys.exit()
+
+    def OnAbout(self,*evnt):
+        return
+
+    def OnHelp(self,*evnt):
+        return
+
+    def _menu_generator(self,parent,name,arguments):
+        menu = wx.Menu()
+
+        for item in arguments:
+            if item == '----':
+                menu.AppendSeparator()
+            else:
+                menuitem = wx.MenuItem(menu,-1,'\t'.join(item[0:2]))
+                if item[2] != '':
+                    self.Bind(wx.EVT_MENU,item[2],menuitem)
+
+                menu.AppendItem(menuitem)
+
+        parent.Append(menu,name)
+
+    def _initialize_menus(self):
+        menubar = wx.MenuBar()
+
+        file = [['&Open Directory','Ctrl+O',self.pathEditor.browse_paths],
+                ['&Sort Images','Ctrl+S',self.Sort],
+                '----',
+                ['&Preferences...','Ctrl+,',self.OnPreferences],
+                '----',
+                ['&Exit','Ctrl+W',self.OnQuit]]
+
+        self._menu_generator(menubar,'&File',file)
+
+        help = [['About','',self.OnAbout],
+                ['&Help','Ctrl+?',self.OnHelp]]
+
+        self._menu_generator(menubar,'&Help',help)
+
+        self.SetMenuBar(menubar)
+
+    def fill_list(self,evnt):
+        self.dicomSorter.pathname = evnt.path
+        try:
+            fields = self.dicomSorter.GetAvailableFields()
+        except dicomsorter.DicomFolderError:
+            errMsg = ''.join([evnt.path,' contains no DICOMs'])
+            throw_error(errMsg,'No DICOMs Present')
+            return
+
+        self.selector.set_options(fields)
+
+        # This is clunky
+        # TODO: Change PrefDlg to a dict
+        self.prefDlg.pages[0].SetDicomFields(fields)
+
+        self.Notify(PopulateEvent,fields=fields)
+
+    def Notify(self,evntType,**kwargs):
+        event = evntType(**kwargs)
+        wx.PostEvent(self,event)
+
+
