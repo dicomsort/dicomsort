@@ -290,7 +290,17 @@ class FieldSelector(wx.Panel):
 
         # TODO: Future checks to make sure that fields are in this
         
-class DebugApp(gui.DicomSort):
+class DicomSort(wx.App):
+
+    def __init__(self,*args):
+        wx.App.__init__(self,*args)
+        self.frame = wx.Frame(None,-1,"DicomSort",size=(500,500))
+        self.frame.Show()
+
+    def MainLoop(self,*args):
+        wx.App.MainLoop(self,*args)
+
+class DebugApp(DicomSort):
     """
     Develops the debugging framework for easy testing etc.
     """
@@ -308,13 +318,3 @@ class DebugApp(gui.DicomSort):
         # Call superclass MainLoop
         super('DebugApp',self).MainLoop(*args)
         self.debug.Destroy()
-   
-class DicomSort(wx.App):
-
-    def __init__(self,*args):
-        wx.App.__init__(self,*args)
-        self.frame = wx.Frame(None,-1,"DicomSort",size=(500,500))
-        self.frame.Show()
-
-    def MainLoop(self,*args):
-        wx.App.MainLoop(self,*args)
