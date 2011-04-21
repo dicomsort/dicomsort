@@ -1,3 +1,4 @@
+import sys
 import wx
 import wx.lib.newevent
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
