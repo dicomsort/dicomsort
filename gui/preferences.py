@@ -1,96 +1,134 @@
 import wx
+import gui
+import anonymizer
+import wx.py
 import configobj
 
-class PreferenceDialog(wx.Dialog):
-	"""
-	Creates and displays a preference dialog that allows the user to change
-	some settings.
-	"""
+class PreferenceDlg(wx.Dialog):
 
-	def __init__(self):
-		wx.Dialog.__init__(self,None,wx.ID_ANY,'Preferences',size=(500,300))
-		self.createWidgets()
+    def __init__(self,*args,**kwargs):
+        if kwargs.has_key('config'):
+            self.config = kwargs.pop('config')
+        else:
+            self.config = configobj.ConfigObj('dicomSort.ini')
 
-	def createWidgets(self):
+        wx.Dialog.__init__(self,*args,**kwargs)
+        self.pages = []
+        self.create()
 
-		lblSizer = wx.BoxSizer(wx.VERTICAL)
-		valueSizer = wx.BoxSizer(wx.VERTICAL)
-		btnSizer = wx.StdDialogButtonSizer()
-		colSizer = wx.BoxSizer(wx.HORIZONTAL)
-		mainSizer = wx.BoxSizer(wx.VERTICAL)
+        # Initialize from Config on Create
+        self.UpdateFromConfig(self.config)
 
-		iniFile = "config.ini"
-		self.config = configobj.ConfigObj(iniFile);
+    def UpdateFromConfig(self,config=None):
+        if config == None:
+            config = self.config
 
-		#labels = self.config.keys()
-		labels = self.config["Labels"]
-		values = self.config["Values"]
-		self.widgetNames = values
-		font = wx.Font(12,wx.SWISS,wx.NORMAL,wx.BOLD);
+        [page.UpdateFromConfig(config) for page in self.pages]
 
-		for key in labels:
-			value = labels[key] 
-			lbl = wx.StaticText(self, label=value)
-			lbl.SetFont(font)
-			lblSizer.Add(lbl,0,wx.ALL,5)
+    def Show(self,*args):
+        # Call superclass constructor
+        print 'showing...'
+        wx.Dialog.Show(self,*args)
 
-		for key in values:
-			value = values[key]
-			if isinstance(value,list):
-				default = value[0]
-				choices = value[1:]
-				cbo = wx.ComboBox(self,value=value[0],
-								size=wx.DefaultSize,choices=choices,
-								style=wx.CB_DROPDOWN|wx.CB_READONLY,
-								name=key)
-				valueSizer.Add(cbo,0,wx.ALL,5)
-			else:
-				txt = wx.TextCtrl(self,value=value,name=key)
-				valueSizer.Add(txt,0,wx.ALL|wx.EXPAND,5)
-				
-		saveBtn = wx.Button(self,wx.ID_OK, label="Save")
-		saveBtn.Bind(wx.EVT_BUTTON, self.onSave)
-		btnSizer.AddButton(saveBtn)
+    def create(self):
+        self.nb = wx.Notebook(self)
+        self.add_module(anonymizer.AnonymousPanel,'Anonymized Fields')
+        self.add_module(FileNamePanel,'Filename Format')
 
-		cancelBtn = wx.Button(self,wx.ID_CANCEL)
-		btnSizer.AddButton(cancelBtn)
-		btnSizer.Realize()
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add(self.nb, 1, wx.EXPAND)
 
-		colSizer.Add(lblSizer)
-		colSizer.Add(valueSizer,1,wx.EXPAND)
-		mainSizer.Add(colSizer,0,wx.EXPAND)
-		mainSizer.Add(btnSizer,0,wx.ALL|wx.ALIGN_RIGHT,5)
-		self.SetSizer(mainSizer)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
 
-	def onSave(self,event):
-		for name in self.widgetNames:
-			widget = wx.FindWindowByName(name)
-			if isinstance(widget,wx.ComboBox):
-				selection = widget.GetValue()
-				choices = widget.GetItems()
-				choices.insert(0,selection)
-				self.widgetNames[name] = choices
-			el:ese:
-				value = widget.GetValue()
-				self.widgetNames[name] = value
-		self.config.write()
-		self.EndModal(0)
+        self.cancel = wx.Button(self,-1,'Cancel')
+        self.apply = wx.Button(self,-1,'Apply')
 
-class CheckListItem(wx.CheckListBox):
+        self.cancel.Bind(wx.EVT_BUTTON,self.OnCancel)
+        self.apply.Bind(wx.EVT_BUTTON,self.OnApply)
 
-	def __init__(self,parent,id=-1,size=(250,300),choices=[]):
-		wx.CheckListBox.__init__(self,parent,id,size,choices)
-		
-		
+        hbox.Add(self.cancel,0,wx.ALIGN_RIGHT, 10)
+        hbox.Add(self.apply,0,wx.ALIGN_RIGHT | wx.LEFT, 10)
 
-class MyApp(wx.App):
-	def OnInit(self):
-		dlg = PreferenceDialog()
-		dlg.ShowModal()
-		dlg.Destroy()
+        vbox.Add(hbox,0,wx.ALIGN_RIGHT | wx.TOP, 5)
+        self.SetSizer(vbox)
 
-		return True
+    def add_module(self,panel,title):
+        self.pages.append(panel(self.nb,self.config))
+        self.nb.AddPage(self.pages[-1],title)
+
+    def OnApply(self,*evnt):
+        [page.StoreState() for page in self.pages]
+
+        # For now don't write this to the file because it's a local default
+        self.Close()
+        return self.config
+
+    def OnCancel(self,*evnt):
+        # Return configobj that we came in with
+        self.Close()
+        self.UpdateFromConfig(self.config)
+        return self.config
+
+    def ShowModal(self,*args):
+        wx.Dialog.ShowModal(self,*args)
+        return self.config
+
+class PreferencePanel(wx.Panel):
+
+    def __init__(self,parent,shortname,config):
+        wx.Panel.__init__(self,parent,-1)
+        self.shortname = shortname
+        self.config = config
+
+    def GetState(self):
+        raise TypeError('Abstract Method!')
+
+    def SaveState(self,*evnt):
+        # Load since last saved version
+        tmpconfig = configobj.ConfigObj(self.config.filename)
+        self.StoreState(config=tmpconfig)
+
+        # Write just the change from this panel
+        tmpconfig.write()
+
+    def UpdateFromConfig(self,config=None):
+        raise TypeError('Abstract Method!')
+
+    def RevertState(self,*evnt):
+        # Load a temporary copy
+        tmpconfig = configobj.ConfigObj(self.config.filename)
+        self.config[self.shortname] = tmpconfig[self.shortname]
+        # TODO: See if all of these configobjs need to be closed()
+
+    def StoreState(self, config=None):
+        if config == None:
+            config = self.config
+
+        config[self.shortname] = self.GetState()
+
+class FileNamePanel(PreferencePanel):
+
+    def __init__(self,parent,config):
+        PreferencePanel.__init__(self,parent,'FilenameFormat',config)
+
+    def UpdateFromConfig(self,config):
+        data = config[self.shortname]
+
+    def GetState(self):
+        #TODO: Actually make this point to a value
+        return {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)'}
+
 
 if __name__ == "__main__":
-	app = MyApp(False)
-	app.MainLoop()
+    app = gui.DebugApp(0)
+
+    p = PreferenceDlg(None,-1,"DICOM sort preferences",size=(400,500),pos=(708,0))
+    p.Show()
+
+    anonList = p.pages[0].anonList
+
+    app.SetTopWindow(p)
+
+    app.MainLoop()
+
+

@@ -1,5 +1,5 @@
 import wx
-import anonymize
+import anonymizer
 import wx.py
 import configobj
 
@@ -31,7 +31,7 @@ class PreferenceDlg(wx.Dialog):
 
     def create(self):
         self.nb = wx.Notebook(self)
-        self.add_module(AnonymousPanel,'Anonymized Fields')
+        self.add_module(anonymizer.AnonymousPanel,'Anonymized Fields')
         self.add_module(FileNamePanel,'Filename Format')
 
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -117,66 +117,6 @@ class FileNamePanel(PreferencePanel):
         #TODO: Actually make this point to a value
         return {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)'}
 
-class AnonymousPanel(PreferencePanel):
-
-    def __init__(self,parent,config):
-        PreferencePanel.__init__(self,parent,'Anonymization',config)
-
-        self.create()
-
-    def GetState(self):
-        dat =  {'Fields':self.anonList.GetCheckedStrings(0),
-                'Replacements':self.anonList.GetReplacements()}
-        return dat
-
-    def RevertState(self,*evnt):
-        # Update self.config
-        PreferencePanel.RevertState(self)
-        savedConfig = configobj.ConfigObj(self.config.filename)
-        self.UpdateFromConfig(savedConfig)
-
-    def SetDicomFields(self,values):
-        self.anonList.SetStringItems(values)
-        self.UpdateFromConfig(self.config)
-
-    def UpdateFromConfig(self,config):
-        data = config[self.shortname]
-
-        # The fields that we care about are "Fields" and "Replacements"
-        fields = data['Fields']
-        self.anonList.UnCheckAll()
-        self.anonList.CheckStrings(fields,col=0)
-
-        # Now put in substitutes
-        self.anonList.ClearColumn(1)
-        self.anonList.SetReplacements(data['Replacements'])
-
-    def create(self):
-        vbox = wx.BoxSizer(wx.VERTICAL)
-
-        title = wx.StaticText(self,-1,"Fields to Omit")
-        vbox.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP | wx.BOTTOM, 10)
-
-        self.anonList = anonymize.AnonymizeList(self)
-
-        #self.anonList.SetChoices([(0,'peanut','butter'),(1,'and','jelly')])
-        self.anonList.SetStringItems([('Peanut','Butter'),('and','jelly')])
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-
-        self.store = wx.Button(self, -1, "Set as Default", size=(120,-1))
-        self.revert = wx.Button(self, -1, "Revert to Defaults",size=(120,-1))
-        self.revert.Bind(wx.EVT_BUTTON, self.RevertState)
-        self.store.Bind(wx.EVT_BUTTON, self.SaveState)
-
-        opts = wx.ALIGN_RIGHT | wx.TOP | wx.LEFT
-
-        hbox.Add(self.store, 0, opts, 10)
-        hbox.Add(self.revert, 0, opts, 10)
-
-        vbox.Add(self.anonList, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
-        vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 15)
-        self.SetSizer(vbox)
 
 if __name__ == "__main__":
     app = wx.App(0)
