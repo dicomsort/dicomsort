@@ -1,3 +1,4 @@
+import os
 import configobj
 import dicomsorter
 import sys
@@ -18,7 +19,7 @@ defaultConfig = {'Anonymization':
                      'Replacements':
                         {'PatientsName':'ANONYMOUS'}},
                  'FilenameFormat':
-                    {'Filename':'%(ImageType)s (%(InstanceNumber)04d)'}}
+                    {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)'}}
 
 # Define even
 PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
@@ -485,7 +486,7 @@ class MainFrame(wx.Frame):
 
         # This is clunky
         # TODO: Change PrefDlg to a dict
-        self.prefDlg.pages[0].SetDicomFields(fields)
+        self.prefDlg.pages['Anonymization'].SetDicomFields(fields)
 
         self.Notify(PopulateEvent,fields=fields)
 
