@@ -56,18 +56,18 @@ class AnonymizeList(gui.CheckListCtrl):
 class AnonymousPanel(preferences.PreferencePanel):
 
     def __init__(self,parent,config):
-        preferences.PreferencePanel.__init__(self,parent,'Anonymization',config)
+        super(AnonymousPanel,self).__init__(parent,'Anonymization',config)
 
         self.create()
 
     def GetState(self):
         dat =  {'Fields':self.anonList.GetCheckedStrings(0),
-                'Replacements':self.anonList.GetReplacements()}
+                'Replacements':self.anonList.GetReplacementDict()}
         return dat
 
     def RevertState(self,*evnt):
         # Update self.config
-        PreferencePanel.RevertState(self)
+        super(AnonymousPanel,self).RevertState()
         savedConfig = configobj.ConfigObj(self.config.filename)
         self.UpdateFromConfig(savedConfig)
 
@@ -85,7 +85,7 @@ class AnonymousPanel(preferences.PreferencePanel):
 
         # Now put in substitutes
         self.anonList.ClearColumn(1)
-        self.anonList.SetReplacements(data['Replacements'])
+        self.anonList.SetReplacementDict(data['Replacements'])
 
     def create(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
