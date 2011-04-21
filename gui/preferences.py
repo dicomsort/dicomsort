@@ -5,10 +5,11 @@ import configobj
 
 class PreferencePanel(wx.Panel):
 
-    def __init__(self,parent,shortname,config):
+    def __init__(self,parent,shortname,title,config):
         wx.Panel.__init__(self,parent,-1)
         self.shortname = shortname
         self.config = config
+        self.title = title
 
     def GetState(self):
         raise TypeError('Abstract Method!')
@@ -42,12 +43,14 @@ class PreferencePanel(wx.Panel):
 
 
         config[self.shortname] = self.GetState()
+
 import anonymizer
 
 class FileNamePanel(PreferencePanel):
 
     def __init__(self,parent,config):
-        PreferencePanel.__init__(self,parent,'FilenameFormat',config)
+        PreferencePanel.__init__(self,parent,'FilenameFormat',
+                                            'Filename Format',config)
 
     def UpdateFromConfig(self,config):
         data = config[self.shortname]
@@ -65,7 +68,9 @@ class PreferenceDlg(wx.Dialog):
             self.config = configobj.ConfigObj('dicomSort.ini')
 
         wx.Dialog.__init__(self,*args,**kwargs)
-        self.pages = []
+
+        # We want to make this a dict instead of list
+        self.pages = dict() 
         self.create()
 
         # Initialize from Config on Create
@@ -75,17 +80,16 @@ class PreferenceDlg(wx.Dialog):
         if config == None:
             config = self.config
 
-        [page.UpdateFromConfig(config) for page in self.pages]
+        [val.UpdateFromConfig(config) for key,val in self.pages.items()]
 
     def Show(self,*args):
         # Call superclass constructor
-        print 'showing...'
         wx.Dialog.Show(self,*args)
 
     def create(self):
         self.nb = wx.Notebook(self)
-        self.AddModule(anonymizer.AnonymousPanel,'Anonymized Fields')
-        self.AddModule(FileNamePanel,'Filename Format')
+        self.AddModule(anonymizer.AnonymousPanel)
+        self.AddModule(FileNamePanel)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(self.nb, 1, wx.EXPAND)
@@ -104,12 +108,14 @@ class PreferenceDlg(wx.Dialog):
         vbox.Add(hbox,0,wx.ALIGN_RIGHT | wx.TOP, 5)
         self.SetSizer(vbox)
 
-    def AddModule(self,panel,title):
-        self.pages.append(panel(self.nb,self.config))
-        self.nb.AddPage(self.pages[-1],title)
+    def AddModule(self,panel):
+        newPage = panel(self.nb,self.config)
+
+        self.pages[newPage.shortname] = newPage
+        self.nb.AddPage(newPage,newPage.title)
 
     def OnApply(self,*evnt):
-        [page.StoreState() for page in self.pages]
+        [val.StoreState() for key,val in self.pages.items()]
 
         # For now don't write this to the file because it's a local default
         self.Close()
@@ -127,14 +133,13 @@ class PreferenceDlg(wx.Dialog):
         return self.config
 
 
-
 if __name__ == "__main__":
     app = gui.DebugApp(0)
 
     p = PreferenceDlg(None,-1,"DICOM sort preferences",size=(400,500),pos=(708,0))
     p.Show()
 
-    anonList = p.pages[0].anonList
+    anonList = p.pages['Anonymization']
 
     app.SetTopWindow(p)
 

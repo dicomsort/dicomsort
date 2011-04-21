@@ -58,7 +58,8 @@ import preferences
 class AnonymousPanel(preferences.PreferencePanel):
 
     def __init__(self,parent,config):
-        super(AnonymousPanel,self).__init__(parent,'Anonymization',config)
+        super(AnonymousPanel,self).__init__(parent,'Anonymization',
+                                            'Anonymizing Fields',config)
 
         self.create()
 

@@ -8,7 +8,19 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from wx.lib.mixins.listctrl import CheckListCtrlMixin,TextEditMixin
 configFile = 'dicomSort.ini'
 
-# Define events
+defaultConfig = {'Anonymization':
+                    {'Fields':['OtherPatientsIDS',
+                               'PatientID',
+                               'PatientsBirthDate',
+                               'PatientsName',
+                               'ReferringPhysiciansName',
+                               'RequestingPhysician'],
+                     'Replacements':
+                        {'PatientsName':'ANONYMOUS'}},
+                 'FilenameFormat':
+                    {'Filename':'%(ImageType)s (%(InstanceNumber)04d)'}}
+
+# Define even
 PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
 PopulateEvent,EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
 
@@ -310,7 +322,10 @@ class DebugApp(DicomSort):
 
     def __init__(self,*args):
         super(DebugApp,self).__init__(*args)
-        self.debug = wx.Frame(None,-1,'DEBUGGER',size=(700,500))
+
+        pos = (self.frame.Position[0] + self.frame.Size[0],self.frame.Position[1])
+
+        self.debug = wx.Frame(None,-1,'DEBUGGER',size=(700,500),pos=pos)
         self.crust = wx.py.crust.Crust(self.debug)
         self.debug.Show()
 
