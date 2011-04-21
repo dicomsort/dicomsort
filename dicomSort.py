@@ -80,14 +80,14 @@ class App:
         self.checkprivate = wx.CheckBox(self.root, -1, "Anonymize Output")#,pos=(320,300))
         self.checkprivate.SetValue(False)
         
-        self.frame.Bind(wx.EVT_CHECKBOX, self.anonCheck, self.checkprivate)
+        self.frame.Bind(wx.EVT_CHECKBOX, self.AnonCheck, self.checkprivate)
         
         self.checksameName = wx.CheckBox(self.root, -1, "Keep Original Filename")#, pos=(320,330))
         self.checksameName.SetValue(False)
         
         self.manageLayout()
         
-        self.anonymizeDisp()
+        self.AnonymizeDisp()
         
         # Setup Frame properties
                 
@@ -121,12 +121,12 @@ class App:
         except:
             pass
         
-    def anonymizeDisp(self, *evnt):
+    def AnonymizeDisp(self, *evnt):
         self.anon = wx.Frame(self.frame, -1, "Fields to Remove", size=(390,450),
             style=wx.DEFAULT_DIALOG_STYLE)
         self.anon.panel = wx.Panel(self.anon)
         
-        self.anon.Bind(wx.EVT_CLOSE, self.anonClose, id=self.anon.GetId())
+        self.anon.Bind(wx.EVT_CLOSE, self.AnonClose, id=self.anon.GetId())
         
         vbox = wx.BoxSizer(wx.VERTICAL)
         
@@ -141,13 +141,13 @@ class App:
         vbox.Add(self.anon.defbtn, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 20)
         
         self.anon.okbtn = wx.Button(self.anon.panel, -1, "Accept")
-        self.anon.Bind(wx.EVT_BUTTON, self.anonClose, id=self.anon.okbtn.GetId())
+        self.anon.Bind(wx.EVT_BUTTON, self.AnonClose, id=self.anon.okbtn.GetId())
         
         vbox.Add(self.anon.okbtn, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP,20)        
         self.anon.panel.SetSizer(vbox)
 
                                 
-    def anonCheck(self, *evnt):
+    def AnonCheck(self, *evnt):
     
         if(self.checkprivate.GetValue()):
             self.anon.Show(True)
@@ -201,7 +201,7 @@ class App:
     
         self.anon.lb.SetCheckedStrings(self.defaultAnon)
         
-    def anonClose(self, *evnt):
+    def AnonClose(self, *evnt):
     
         self.currentAnon = self.anon.lb.GetCheckedStrings()
         self.anon.Show(False)
@@ -210,7 +210,7 @@ class App:
         """Creates the two main listboxes for this program"""
         self.lb = wx.StaticText(parent, -1, "DICOM Properties")#, pos=(65,40))
         self.lb.prop = wx.ListBox(parent, -1)#, (20,60), (200,300))
-        self.frame.Bind(wx.EVT_LISTBOX_DCLICK, self.addCallback, id=self.lb.prop.GetId())
+        self.frame.Bind(wx.EVT_LISTBOX_DCLICK, self.AddCallback, id=self.lb.prop.GetId())
         self.sel = wx.StaticText(parent, -1, "Properties to Use")#, pos=(375,40))
         self.lb.sel = wx.ListBox(parent, -1)#, (320,60), (200,225))
         self.frame.Bind(wx.EVT_LISTBOX_DCLICK, self.removeCallback, id=self.lb.sel.GetId())
@@ -222,7 +222,7 @@ class App:
         self.up = wx.Button(self.root, -1, label="Up")
         self.down = wx.Button(self.root, -1, label="Dn")
                 
-        self.frame.Bind(wx.EVT_BUTTON, self.addCallback,id=self.add.GetId())
+        self.frame.Bind(wx.EVT_BUTTON, self.AddCallback,id=self.add.GetId())
         self.frame.Bind(wx.EVT_BUTTON, self.removeCallback, id=self.remove.GetId())
         self.frame.Bind(wx.EVT_BUTTON, self.moveUpCallback, id=self.up.GetId())
         self.frame.Bind(wx.EVT_BUTTON, self.moveDownCallback, id=self.down.GetId())
@@ -267,7 +267,7 @@ class App:
         self.frame.Bind(wx.EVT_MENU, self.loadPush, id=open.GetId())
         self.frame.Bind(wx.EVT_MENU, self.processIms, id=sort.GetId())
         self.frame.Bind(wx.EVT_MENU, self.OnQuit, id=quit.GetId())
-        self.frame.Bind(wx.EVT_MENU, self.addCallback, id=add.GetId())
+        self.frame.Bind(wx.EVT_MENU, self.AddCallback, id=add.GetId())
         self.frame.Bind(wx.EVT_MENU, self.removeCallback, id=rem.GetId())
         self.frame.Bind(wx.EVT_MENU, self.about, id=about.GetId())
         self.frame.Bind(wx.EVT_MENU, self.helpBox, id=helpmenu.GetId())
@@ -377,7 +377,7 @@ class App:
             self.frame.Destroy()
             #self.app.Destroy()
         
-    def addCallback(self,*evnt):
+    def AddCallback(self,*evnt):
         """Add property to list"""
         
         prop2add = self.lb.prop.GetStringSelection()

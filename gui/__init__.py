@@ -113,9 +113,9 @@ class PathEditCtrl(wx.Panel):
         wx.Panel.__init__(self,*args,**kwargs)
         self._initialize_controls()
         self.path = ''
-        self.Bind(wx.EVT_TEXT_ENTER,self.validate_path,self.edit)
+        self.Bind(wx.EVT_TEXT_ENTER,self.ValidatePath,self.edit)
 
-    def validate_path(self,*evnt):
+    def ValidatePath(self,*evnt):
         path = os.path.abspath(self.edit.GetValue())
 
         # update the box with the absolute path
@@ -123,7 +123,7 @@ class PathEditCtrl(wx.Panel):
 
         if os.path.isdir(path):
             self.path = path
-            self.notify()
+            self.Notify()
         else:
             errorMsg = 'The Directory %(a)s does not exist!' % {'a':path}
             throw_error(errorMsg,'Invalid Location')
@@ -139,16 +139,16 @@ class PathEditCtrl(wx.Panel):
         self.browse = wx.Button(self,-1,label="Browse")
         hbox.Add(self.browse, 0, opts, 10)
 
-        self.browse.Bind(wx.EVT_BUTTON, self.browse_paths)
+        self.browse.Bind(wx.EVT_BUTTON, self.BrowsePaths)
 
         self.SetSizer(hbox)
 
-    def notify(self,*evnt):
+    def Notify(self,*evnt):
         global PathEvent
         event = PathEvent(path=self.path)
         wx.PostEvent(self,event)
 
-    def browse_paths(self,*evnt):
+    def BrowsePaths(self,*evnt):
         # Open the dialog and search
         path = wx.DirDialog(self.GetParent(),"Please Select Directory",
                                     defaultPath=self.path)
@@ -156,7 +156,7 @@ class PathEditCtrl(wx.Panel):
 
         if path.ShowModal() == wx.ID_OK:
             self.edit.SetValue(path.GetPath())
-            self.validate_path()
+            self.ValidatePath()
 
         path.Destroy()
 
@@ -170,7 +170,7 @@ class FieldSelector(wx.Panel):
 
         self._initialize_controls()
 
-    def filter(self,string=None):
+    def Filter(self,string=None):
         if string and isinstance(string,str):
             self.search.SetValue(string)
         else:
@@ -194,11 +194,11 @@ class FieldSelector(wx.Panel):
         self.selected    = wx.ListBox(self,-1,choices=[])
 
         # Setup double-click callbacks
-        self.options.Bind(wx.EVT_LISTBOX_DCLICK, self.select_item)
-        self.selected.Bind(wx.EVT_LISTBOX_DCLICK, self.deselect_item)
+        self.options.Bind(wx.EVT_LISTBOX_DCLICK, self.SelectItem)
+        self.selected.Bind(wx.EVT_LISTBOX_DCLICK, self.DeselectItem)
 
         # Setup Search Control
-        self.search.Bind(wx.EVT_TEXT, self.filter)
+        self.search.Bind(wx.EVT_TEXT, self.Filter)
         self.search.Bind(wx.EVT_TEXT_ENTER, self._return_focus)
 
         # Setup controls:
@@ -207,10 +207,10 @@ class FieldSelector(wx.Panel):
         self.bUp = wx.Button(self,-1,label="Up")
         self.bDown = wx.Button(self,-1,label="Down")
 
-        self.bAdd.Bind(wx.EVT_BUTTON, self.select_item)
-        self.bRemove.Bind(wx.EVT_BUTTON, self.deselect_item)
-        self.bUp.Bind(wx.EVT_BUTTON, self.promote_selection)
-        self.bDown.Bind(wx.EVT_BUTTON, self.demote_selection)
+        self.bAdd.Bind(wx.EVT_BUTTON, self.SelectItem)
+        self.bRemove.Bind(wx.EVT_BUTTON, self.DeselectItem)
+        self.bUp.Bind(wx.EVT_BUTTON, self.PromoteSelection)
+        self.bDown.Bind(wx.EVT_BUTTON, self.DemoteSelection)
 
         self._initialize_layout()
 
@@ -248,10 +248,10 @@ class FieldSelector(wx.Panel):
 
         self.SetSizer(hbox)
 
-    def promote_selection(self,*evnt):
+    def PromoteSelection(self,*evnt):
         self._move_selection(-1)
 
-    def demote_selection(self,*evnt):
+    def DemoteSelection(self,*evnt):
         self._move_selection(1)
 
     def _move_selection(self,inc):
@@ -273,20 +273,20 @@ class FieldSelector(wx.Panel):
         self.selected.Insert(prop,index + inc)
         self.selected.Select(index + inc)
 
-    def select_item(self,*evnt):
+    def SelectItem(self,*evnt):
         item = self.options.GetStringSelection()
         self.selected.Append(item)
 
-    def deselect_item(self,*evnt):
+    def DeselectItem(self,*evnt):
         index = self.selected.GetSelection()
         self.selected.Delete(index)
 
         self.selected.Select(index-1)
 
-    def set_titles(self,titleL,titleR):
+    def SetTitles(self,titleL,titleR):
         self.leftBox
 
-    def set_options(self,optionList=[]):
+    def SetOptions(self,optionList=[]):
         # clear
         self.options.SetItems(optionList)
         self.choices = optionList
@@ -362,7 +362,7 @@ class MainFrame(wx.Frame):
 
         self.SetSizer(vbox)
 
-        self.pathEditor.Bind(EVT_PATH,self.fill_list)
+        self.pathEditor.Bind(EVT_PATH,self.FillList)
 
     def Sort(self,*evnt):
         self.anonymize = 0 
@@ -441,7 +441,7 @@ class MainFrame(wx.Frame):
     def _initialize_menus(self):
         menubar = wx.MenuBar()
 
-        file = [['&Open Directory','Ctrl+O',self.pathEditor.browse_paths],
+        file = [['&Open Directory','Ctrl+O',self.pathEditor.BrowsePaths],
                 ['&Sort Images','Ctrl+S',self.Sort],
                 '----',
                 ['&Preferences...','Ctrl+,',self.OnPreferences],
@@ -457,7 +457,7 @@ class MainFrame(wx.Frame):
 
         self.SetMenuBar(menubar)
 
-    def fill_list(self,evnt):
+    def FillList(self,evnt):
         self.dicomSorter.pathname = evnt.path
         try:
             fields = self.dicomSorter.GetAvailableFields()
@@ -466,7 +466,7 @@ class MainFrame(wx.Frame):
             throw_error(errMsg,'No DICOMs Present')
             return
 
-        self.selector.set_options(fields)
+        self.selector.SetOptions(fields)
 
         # This is clunky
         # TODO: Change PrefDlg to a dict

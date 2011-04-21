@@ -84,8 +84,8 @@ class PreferenceDlg(wx.Dialog):
 
     def create(self):
         self.nb = wx.Notebook(self)
-        self.add_module(anonymizer.AnonymousPanel,'Anonymized Fields')
-        self.add_module(FileNamePanel,'Filename Format')
+        self.AddModule(anonymizer.AnonymousPanel,'Anonymized Fields')
+        self.AddModule(FileNamePanel,'Filename Format')
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(self.nb, 1, wx.EXPAND)
@@ -104,7 +104,7 @@ class PreferenceDlg(wx.Dialog):
         vbox.Add(hbox,0,wx.ALIGN_RIGHT | wx.TOP, 5)
         self.SetSizer(vbox)
 
-    def add_module(self,panel,title):
+    def AddModule(self,panel,title):
         self.pages.append(panel(self.nb,self.config))
         self.nb.AddPage(self.pages[-1],title)
 
