@@ -94,6 +94,7 @@ class FileNamePanel(PreferencePanel):
     def OnChange(self,*evnt):
         index = self.radioBox.GetSelection()
 
+        #TODO: Make this more robust in the future
         if index != 2:
             self.custom.Disable()
         else:
