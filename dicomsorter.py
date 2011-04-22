@@ -97,8 +97,12 @@ class Dicom():
 		if not os.path.exists(dest):
 			os.makedirs(dest)
 
-	def sort(self,root,dirFields,fnameString):
+	def sort(self,root,dirFields,fnameString,test=False):
 		destination = self.get_destination(root,dirFields,fnameString)
+
+        if test:
+            print(destination)
+            return
 
 		self.check_dir(destination)
 
@@ -108,13 +112,14 @@ class Dicom():
 			shutil.copy(self.filename,destination)
 
 class Sorter(Thread):
-	def __init__(self,files,outDir,dirFormat,fileFormat,anon=dict(),keep_filename=False):
+	def __init__(self,files,outDir,dirFormat,fileFormat,anon=dict(),keep_filename=False,test=False):
 		self.dirFormat = dirFormat
 		self.fileFormat = fileFormat
 		self.fileList = files
 		self.anondict  = anon
 		self.keep_filename = keep_filename
 		self.outDir = outDir
+        self.test = test
 
 		Thread.__init__(self)
 		self.start()
@@ -134,9 +139,9 @@ class Sorter(Thread):
 				dcm = Dicom(file,dcm)
 				dcm.SetAnonRules(self.anondict)
 				if self.keep_filename:
-					dcm.sort(self.outDir,self.dirFormat,file)
+					dcm.sort(self.outDir,self.dirFormat,file,test=self.test)
 				else:
-					dcm.sort(self.outDir,self.dirFormat,self.fileFormat)
+					dcm.sort(self.outDir,self.dirFormat,self.fileFormat,test=self.test)
 
 class DicomSorter():
 	def __init__(self,pathname=None):
@@ -174,7 +179,7 @@ class DicomSorter():
 
 		return folderList			
 
-	def Sort(self,outputDir):
+	def Sort(self,outputDir,test=False):
 		# This should be moved to a worker thread
 
 		dirFormat = self.GetFolderFormat()
@@ -197,7 +202,7 @@ class DicomSorter():
 		s = list()
 
 		for group in fileGroups:
-			s = Sorter(group,outputDir,dirFormat,self.filename,self.anondict,self.keep_filename)
+			s = Sorter(group,outputDirz,dirFormat,self.filename,self.anondict,self.keep_filename,test)
 			# We want to wait until we are completely done
 			s.join()
 
