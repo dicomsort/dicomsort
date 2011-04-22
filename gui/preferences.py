@@ -52,12 +52,73 @@ class FileNamePanel(PreferencePanel):
         PreferencePanel.__init__(self,parent,'FilenameFormat',
                                             'Filename Format',config)
 
+        self.create()
+
+    def create(self):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        boxChoices = ['Image (0001)',
+                      'Keep Original Filename',
+                      'Custom Filename Format:']
+
+        self.radioBox = wx.RadioBox(self,-1,
+                style=wx.VERTICAL | wx.RB_USE_CHECKBOX | wx.BORDER_NONE ,
+                choices=boxChoices)
+
+        self.Bind(wx.EVT_RADIOBOX,self.OnChange,self.radioBox)
+
+        vbox.Add(self.radioBox,0,wx.TOP | wx.LEFT, 15)
+
+        self.custom = wx.TextCtrl(self,-1,'',
+                            size=(300,-1))
+        vbox.Add(self.custom,0,wx.ALIGN_BOTTOM | wx.LEFT,50)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.store = wx.Button(self,-1,"Set as Default", size=(120,-1))
+        self.revert = wx.Button(self,-1,"Revert to Default",size=(120,-1))
+        self.Bind(wx.EVT_BUTTON,self.RevertState,self.revert)
+        self.Bind(wx.EVT_BUTTON,self.SaveState,self.store)
+
+        hbox.Add(self.store,0,wx.ALL,5)
+        hbox.Add(self.revert,0, wx.ALL, 5)
+
+        vbox.Add(hbox,0,wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 25)
+
+        self.SetSizer(vbox)
+
+    def RevertState(self,*evnt):
+        super(FileNamePanel,self).RevertState()
+        savedConfig = configobj.ConfigObj(self.config.filename)
+        self.UpdateFromConfig(savedConfig)
+
+    def OnChange(self,*evnt):
+        index = self.radioBox.GetSelection()
+
+        if index != 2:
+            self.custom.Disable()
+        else:
+            self.custom.Enable()
+
     def UpdateFromConfig(self,config):
+
+        config.interpolation = False
+
         data = config[self.shortname]
 
+        if data.has_key('Selection'):
+            self.radioBox.SetSelection(int(data['Selection']))
+        else:
+            self.radioBox.SetSelection(0)
+
+        self.custom.SetValue(data['FilenameString'])
+
+        self.OnChange()
+
     def GetState(self):
-        #TODO: Actually make this point to a value
-        return {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)'}
+        d = {'FilenameString':self.custom.GetValue(),
+             'Selection':self.radioBox.GetSelection()}
+
+        return d
 
 class PreferenceDlg(wx.Dialog):
 

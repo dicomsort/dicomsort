@@ -19,7 +19,8 @@ defaultConfig = {'Anonymization':
                      'Replacements':
                         {'PatientsName':'ANONYMOUS'}},
                  'FilenameFormat':
-                    {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)'}}
+                    {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)',
+                     'Selection':0}}
 
 # Define even
 PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
