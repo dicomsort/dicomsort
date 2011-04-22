@@ -385,7 +385,6 @@ class MainFrame(wx.Frame):
         self.anonymize = 0 
 
         if self.anonymize:
-            print 'Retrieving anonymizing dictionary...'
             anonTab = self.prefDlg.pages[0]
             anonDict = anonTab.anonList.GetAnonDict()
             self.dicomSorter.SetAnonRules(anonDict)
@@ -398,14 +397,22 @@ class MainFrame(wx.Frame):
         # TODO: Keep Series
         keepSeries = True
 
-        fFormat = self.config['FilenameFormat']['FilenameString']
+        filenameMethod = self.config['FilenameFormat']['Selection']
 
-        # TODO: Get "keepOriginalFilename"
-        original = False
+        if filenameMethod == 0:
+            # Image (0001)
+            fFormat = '%(ImageType) (%(InstanceNumber)04d)'
+        elif filenameMethod == 1:
+            # Use the original filename
+            fFormat = ''
+            self.dicomSorter.keep_filename = original
+            # Alternately we could pass None to dicomSorter
+        elif filenameMethod == 2:
+            # Use custom format
+            fFormat = self.config['FilenameFormat']['FilenameString']
 
         self.dicomSorter.filename = fFormat
         self.dicomSorter.folders = dFormat
-        self.dicomSorter.keep_filename = original
         self.dicomSorter.includeSeries = keepSeries
 
         outputDir = self.SelectOutputDir()
