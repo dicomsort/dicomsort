@@ -92,6 +92,8 @@ class MainFrame(wx.Frame):
         self.prefDlg = preferences.PreferenceDlg(None,-1,"DicomSort Preferences",
                             config = self.config, size=(400,400))
 
+        self.Bind(wx.EVT_CLOSE,self.OnQuit)
+
     def _initialize_components(self):
         global DEBUG
 
