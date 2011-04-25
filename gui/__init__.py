@@ -24,6 +24,7 @@ defaultConfig = {'Anonymization':
 # Define even
 PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
 PopulateEvent,EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
+SortEvent,EVT_SORT = wx.lib.newevent.NewEvent()
 
 def ThrowError(message,titl = 'Error'):
     """
@@ -101,14 +102,17 @@ class MainFrame(wx.Frame):
 
         self.selector = widgets.FieldSelector(self,titles=['DICOM Properties',
                                                    'Properties to Use'])
+
+        self.selector.Bind(EVT_SORT,self.Sort)
+
         vbox.Add(self.selector,1,wx.EXPAND)
 
         self.SetSizer(vbox)
 
         self.pathEditor.Bind(EVT_PATH,self.FillList)
 
-    def Sort(self,*evnt):
-        self.anonymize = 0 
+    def Sort(self,evnt):
+        self.anonymize = evnt.anon 
 
         if self.anonymize:
             anonTab = self.prefDlg.pages[0]
@@ -118,16 +122,16 @@ class MainFrame(wx.Frame):
             self.dicomSorter.SetAnonRules(dict())
 
         # TODO: Get folder format
-        dFormat = []
+        dFormat = evnt.fields 
 
         # TODO: Keep Series
         keepSeries = True
 
-        filenameMethod = self.config['FilenameFormat']['Selection']
+        filenameMethod = int(self.config['FilenameFormat']['Selection'])
 
         if filenameMethod == 0:
             # Image (0001)
-            fFormat = '%(ImageType) (%(InstanceNumber)04d)'
+            fFormat = '%(ImageType)s (%(InstanceNumber)04d)'
         elif filenameMethod == 1:
             # Use the original filename
             fFormat = ''
@@ -136,7 +140,7 @@ class MainFrame(wx.Frame):
         elif filenameMethod == 2:
             # Use custom format
             fFormat = self.config['FilenameFormat']['FilenameString']
-
+        
         self.dicomSorter.filename = fFormat
         self.dicomSorter.folders = dFormat
         self.dicomSorter.includeSeries = keepSeries
@@ -146,7 +150,7 @@ class MainFrame(wx.Frame):
         if outputDir == None:
             return
         
-        self.dicomSorter.Sort(outputDir)
+        self.dicomSorter.Sort(outputDir,test=True)
 
     def SelectOutputDir(self):
         # TODO: Set default path

@@ -100,7 +100,7 @@ class CheckListCtrl(wx.ListCtrl,ListCtrlAutoWidthMixin,
 class PathEditCtrl(wx.Panel):
     def __init__(self,*args,**kwargs):
         wx.Panel.__init__(self,*args,**kwargs)
-        self._initialize_controls()
+        self.create()
         self.path = ''
         self.Bind(wx.EVT_TEXT_ENTER,self.ValidatePath,self.edit)
 
@@ -117,7 +117,7 @@ class PathEditCtrl(wx.Panel):
             errorMsg = 'The Directory %(a)s does not exist!' % {'a':path}
             throw_error(errorMsg,'Invalid Location')
 
-    def _initialize_controls(self):
+    def create(self):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         opts = wx.ALIGN_CENTER_VERTICAL | wx.LEFT | wx.RIGHT | wx.TOP
@@ -156,7 +156,7 @@ class FieldSelector(wx.Panel):
         self.choices = choices
         self.titles = titles
 
-        self._initialize_controls()
+        self.create()
 
     def Filter(self,string=None):
         if string and isinstance(string,str):
@@ -171,15 +171,32 @@ class FieldSelector(wx.Panel):
     def _return_focus(self):
         return
 
-    def _initialize_controls(self):
+    def _sort_callback(self,*evnt):
+        event = gui.SortEvent(anon=self.anonQ.IsChecked(),
+                              fields=self.GetFormatFields())
+        wx.PostEvent(self,event)
 
-        self.titleL        = wx.StaticText(self,-1,self.titles[0])
+    def GetSelectedItems(self):
+        return self.selected.GetItems()
+
+    def GetFormatFields(self):
+        items = self.GetSelectedItems()
+        return ['%(' + item + ')s' for item in items]
+
+    def create(self):
+
+        self.titleL     = wx.StaticText(self,-1,self.titles[0])
         self.options    = wx.ListBox(self,-1,choices=self.choices)
 
-        self.search        = wx.SearchCtrl(self,-1,"",style=wx.TE_PROCESS_ENTER)
+        self.search     = wx.SearchCtrl(self,-1,"",style=wx.TE_PROCESS_ENTER)
 
-        self.titleR        = wx.StaticText(self,-1,self.titles[1])
-        self.selected    = wx.ListBox(self,-1,choices=[])
+        self.titleR     = wx.StaticText(self,-1,self.titles[1])
+        self.selected   = wx.ListBox(self,-1,choices=[])
+
+        self.sortBtn    = wx.Button(self,-1,label="Sort Images")
+        self.anonQ      = wx.CheckBox(self,-1,label="Anonymize Data")
+
+        self.sortBtn.Bind(wx.EVT_BUTTON,self._sort_callback)
 
         # Setup double-click callbacks
         self.options.Bind(wx.EVT_LISTBOX_DCLICK, self.SelectItem)
@@ -190,10 +207,10 @@ class FieldSelector(wx.Panel):
         self.search.Bind(wx.EVT_TEXT_ENTER, self._return_focus)
 
         # Setup controls:
-        self.bAdd = wx.Button(self,-1,label=">>")
-        self.bRemove = wx.Button(self,-1,label="<<")
-        self.bUp = wx.Button(self,-1,label="Up")
-        self.bDown = wx.Button(self,-1,label="Down")
+        self.bAdd       = wx.Button(self,-1,label=">>")
+        self.bRemove    = wx.Button(self,-1,label="<<")
+        self.bUp        = wx.Button(self,-1,label="Up")
+        self.bDown      = wx.Button(self,-1,label="Down")
 
         self.bAdd.Bind(wx.EVT_BUTTON, self.SelectItem)
         self.bRemove.Bind(wx.EVT_BUTTON, self.DeselectItem)
@@ -218,6 +235,8 @@ class FieldSelector(wx.Panel):
         vboxSelect.Add(self.titleR, 0, wx.ALIGN_CENTER_HORIZONTAL)
         vboxSelect.Add(self.selected, 1,
                         wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 10)
+        vboxSelect.Add(self.anonQ,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+        vboxSelect.Add(self.sortBtn,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
 
         # BoxSizer housing the controls
         vboxControl = wx.BoxSizer(wx.VERTICAL)

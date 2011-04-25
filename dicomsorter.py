@@ -77,6 +77,9 @@ class Dicom():
 
     def get_destination(self,root,dirFormat,fileFormat):
         directory = os.path.join(root,*dirFormat)
+
+        path = os.path.join(directory,fileFormat)
+
         return os.path.join(directory,fileFormat) % self
 
     def SetAnonRules(self,anondict):
@@ -202,7 +205,7 @@ class DicomSorter():
         s = list()
 
         for group in fileGroups:
-            s = Sorter(group,outputDirz,dirFormat,self.filename,self.anondict,self.keep_filename,test)
+            s = Sorter(group,outputDir,dirFormat,self.filename,self.anondict,self.keep_filename,test)
             # We want to wait until we are completely done
             s.join()
 
