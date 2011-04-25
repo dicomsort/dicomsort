@@ -25,6 +25,7 @@ defaultConfig = {'Anonymization':
 PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
 PopulateEvent,EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
 SortEvent,EVT_SORT = wx.lib.newevent.NewEvent()
+CounterEvent,EVT_COUNTER = wx.lib.newevent.NewEvent()
 
 def ThrowError(message,titl = 'Error'):
     """
@@ -152,7 +153,12 @@ class MainFrame(wx.Frame):
         if outputDir == None:
             return
         
-        self.dicomSorter.Sort(outputDir,test=True)
+        self.dicomSorter.Sort(outputDir,test=True,listener=self)
+
+        self.Bind(EVT_COUNTER,self.OnCount)
+
+    def OnCount(self,evnt):
+        print evnt.Count
 
     def SelectOutputDir(self):
         # TODO: Set default path
@@ -233,5 +239,3 @@ class MainFrame(wx.Frame):
     def Notify(self,evntType,**kwargs):
         event = evntType(**kwargs)
         wx.PostEvent(self,event)
-
-

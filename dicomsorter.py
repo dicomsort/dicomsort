@@ -1,5 +1,6 @@
 import os
 import dicom
+import gui
 import re
 import shutil
 import itertools
@@ -115,7 +116,9 @@ class Dicom():
             shutil.copy(self.filename,destination)
 
 class Sorter(Thread):
-    def __init__(self,files,outDir,dirFormat,fileFormat,anon=dict(),keep_filename=False,test=False):
+    def __init__(self,files,outDir,dirFormat,fileFormat,
+                    anon=dict(),keep_filename=False,iterator=None,test=False,
+                    listener=None):
         self.dirFormat = dirFormat
         self.fileFormat = fileFormat
         self.fileList = files
@@ -123,11 +126,21 @@ class Sorter(Thread):
         self.keep_filename = keep_filename
         self.outDir = outDir
         self.test = test
+        self.iter = iterator
+
+        self.isgui = False
+
+        if listener:
+            self.listener = listener
+            self.isgui = True
 
         Thread.__init__(self)
         self.start()
 
     def run(self):
+
+        if self.isgui:
+            import wx
 
         files = self.fileList
 
@@ -145,6 +158,12 @@ class Sorter(Thread):
                     dcm.sort(self.outDir,self.dirFormat,file,test=self.test)
                 else:
                     dcm.sort(self.outDir,self.dirFormat,self.fileFormat,test=self.test)
+
+            if self.iter:
+                count = self.iter.next()
+                if self.isgui:
+                    event = gui.CounterEvent(Count=count)
+                    wx.PostEvent(self.listener,event)
 
 class DicomSorter():
     def __init__(self,pathname=None):
@@ -182,7 +201,7 @@ class DicomSorter():
 
         return folderList           
 
-    def Sort(self,outputDir,test=False):
+    def Sort(self,outputDir,test=False,listener=None):
         # This should be moved to a worker thread
 
         dirFormat = self.GetFolderFormat()
@@ -204,10 +223,13 @@ class DicomSorter():
 
         s = list()
 
+        iterator = itertools.count(1)
+
         for group in fileGroups:
-            s = Sorter(group,outputDir,dirFormat,self.filename,self.anondict,self.keep_filename,test)
+            s = Sorter(group,outputDir,dirFormat,self.filename,
+                    self.anondict,self.keep_filename,iterator=iterator,
+                    test=test,listener=listener)
             # We want to wait until we are completely done
-            s.join()
 
     def SetIncludeSeriesAuto(self,val):
         self.includeSeries = val
