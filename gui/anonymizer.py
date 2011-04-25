@@ -1,11 +1,11 @@
 import configobj
 import wx
-import gui
+from gui import widgets
 
-class AnonymizeList(gui.CheckListCtrl):
+class AnonymizeList(widgets.CheckListCtrl):
 
     def __init__(self,*args,**kwargs):
-        gui.CheckListCtrl.__init__(self,*args,**kwargs)
+        super(AnonymizeList,self).__init__(*args,**kwargs)
 
         self.InsertColumn(0,'DICOM Property',width=200)
         self.InsertColumn(1,'Replacement Value')
