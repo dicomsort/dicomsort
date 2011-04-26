@@ -11,6 +11,14 @@ from wx.lib.mixins.listctrl import CheckListCtrlMixin,TextEditMixin
 
 #TODO: Create searcheable ListCtrl item
 
+class FileDropTarget(wx.FileDropTarget):
+    def __init__(self,callback):
+        super(FileDropTarget,self).__init__()
+        self.callback = callback
+
+    def OnDropFiles(self,x,y,filenames):
+        self.callback(x,y,filenames)
+
 class AboutDlg(wx.AboutDialogInfo):
 
     def __init__(self,*args):
@@ -134,6 +142,22 @@ class PathEditCtrl(wx.Panel):
         self.create()
         self.path = ''
         self.Bind(wx.EVT_TEXT_ENTER,self.ValidatePath,self.edit)
+
+        dt = FileDropTarget(self.ValidateDropFiles)
+        self.edit.SetDropTarget(dt)
+
+    def ValidateDropFiles(self,x,y,filenames):
+        for file in filenames:
+            if not os.path.isdir(file):
+                gui.ThrowError('All Dropped Items must be Directories')
+                return
+            elif len(filenames) > 1:
+                # Temporary until we get this figured out
+                gui.ThrowError('You can only specify one folder at a time')
+                return
+
+        self.edit.SetValue(';'.join(filenames))
+        self.ValidatePath()
 
     def ValidatePath(self,*evnt):
         path = os.path.abspath(self.edit.GetValue())
