@@ -27,13 +27,14 @@ PopulateEvent,EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
 SortEvent,EVT_SORT = wx.lib.newevent.NewEvent()
 CounterEvent,EVT_COUNTER = wx.lib.newevent.NewEvent()
 
-def ThrowError(message,titl = 'Error'):
+def ThrowError(message,title='Error'):
     """
     Generic way to throw an error and display the appropriate dialog
     """
     dlg = wx.MessageDialog(None,message,title,wx.OK | wx.ICON_ERROR)
     dlg.ShowModal()
     dlg.Destroy()
+
 
 class DicomSort(wx.App):
 
@@ -44,6 +45,7 @@ class DicomSort(wx.App):
 
     def MainLoop(self,*args):
         wx.App.MainLoop(self,*args)
+
 
 class DebugApp(DicomSort):
     """
@@ -67,14 +69,15 @@ class DebugApp(DicomSort):
         super(DebugApp,self).MainLoop(*args)
         self.debug.Destroy()
 
+
 from gui import preferences
 
 class MainFrame(wx.Frame):
 
     def __init__(self,*args,**kwargs):
         wx.Frame.__init__(self,*args,**kwargs)
-        self.create()
-        self._initialize_menus()
+        self.Create()
+        self._InitializeMenus()
 
         # Use os.getcwd() for now
         self.dicomSorter = dicomsorter.DicomSorter()
@@ -98,7 +101,7 @@ class MainFrame(wx.Frame):
         self.CreateStatusBar()
         self.SetStatusText("Ready...")
 
-    def create(self):
+    def Create(self):
         global DEBUG
 
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -189,7 +192,7 @@ class MainFrame(wx.Frame):
     def OnHelp(self,*evnt):
         return
 
-    def _menu_generator(self,parent,name,arguments):
+    def _MenuGenerator(self,parent,name,arguments):
         menu = wx.Menu()
 
         for item in arguments:
@@ -204,7 +207,7 @@ class MainFrame(wx.Frame):
 
         parent.Append(menu,name)
 
-    def _initialize_menus(self):
+    def _InitializeMenus(self):
         menubar = wx.MenuBar()
 
         file = [['&Open Directory','Ctrl+O',self.pathEditor.BrowsePaths],
@@ -214,14 +217,15 @@ class MainFrame(wx.Frame):
                 '----',
                 ['&Exit','Ctrl+W',self.OnQuit]]
 
-        self._menu_generator(menubar,'&File',file)
+        self._MenuGenerator(menubar,'&File',file)
 
         help = [['About','',self.OnAbout],
                 ['&Help','Ctrl+?',self.OnHelp]]
 
-        self._menu_generator(menubar,'&Help',help)
+        self._MenuGenerator(menubar,'&Help',help)
 
         self.SetMenuBar(menubar)
+
 
     def FillList(self,evnt):
         self.dicomSorter.pathname = evnt.path
