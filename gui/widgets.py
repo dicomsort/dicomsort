@@ -9,6 +9,35 @@ from wx.lib.mixins.listctrl import CheckListCtrlMixin,TextEditMixin
 
 #TODO: Create searcheable ListCtrl item
 
+class AboutDlg(wx.AboutDialogInfo):
+
+    def __init__(self,*args):
+        super(AboutDlg,self).__init__(*args)
+
+        path = os.path.join(sys.path[0],'dsnoshad.ico')
+        icon = wx.Icon(path,wx.BITMAP_TYPE_ICO)
+        self.SetIcon(icon)
+
+        self.SetName('DICOM Sorting')
+        self.SetVersion(gui.__version__)
+
+        self.SetCopyright('(C) 2011 Jonathan Suever')
+        self.SetWebSite('http://www.suever.net')
+
+        self.GenerateDescription()
+
+        box = wx.AboutBox(self)
+
+
+    def GenerateDescription(self):
+        description = ("      Program designed to sort DICOM images       \n"+
+                       "     into directories based upon DICOM header     \n"+
+                       "      information. The program also provides      \n"+
+                       "       additional functionality such as the       \n"+
+                       "anonymization of DICOM images for patient privacy.")
+
+        self.SetDescription(description)
+
 class CheckListCtrl(wx.ListCtrl,ListCtrlAutoWidthMixin,
         CheckListCtrlMixin,TextEditMixin):
 

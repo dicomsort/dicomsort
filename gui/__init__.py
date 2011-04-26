@@ -8,6 +8,9 @@ import wx.lib.newevent
 
 configFile = 'dicomSort.ini'
 
+__version__ = '2.0.0'
+Version = (2,0,0)
+
 defaultConfig = {'Anonymization':
                     {'Fields':['OtherPatientsIDS',
                                'PatientID',
@@ -190,7 +193,7 @@ class MainFrame(wx.Frame):
         sys.exit()
 
     def OnAbout(self,*evnt):
-        return
+        widgets.AboutDlg()
 
     def OnHelp(self,*evnt):
         return
