@@ -15,8 +15,6 @@ class AnonymizeList(widgets.CheckListCtrl):
     def GetReplacementDict(self):
         res = dict()
 
-        ilist = self.GetItemList(1)
-
         x = [i for i in range(self.ItemCount) if len(self.GetStringItem(i,1))]
 
         for row in x:
@@ -49,9 +47,6 @@ class AnonymizeList(widgets.CheckListCtrl):
 
     def GetDicomField(self,row):
         return self.GetItem(row,0).Text
-
-    #def GetAnonymousFields(self):
-    #    return [self.GetDicomField(i) for i in self.GetAnonymousIndex()]
 
 import preferences
 
@@ -116,4 +111,3 @@ class AnonymousPanel(preferences.PreferencePanel):
         vbox.Add(self.anonList, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
         vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 15)
         self.SetSizer(vbox)
-
