@@ -118,7 +118,8 @@ class Dicom():
 class Sorter(Thread):
     def __init__(self,files,outDir,dirFormat,fileFormat,
                     anon=dict(),keep_filename=False,iterator=None,test=False,
-                    listener=None):
+                    listener=None,total=None):
+
         self.dirFormat = dirFormat
         self.fileFormat = fileFormat
         self.fileList = files
@@ -127,6 +128,11 @@ class Sorter(Thread):
         self.outDir = outDir
         self.test = test
         self.iter = iterator
+        
+        if total == None:
+            self.total = len(self.fileList)
+        else:
+            self.total = total
 
         self.isgui = False
 
@@ -162,7 +168,7 @@ class Sorter(Thread):
             if self.iter:
                 count = self.iter.next()
                 if self.isgui:
-                    event = gui.CounterEvent(Count=count)
+                    event = gui.CounterEvent(Count=count,total=self.total)
                     wx.PostEvent(self.listener,event)
 
 class DicomSorter():
@@ -228,8 +234,7 @@ class DicomSorter():
         for group in fileGroups:
             s = Sorter(group,outputDir,dirFormat,self.filename,
                     self.anondict,self.keep_filename,iterator=iterator,
-                    test=test,listener=listener)
-            # We want to wait until we are completely done
+                    test=test,listener=listener,total=numberOfFiles)
 
     def SetIncludeSeriesAuto(self,val):
         self.includeSeries = val

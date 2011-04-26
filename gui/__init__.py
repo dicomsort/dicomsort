@@ -73,7 +73,7 @@ class MainFrame(wx.Frame):
 
     def __init__(self,*args,**kwargs):
         wx.Frame.__init__(self,*args,**kwargs)
-        self._initialize_components()
+        self.create()
         self._initialize_menus()
 
         # Use os.getcwd() for now
@@ -95,7 +95,10 @@ class MainFrame(wx.Frame):
 
         self.Bind(wx.EVT_CLOSE,self.OnQuit)
 
-    def _initialize_components(self):
+        self.CreateStatusBar()
+        self.SetStatusText("Ready...")
+
+    def create(self):
         global DEBUG
 
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -158,7 +161,8 @@ class MainFrame(wx.Frame):
         self.Bind(EVT_COUNTER,self.OnCount)
 
     def OnCount(self,evnt):
-        print evnt.Count
+        statusText = '%s / %s' % (evnt.Count,evnt.total)
+        self.SetStatusText(statusText)
 
     def SelectOutputDir(self):
         # TODO: Set default path
