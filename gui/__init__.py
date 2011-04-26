@@ -170,8 +170,12 @@ class MainFrame(wx.Frame):
 
         if outputDir == None:
             return
-        
-        self.dicomSorter.Sort(outputDir,test=True,listener=self)
+
+        # Use this for testing
+        # self.dicomSorter.Sort(outputDir,test=True,listener=self)
+
+        # Use for the real deal
+        self.dicomSorter.Sort(outputDir,listener=self)
 
         self.Bind(EVT_COUNTER,self.OnCount)
 
