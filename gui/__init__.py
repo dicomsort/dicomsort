@@ -44,6 +44,7 @@ class DicomSort(wx.App):
     def __init__(self,*args):
         wx.App.__init__(self,*args)
         self.frame = MainFrame(None,-1,"DicomSort",size=(500,500))
+        self.SetTopWindow(self.frame)
         self.frame.Show()
 
     def MainLoop(self,*args):
@@ -212,9 +213,6 @@ class MainFrame(wx.Frame):
         self.debug = wx.Frame(None,-1,'DicomSort DEBUGGER',size=(700,500),pos=pos)
         self.crust = wx.py.crust.Crust(self.debug)
         self.debug.Show()
-
-        # Set the correct Main window
-        self.SetTopWindow(self)
 
     def _InitializeMenus(self):
         menubar = wx.MenuBar()
