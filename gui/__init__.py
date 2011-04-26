@@ -79,6 +79,7 @@ class MainFrame(wx.Frame):
 
     def __init__(self,*args,**kwargs):
         wx.Frame.__init__(self,*args,**kwargs)
+
         self.Create()
         self._InitializeMenus()
 
@@ -108,7 +109,12 @@ class MainFrame(wx.Frame):
         global DEBUG
 
         # Set Frame icon
-        path = os.path.join(sys.path[0],'DSicon.ico')
+        if os.path.isfile(os.path.join(sys.executable,'DSicon.ico')):
+            self.exedir = sys.executable
+        else:
+            self.exedir = sys.path[0]
+
+        path = os.path.join(self.exedir,'DSicon.ico')
         icon = wx.Icon(path,wx.BITMAP_TYPE_ICO,16,16)
         self.SetIcon(icon)
 
@@ -196,7 +202,10 @@ class MainFrame(wx.Frame):
         widgets.AboutDlg()
 
     def OnHelp(self,*evnt):
-        return
+        handle = open(os.path.join(self.exedir,'help.inc'),"r")
+        helpText = handle.read()
+
+        widgets.HelpDlg(self,text=helpText)
 
     def _MenuGenerator(self,parent,name,arguments):
         menu = wx.Menu()

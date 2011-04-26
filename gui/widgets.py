@@ -4,6 +4,8 @@ import re
 import sys
 import wx
 
+import wx.html
+
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from wx.lib.mixins.listctrl import CheckListCtrlMixin,TextEditMixin
 
@@ -326,3 +328,36 @@ class FieldSelector(wx.Panel):
         # clear
         self.options.SetItems(optionList)
         self.choices = optionList
+
+class HtmlWindow(wx.html.HtmlWindow):
+    def __init__(self, parent, id, size):
+        wx.html.HtmlWindow.__init__(self,parent, id, size=size)
+        if "gtk2" in wx.PlatformInfo:
+            self.SetStandardFonts()
+
+class HelpDlg(wx.Dialog):
+
+    def __init__(self,parent=None,**kwargs):
+
+        self.helpText = kwargs['text']
+
+        super(HelpDlg,self).__init__(parent,-1,"DICOM Sorting Help",
+            style=wx.DEFAULT_DIALOG_STYLE|wx.THICK_FRAME|wx.RESIZE_BORDER|wx.TAB_TRAVERSAL)
+
+        self.hwin = HtmlWindow(self,-1,size=(400,200))
+
+        self.hwin.SetPage(self.helpText)
+        btn = self.hwin.FindWindowById(wx.ID_OK)
+        irep = self.hwin.GetInternalRepresentation()
+
+        self.hwin.SetSize((irep.GetWidth(),int(irep.GetHeight()/4)))
+        self.Show()
+
+        self.SetClientSize(self.hwin.GetSize())
+        self.CenterOnParent(wx.BOTH)
+        self.SetFocus()
+
+        self.Bind(wx.EVT_CLOSE, self.hbquit)
+
+    def hbquit(self,*evnt):
+        self.Destroy()
