@@ -115,7 +115,7 @@ class PathEditCtrl(wx.Panel):
             self.Notify()
         else:
             errorMsg = 'The Directory %(a)s does not exist!' % {'a':path}
-            throw_error(errorMsg,'Invalid Location')
+            gui.ThrowError(errorMsg,'Invalid Location')
 
     def create(self):
         hbox = wx.BoxSizer(wx.HORIZONTAL)

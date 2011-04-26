@@ -233,7 +233,7 @@ class MainFrame(wx.Frame):
             fields = self.dicomSorter.GetAvailableFields()
         except dicomsorter.DicomFolderError:
             errMsg = ''.join([evnt.path,' contains no DICOMs'])
-            throw_error(errMsg,'No DICOMs Present')
+            ThrowError(errMsg,'No DICOMs Present')
             return
 
         self.selector.SetOptions(fields)
