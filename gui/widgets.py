@@ -337,7 +337,7 @@ class FieldSelector(wx.Panel):
 
     def SelectItem(self,*evnt):
         item = self.options.GetStringSelection()
-	self.selected.Insert(item,0)
+        self.selected.Append(item)
 
     def DeselectItem(self,*evnt):
         index = self.selected.GetSelection()
