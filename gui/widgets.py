@@ -297,5 +297,3 @@ class FieldSelector(wx.Panel):
         # clear
         self.options.SetItems(optionList)
         self.choices = optionList
-
-        # TODO: Future checks to make sure that fields are in this

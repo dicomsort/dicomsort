@@ -209,7 +209,6 @@ class MainFrame(wx.Frame):
         menubar = wx.MenuBar()
 
         file = [['&Open Directory','Ctrl+O',self.pathEditor.BrowsePaths],
-                ['&Sort Images','Ctrl+S',self.Sort],
                 '----',
                 ['&Preferences...','Ctrl+,',self.OnPreferences],
                 '----',
