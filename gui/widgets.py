@@ -282,7 +282,7 @@ class FieldSelector(wx.Panel):
 
     def SelectItem(self,*evnt):
         item = self.options.GetStringSelection()
-        self.selected.Append(item)
+	self.selected.Insert(item,0)
 
     def DeselectItem(self,*evnt):
         index = self.selected.GetSelection()
@@ -299,5 +299,3 @@ class FieldSelector(wx.Panel):
         self.choices = optionList
 
         # TODO: Future checks to make sure that fields are in this
-        
-

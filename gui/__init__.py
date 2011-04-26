@@ -130,11 +130,9 @@ class MainFrame(wx.Frame):
         else:
             self.dicomSorter.SetAnonRules(dict())
 
-        # TODO: Get folder format
         dFormat = evnt.fields 
 
-        # TODO: Keep Series
-        keepSeries = True
+        keepSeries = eval(self.config['Miscpanel']['KeepSeries'])
 
         filenameMethod = int(self.config['FilenameFormat']['Selection'])
 

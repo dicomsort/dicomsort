@@ -46,6 +46,53 @@ class PreferencePanel(wx.Panel):
 
 import anonymizer
 
+class MiscPanel(PreferencePanel):
+	def __init__(self,parent,config):
+		super(MiscPanel,self).__init__(parent,'Miscpanel',
+			'Miscellaneous',config)
+		self.create()
+
+	def GetState(self):
+		d = {'KeepSeries':str(self.keepSeries.IsChecked())}
+		return d
+
+	def RevertState(self,*evnt):
+		super(MiscPanel,self).RevertState()
+		savedConfig = configobj.ConfigObj(self.config.filename)
+		self.UpdateFromConfig(savedConfig)
+
+	def UpdateFromConfig(self,config):
+		tmp = config[self.shortname]
+		if not tmp.has_key('KeepSeries'):
+			tmp['KeepSeries'] = 'True'
+			
+		if tmp['KeepSeries']:
+			self.keepSeries.SetValue(eval(tmp['KeepSeries']))
+
+	def create(self):
+		vbox = wx.BoxSizer(wx.VERTICAL)
+
+		self.keepSeries = wx.CheckBox(self,-1,
+			"Automatically include SeriesDescription")
+
+		vbox.Add((30,40),0,wx.ALL | 30)
+
+		vbox.Add(self.keepSeries,0,wx.ALIGN_LEFT | wx.ALL | 15)
+
+		hbox = wx.BoxSizer(wx.HORIZONTAL)
+		self.store = wx.Button(self,-1,"Set as Default",size=(120,-1))
+		self.revert = wx.Button(self,-1,"Revert to Default",size=(120,-1))
+		self.Bind(wx.EVT_BUTTON,self.RevertState,self.revert)
+		self.Bind(wx.EVT_BUTTON,self.SaveState,self.store)
+
+		hbox.Add(self.store,0,wx.ALL,5)
+		hbox.Add(self.revert,0,wx.ALL,5)
+
+		vbox.Add(hbox,0,wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 25)
+
+		self.SetSizer(vbox)
+
+
 class FileNamePanel(PreferencePanel):
 
     def __init__(self,parent,config):
@@ -152,6 +199,7 @@ class PreferenceDlg(wx.Dialog):
         self.nb = wx.Notebook(self)
         self.AddModule(anonymizer.AnonymousPanel)
         self.AddModule(FileNamePanel)
+	self.AddModule(MiscPanel)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(self.nb, 1, wx.EXPAND)
