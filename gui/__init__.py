@@ -104,6 +104,11 @@ class MainFrame(wx.Frame):
     def Create(self):
         global DEBUG
 
+        # Set Frame icon
+        path = os.path.join(sys.path[0],'DSicon.ico')
+        icon = wx.Icon(path,wx.BITMAP_TYPE_ICO,16,16)
+        self.SetIcon(icon)
+
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         self.pathEditor = widgets.PathEditCtrl(self,-1)
