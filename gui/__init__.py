@@ -50,29 +50,6 @@ class DicomSort(wx.App):
         wx.App.MainLoop(self,*args)
 
 
-class DebugApp(DicomSort):
-    """
-    Develops the debugging framework for easy testing etc.
-    """
-
-    def __init__(self,*args):
-        super(DebugApp,self).__init__(*args)
-
-        pos = (self.frame.Position[0] + self.frame.Size[0],self.frame.Position[1])
-
-        self.debug = wx.Frame(None,-1,'DEBUGGER',size=(700,500),pos=pos)
-        self.crust = wx.py.crust.Crust(self.debug)
-        self.debug.Show()
-
-        # Set the correct Main window
-        self.SetTopWindow(self.frame)
-
-    def MainLoop(self,*args):
-        # Call superclass MainLoop
-        super(DebugApp,self).MainLoop(*args)
-        self.debug.Destroy()
-
-
 from gui import preferences
 
 class MainFrame(wx.Frame):
@@ -226,6 +203,19 @@ class MainFrame(wx.Frame):
 
         parent.Append(menu,name)
 
+    def LoadDebug(self,*evnt):
+        size = self.Size
+        pos = self.Position
+
+        pos = (pos[0]+size[0],pos[1])
+
+        self.debug = wx.Frame(None,-1,'DicomSort DEBUGGER',size=(700,500),pos=pos)
+        self.crust = wx.py.crust.Crust(self.debug)
+        self.debug.Show()
+
+        # Set the correct Main window
+        self.SetTopWindow(self)
+
     def _InitializeMenus(self):
         menubar = wx.MenuBar()
 
@@ -236,6 +226,10 @@ class MainFrame(wx.Frame):
                 ['&Exit','Ctrl+W',self.OnQuit]]
 
         self._MenuGenerator(menubar,'&File',file)
+
+        win = [['&Debug Window','Ctrl+D',self.LoadDebug],]
+
+        self._MenuGenerator(menubar, '&Window', win)
 
         help = [['About','',self.OnAbout],
                 ['&Help','Ctrl+?',self.OnHelp]]
