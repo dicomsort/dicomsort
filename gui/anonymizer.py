@@ -94,9 +94,6 @@ class AnonymousPanel(preferences.PreferencePanel):
 
         self.anonList = AnonymizeList(self)
 
-        #self.anonList.SetChoices([(0,'peanut','butter'),(1,'and','jelly')])
-        self.anonList.SetStringItems([('Peanut','Butter'),('and','jelly')])
-
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         self.store = wx.Button(self, -1, "Set as Default", size=(120,-1))
