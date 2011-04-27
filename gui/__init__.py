@@ -1,7 +1,6 @@
 import os
 import configobj
 import dicomsorter
-import pwd
 import sys
 import re
 import traceback
