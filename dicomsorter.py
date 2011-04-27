@@ -112,6 +112,12 @@ class Dicom():
         self.check_dir(destination)
 
         if self.is_anonymous():
+            # Actually write the anononymous data
+            # write everything in anondict -> Parse it so we can have dynamic fields
+            for key in self.anondict.keys():
+                replacementvalue = self.anondict[key] % self
+                self.dicom.data_element(key).value = replacementvalue
+
             self.dicom.SaveAs(destination)
         else:
             shutil.copy(self.filename,destination)
