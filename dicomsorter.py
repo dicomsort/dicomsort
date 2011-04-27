@@ -251,7 +251,6 @@ class DicomSorter():
             for root,dirs,files in os.walk(path):
                 for file in files[2:]:
                     filename = os.path.join(root,file)
-                    print filename
                     dcm = isdicom(filename)
                     if dcm:
                         return dcm.dir('')
