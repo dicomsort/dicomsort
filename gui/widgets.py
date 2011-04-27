@@ -197,7 +197,7 @@ class PathEditCtrl(wx.Panel):
             gui.ThrowError(errorMsg,'Invalid Paths')
             return
 
-        self.paths = paths
+        self.path = paths
         self.edit.SetValue(';'.join(paths))
 
         # Trigger an EVT_PATH event
