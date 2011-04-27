@@ -136,7 +136,7 @@ class MainFrame(wx.Frame):
         elif filenameMethod == 1:
             # Use the original filename
             fFormat = ''
-            self.dicomSorter.keep_filename = original
+            self.dicomSorter.keep_filename = True
             # Alternately we could pass None to dicomSorter
         elif filenameMethod == 2:
             # Use custom format

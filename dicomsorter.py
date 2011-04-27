@@ -168,7 +168,8 @@ class Sorter(Thread):
                 dcm = Dicom(file,dcm)
                 dcm.SetAnonRules(self.anondict)
                 if self.keep_filename:
-                    dcm.sort(self.outDir,self.dirFormat,file,test=self.test)
+                    origFile = os.path.basename(file)
+                    dcm.sort(self.outDir,self.dirFormat,origFile,test=self.test)
                 else:
                     dcm.sort(self.outDir,self.dirFormat,self.fileFormat,test=self.test)
 
