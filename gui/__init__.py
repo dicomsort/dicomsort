@@ -1,6 +1,7 @@
 import os
 import configobj
 import dicomsorter
+import pwd
 import sys
 import re
 import traceback
@@ -39,6 +40,9 @@ CounterEvent,EVT_COUNTER = wx.lib.newevent.NewEvent()
 def ExceptHook(type,value,tb):
     dlg = CrashReporter(type,value,tb)
     dlg.ShowModal()
+
+def GetUserName():
+    return pwd.getpwuid(os.getuid())[0]
 
 def ThrowError(message,title='Error'):
     """
@@ -146,6 +150,7 @@ class CrashReporter(wx.Dialog):
         values = {'OS':sys.platform,
                   'version':__version__,
                   'email':email,
+                  'user':GetUserName(),
                   'comments':self.comments.GetValue().strip('\n')}
 
         data = urllib.urlencode(values)
