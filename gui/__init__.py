@@ -118,7 +118,7 @@ class MainFrame(wx.Frame):
         self.anonymize = evnt.anon 
 
         if self.anonymize:
-            anonTab = self.prefDlg.pages[0]
+            anonTab = self.prefDlg.pages['Anonymization']
             anonDict = anonTab.anonList.GetAnonDict()
             self.dicomSorter.SetAnonRules(anonDict)
         else:
