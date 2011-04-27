@@ -22,7 +22,9 @@ defaultConfig = {'Anonymization':
                         {'PatientsName':'ANONYMOUS'}},
                  'FilenameFormat':
                     {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)',
-                     'Selection':0}}
+                     'Selection':0},
+                 'Miscpanel':
+                    {'KeepSeries':'True'}}
 
 # Define even
 PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
