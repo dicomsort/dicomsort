@@ -262,10 +262,10 @@ class FieldSelector(wx.Panel):
         self.search.Bind(wx.EVT_TEXT_ENTER, self._return_focus)
 
         # Setup controls:
-        self.bAdd       = wx.Button(self,-1,label=">>")
-        self.bRemove    = wx.Button(self,-1,label="<<")
-        self.bUp        = wx.Button(self,-1,label="Up")
-        self.bDown      = wx.Button(self,-1,label="Down")
+        self.bAdd       = wx.Button(self,-1,label=">>",size=(50,-1))
+        self.bRemove    = wx.Button(self,-1,label="<<",size=(50,-1))
+        self.bUp        = wx.Button(self,-1,label="Up",size=(50,-1))
+        self.bDown      = wx.Button(self,-1,label="Down",size=(50,-1))
 
         self.bAdd.Bind(wx.EVT_BUTTON, self.SelectItem)
         self.bRemove.Bind(wx.EVT_BUTTON, self.DeselectItem)
@@ -305,7 +305,7 @@ class FieldSelector(wx.Panel):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         
         hbox.Add(vboxOptions,1,wx.EXPAND | wx.ALL, 10)
-        hbox.Add(vboxControl,0,wx.ALL,10)
+        hbox.Add(vboxControl,0,wx.ALL,0)
         hbox.Add(vboxSelect,1,wx.EXPAND | wx.ALL, 10)
 
         self.SetSizer(hbox)
