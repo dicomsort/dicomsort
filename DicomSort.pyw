@@ -1,4 +1,5 @@
 import gui
+import sys
 
-app = gui.DicomSort(0)
+app = gui.DicomSort()
 app.MainLoop()

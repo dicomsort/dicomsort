@@ -2,6 +2,10 @@ import os
 import configobj
 import dicomsorter
 import sys
+import re
+import traceback
+import urllib
+import urllib2
 import widgets
 import wx
 import wx.lib.newevent
@@ -32,6 +36,10 @@ PopulateEvent,EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
 SortEvent,EVT_SORT = wx.lib.newevent.NewEvent()
 CounterEvent,EVT_COUNTER = wx.lib.newevent.NewEvent()
 
+def ExceptHook(type,value,tb):
+    dlg = CrashReporter(type,value,tb)
+    dlg.ShowModal()
+
 def ThrowError(message,title='Error'):
     """
     Generic way to throw an error and display the appropriate dialog
@@ -49,11 +57,111 @@ class DicomSort(wx.App):
         self.SetTopWindow(self.frame)
         self.frame.Show()
 
+        sys.excepthook = ExceptHook
+
     def MainLoop(self,*args):
         wx.App.MainLoop(self,*args)
 
 
 from gui import preferences
+
+class CrashReporter(wx.Dialog):
+    def __init__(self,type,value,tb):
+        super(CrashReporter,self).__init__(None,-1,'DicomSort Crash Reporter',
+                    size=(400,400))
+        self.type = type
+        self.value = value
+        self.tb = tb
+
+        self.traceback = '\n'.join(traceback.format_exception(type,value,tb))
+
+        self.Create()
+
+    def Create(self):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        heading = wx.StaticText(self,-1,"Epic Fail")
+        heading.SetFont(wx.Font(12,wx.DEFAULT,wx.NORMAL, wx.BOLD))
+
+        vbox.Add(heading,0,wx.LEFT | wx.TOP,15)
+
+        text = ''.join(['Dicom Sorting had a problem and crashed.\n',
+                        'In order to help diagnose the problem, you can send a '
+                        'crash report.' ])
+
+        static = wx.StaticText(self,-1,text)
+        vbox.Add(static,0,wx.ALL,15)
+
+        vbox.Add(wx.StaticText(self,-1,'Comments:'),0,wx.LEFT,15)
+
+        self.comments = wx.TextCtrl(self,style=wx.TE_MULTILINE)
+
+        defComments = '\n\n\n--------------DO NOT EDIT BELOW ------------\n'
+
+        self.comments.SetValue(defComments+self.traceback)
+        vbox.Add(self.comments,1,wx.EXPAND|wx.LEFT|wx.RIGHT,15)
+
+        label = 'Email me when a fix is available'
+        self.email = wx.CheckBox(self,-1,label=label)
+        vbox.Add(self.email,0,wx.LEFT | wx.RIGHT | wx.TOP, 15)
+
+        self.email.Bind(wx.EVT_CHECKBOX,self.OnEmail)
+
+        self.emailAddress = wx.TextCtrl(self,-1,'Enter your email address here',
+                size=(200,-1))
+        self.emailAddress.Enable(False)
+
+        vbox.Add(self.emailAddress,0,wx.LEFT | wx.RIGHT, 35)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        self.sender = wx.Button(self,-1,"Send Report")
+        self.cancel = wx.Button(self,-1,"Cancel")
+
+        self.sender.Bind(wx.EVT_BUTTON,self.Report)
+        self.cancel.Bind(wx.EVT_BUTTON,self.OnCancel)
+
+        hbox.Add(self.cancel,0,wx.RIGHT,10)
+        hbox.Add(self.sender,0,wx.RIGHT,15)
+
+        vbox.Add(hbox,0,wx.TOP | wx.BOTTOM | wx.ALIGN_RIGHT,10)
+
+        self.SetSizer(vbox)
+
+    def OnCancel(self,*evnt):
+        self.Destroy()
+
+    def OnEmail(self,*evnt):
+        if self.email.IsChecked():
+            self.emailAddress.Enable()
+        else:
+            self.emailAddress.Enable(False)
+
+    def Report(self,*evnt):
+        if self.email.IsChecked():
+            email = self.ValidateEmail()
+        else:
+            email = None
+
+        url = 'http://www.suever.net/software/dicomSort/bug_report.php'
+        values = {'OS':sys.platform,
+                  'version':__version__,
+                  'email':email,
+                  'comments':self.comments.GetValue().strip('\n')}
+
+        data = urllib.urlencode(values)
+        resp = urllib2.urlopen(url,data)
+        self.OnCancel()
+
+    def ValidateEmail(self):
+        email = self.emailAddress.GetValue()
+        print email
+
+        regex = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
+
+        if not re.search(regex,email,re.UNICODE|re.IGNORECASE):
+            ThrowError('Please enter a valid email address')
+
+        return email
 
 class MainFrame(wx.Frame):
 
