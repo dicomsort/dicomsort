@@ -1,3 +1,4 @@
+import collections
 import os
 import dicom
 import gui
@@ -47,7 +48,7 @@ class Dicom():
         """
         try:
             item = self.overrides[attr]
-            if not isinstance(item,str):
+            if isinstance(item,collections.Callable):
                 return item()
             return item
         except KeyError:
