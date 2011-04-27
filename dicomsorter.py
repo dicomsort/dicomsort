@@ -256,7 +256,7 @@ class DicomSorter():
                     if dcm:
                         return dcm.dir('')
 
-        raise DicomFolderError(''.join([self.pathname,' contains no DICOMs']))
+        raise DicomFolderError(''.join([';'.join(self.pathname),' contains no DICOMs']))
 
 class DicomFolderError(Exception):
     def __init__(self,value):
