@@ -9,6 +9,8 @@ import wx.html
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from wx.lib.mixins.listctrl import CheckListCtrlMixin,TextEditMixin
 
+from wx.lib.agw.multidirdialog import MultiDirDialog
+
 #TODO: Create searcheable ListCtrl item
 
 class FileDropTarget(wx.FileDropTarget):
@@ -160,17 +162,9 @@ class PathEditCtrl(wx.Panel):
         self.ValidatePath()
 
     def ValidatePath(self,*evnt):
-        path = os.path.abspath(self.edit.GetValue())
+        paths = self.edit.GetValue()
 
-        # update the box with the absolute path
-        self.edit.SetValue(path)
-
-        if os.path.isdir(path):
-            self.path = path
-            self.Notify()
-        else:
-            errorMsg = 'The Directory %(a)s does not exist!' % {'a':path}
-            gui.ThrowError(errorMsg,'Invalid Location')
+        self.SetPaths(paths.split(';'))
 
     def create(self):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -187,19 +181,56 @@ class PathEditCtrl(wx.Panel):
 
         self.SetSizer(hbox)
 
+    def SetPaths(self,paths):
+        if not isinstance(paths,list):
+            paths = [paths,]
+
+        # Convert to absolute paths
+        #paths = [os.path.abspath(path) for path in paths]
+
+        # Determine if there are any invalid paths
+        badPaths = [path for path in paths if not os.path.isdir(path)]
+
+        if len(badPaths):
+            p = ', '.join(badPaths)
+            errorMsg = 'The Following directories are invalid paths: %s' % p
+            gui.ThrowError(errorMsg,'Invalid Paths')
+            return
+
+        self.paths = paths
+        self.edit.SetValue(';'.join(paths))
+
+        # Trigger an EVT_PATH event
+        self.Notify()
+
     def Notify(self,*evnt):
         event = gui.PathEvent(path=self.path)
         wx.PostEvent(self,event)
 
     def BrowsePaths(self,*evnt):
         # Open the dialog and search
-        path = wx.DirDialog(self.GetParent(),"Please Select Directory",
-                                    defaultPath=self.path)
+        if len(self.path):
+            defaultPath = self.path[0]
+        else:
+            defaultPath = os.getcwd()
+
+        # Use multi-directory dialog
+        path = MultiDirDialog(self.GetParent(),"Please Select Directory",
+                                    defaultPath=defaultPath)
         path.CenterOnParent()
 
         if path.ShowModal() == wx.ID_OK:
-            self.edit.SetValue(path.GetPath())
-            self.ValidatePath()
+
+            home = os.getenv('USERPROFILE') or os.getenv('HOME')
+
+            paths = path.GetPaths()
+
+            fixed = []
+
+            for path in paths:
+                fixed.append(path.replace('Home directory',home))
+
+            self.SetPaths(fixed)
 
         path.Destroy()
 
