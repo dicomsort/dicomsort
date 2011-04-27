@@ -175,7 +175,10 @@ class DicomSorter():
     def __init__(self,pathname=None):
         # Use current directory by default
         if not pathname:
-            pathname = os.getcwd()
+            pathname = [os.getcwd(),]
+
+        if not isinstance(pathname,list):
+            pathname = [pathname,]
 
         self.pathname = pathname
 
@@ -214,9 +217,13 @@ class DicomSorter():
 
         fileList = list()
 
-        for root,dir,files in os.walk(self.pathname):
-            for file in files[2:]:
-                fileList.append(os.path.join(root,file))
+        for path in self.pathname:
+            for root,dir,files in os.walk(path):
+                for file in files[2:]:
+                    fileList.append(os.path.join(root,file))
+
+        # Make sure that we don't have duplicates
+        fileList = list(set(fileList))
 
         numberOfThreads = 2
         numberOfFiles = len(fileList)
@@ -240,12 +247,14 @@ class DicomSorter():
         self.includeSeries = val
 
     def GetAvailableFields(self):
-        for root,dirs,files in os.walk(self.pathname):
-            for file in files[2:]:
-                filename = os.path.join(root,file)
-                dcm = isdicom(filename)
-                if dcm:
-                    return dcm.dir('') 
+        for path in self.pathname:
+            for root,dirs,files in os.walk(path):
+                for file in files[2:]:
+                    filename = os.path.join(root,file)
+                    print filename
+                    dcm = isdicom(filename)
+                    if dcm:
+                        return dcm.dir('')
 
         raise DicomFolderError(''.join([self.pathname,' contains no DICOMs']))
 
