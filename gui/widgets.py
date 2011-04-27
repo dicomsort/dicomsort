@@ -215,15 +215,15 @@ class PathEditCtrl(wx.Panel):
             defaultPath = os.getcwd()
 
         # Use multi-directory dialog
-        path = MultiDirDialog(self.GetParent(),"Please Select Directory",
+        pathDlg = MultiDirDialog(self.GetParent(),"Please Select Directory",
                                     defaultPath=defaultPath)
-        path.CenterOnParent()
+        pathDlg.CenterOnParent()
 
-        if path.ShowModal() == wx.ID_OK:
+        if pathDlg.ShowModal() == wx.ID_OK:
 
             home = os.getenv('USERPROFILE') or os.getenv('HOME')
 
-            paths = path.GetPaths()
+            paths = pathDlg.GetPaths()
 
             fixed = []
 
@@ -232,7 +232,7 @@ class PathEditCtrl(wx.Panel):
 
             self.SetPaths(fixed)
 
-        path.Destroy()
+        pathDlg.Destroy()
 
 class FieldSelector(wx.Panel):
 
