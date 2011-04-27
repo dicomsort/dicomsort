@@ -67,6 +67,7 @@ class AnonymousPanel(preferences.PreferencePanel):
         # Update self.config
         super(AnonymousPanel,self).RevertState()
         savedConfig = configobj.ConfigObj(self.config.filename)
+        savedConfig.interpolation = False
         self.UpdateFromConfig(savedConfig)
 
     def SetDicomFields(self,values):
