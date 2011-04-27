@@ -197,10 +197,19 @@ class DicomSorter():
         self.includeSeries = True
         self.seriesDefault = '%(SeriesDescription)s'
 
+        self.sorters = list()
+
         # Don't anonymize by default
         self.anondict = dict()
 
         self.keep_filename = False
+
+    def IsSorting(self):
+        for sorter in self.sorters:
+            if sorter.isAlive():
+                return True
+
+        return False
 
     def SetAnonRules(self,anondict):
         # Appends the rules to the overrides so that we can alter them
@@ -242,14 +251,14 @@ class DicomSorter():
 
         dirFormat = self.GetFolderFormat()
 
-        s = list()
+        self.sorters = list()
 
         iterator = itertools.count(1)
 
         for group in fileGroups:
-            s = Sorter(group,outputDir,dirFormat,self.filename,
+            self.sorters.append(Sorter(group,outputDir,dirFormat,self.filename,
                     self.anondict,self.keep_filename,iterator=iterator,
-                    test=test,listener=listener,total=numberOfFiles)
+                    test=test,listener=listener,total=numberOfFiles))
 
     def SetIncludeSeriesAuto(self,val):
         self.includeSeries = val

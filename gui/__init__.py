@@ -115,6 +115,10 @@ class MainFrame(wx.Frame):
         self.pathEditor.Bind(EVT_PATH,self.FillList)
 
     def Sort(self,evnt):
+
+        if self.dicomSorter.IsSorting():
+            return
+
         self.anonymize = evnt.anon 
 
         if self.anonymize:
