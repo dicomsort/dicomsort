@@ -3,8 +3,10 @@ import os
 import dicom
 import gui
 import re
+import sys
 import shutil
 import itertools
+import traceback
 from threading import *
 
 def grouper(iterable,n):
@@ -163,6 +165,8 @@ class Sorter(Thread):
             if file == None:
                 continue
 
+            #try:
+
             dcm = isdicom(file)
             if dcm:
                 dcm = Dicom(file,dcm)
@@ -178,6 +182,9 @@ class Sorter(Thread):
                 if self.isgui:
                     event = gui.CounterEvent(Count=count,total=self.total)
                     wx.PostEvent(self.listener,event)
+            #except:
+            #    dlg = gui.CrashReporter(fullstack=traceback.format_exc())
+            #    dlg.ShowModal()
 
 class DicomSorter():
     def __init__(self,pathname=None):

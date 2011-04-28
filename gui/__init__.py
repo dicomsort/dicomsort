@@ -66,14 +66,17 @@ class DicomSort(wx.App):
 from gui import preferences
 
 class CrashReporter(wx.Dialog):
-    def __init__(self,type,value,tb):
+    def __init__(self,type=None,value=None,tb=None,fullstack=None):
         super(CrashReporter,self).__init__(None,-1,'DicomSort Crash Reporter',
                     size=(400,400))
         self.type = type
         self.value = value
         self.tb = tb
 
-        self.traceback = '\n'.join(traceback.format_exception(type,value,tb))
+        if fullstack:
+            self.traceback = fullstack
+        else:
+            self.traceback = '\n'.join(traceback.format_exception(type,value,tb))
 
         self.Create()
 
