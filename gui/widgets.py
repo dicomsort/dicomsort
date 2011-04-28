@@ -147,17 +147,7 @@ class PathEditCtrl(wx.Panel):
         self.edit.SetDropTarget(dt)
 
     def ValidateDropFiles(self,x,y,filenames):
-        for file in filenames:
-            if not os.path.isdir(file):
-                gui.ThrowError('All Dropped Items must be Directories',parent=self.Parent)
-                return
-            elif len(filenames) > 1:
-                # Temporary until we get this figured out
-                gui.ThrowError('You can only specify one folder at a time',parent=self.Parent)
-                return
-
-        self.edit.SetValue(';'.join(filenames))
-        self.ValidatePath()
+        self.SetPaths(filenames)
 
     def ValidatePath(self,*evnt):
         paths = self.edit.GetValue()
