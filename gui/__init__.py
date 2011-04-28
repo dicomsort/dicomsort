@@ -1,4 +1,5 @@
 import os
+import help
 import configobj
 import dicomsorter
 import icons
@@ -300,10 +301,7 @@ class MainFrame(wx.Frame):
         widgets.AboutDlg()
 
     def OnHelp(self,*evnt):
-        handle = open(os.path.join(self.exedir,'help.inc'),"r")
-        helpText = handle.read()
-
-        widgets.HelpDlg(self,text=helpText)
+        help.HelpDlg(self)
 
     def _MenuGenerator(self,parent,name,arguments):
         menu = wx.Menu()
