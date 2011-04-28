@@ -71,7 +71,7 @@ class Dicom():
 
         if len(phaseSet.intersection(imType)):
             return 'Phase'
-        elif len(magSet.intersection(imType)):
+        elif len(magSet.intersection(imType)) == 2:
             return 'Mag'
         else:
             return 'Image'
