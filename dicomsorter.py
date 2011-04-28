@@ -2,11 +2,8 @@ import collections
 import os
 import dicom
 import gui
-import re
-import sys
 import shutil
 import itertools
-import traceback
 from threading import *
 
 def grouper(iterable,n):
@@ -82,8 +79,6 @@ class Dicom():
     def get_destination(self,root,dirFormat,fileFormat):
         directory = os.path.join(root,*dirFormat)
 
-        path = os.path.join(directory,fileFormat)
-
         return os.path.join(directory,fileFormat) % self
 
     def SetAnonRules(self,anondict):
@@ -158,8 +153,6 @@ class Sorter(Thread):
             import wx
 
         files = self.fileList
-
-        root = os.path.dirname(files[0])
 
         for file in files:
             if file == None:

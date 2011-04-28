@@ -189,7 +189,7 @@ class PreferenceDlg(wx.Dialog):
         if config == None:
             config = self.config
 
-        [val.UpdateFromConfig(config) for key,val in self.pages.items()]
+        [val.UpdateFromConfig(config) for val in self.pages.values()]
 
     def Show(self,*args):
         # Call superclass constructor
@@ -225,7 +225,7 @@ class PreferenceDlg(wx.Dialog):
         self.nb.AddPage(newPage,newPage.title)
 
     def OnApply(self,*evnt):
-        [val.StoreState() for key,val in self.pages.items()]
+        [val.StoreState() for val in self.pages.values()]
 
         # For now don't write this to the file because it's a local default
         self.Close()

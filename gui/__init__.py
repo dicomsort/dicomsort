@@ -154,7 +154,7 @@ class CrashReporter(wx.Dialog):
                   'comments':self.comments.GetValue().strip('\n')}
 
         data = urllib.urlencode(values)
-        resp = urllib2.urlopen(url,data)
+        urllib2.urlopen(url,data)
         self.OnCancel()
 
     def ValidateEmail(self):

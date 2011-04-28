@@ -36,7 +36,7 @@ class AboutDlg(wx.AboutDialogInfo):
 
         self.GenerateDescription()
 
-        box = wx.AboutBox(self)
+        wx.AboutBox(self)
 
 
     def GenerateDescription(self):
@@ -400,7 +400,6 @@ class HelpDlg(wx.Dialog):
         self.hwin = HtmlWindow(self,-1,size=(400,200))
 
         self.hwin.SetPage(self.helpText)
-        btn = self.hwin.FindWindowById(wx.ID_OK)
         irep = self.hwin.GetInternalRepresentation()
 
         self.hwin.SetSize((irep.GetWidth(),int(irep.GetHeight()/4)))
