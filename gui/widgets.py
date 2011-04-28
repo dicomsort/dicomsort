@@ -1,4 +1,5 @@
 import gui
+import icons
 import os
 import re
 import sys
@@ -25,10 +26,7 @@ class AboutDlg(wx.AboutDialogInfo):
 
     def __init__(self,*args):
         super(AboutDlg,self).__init__(*args)
-
-        path = os.path.join(sys.path[0],'dsnoshad.ico')
-        icon = wx.Icon(path,wx.BITMAP_TYPE_ICO)
-        self.SetIcon(icon)
+        self.SetIcon(icons.about.GetIcon())
 
         self.SetName('DICOM Sorting')
         self.SetVersion(gui.__version__)

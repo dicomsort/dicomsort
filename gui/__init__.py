@@ -1,6 +1,7 @@
 import os
 import configobj
 import dicomsorter
+import icons
 import sys
 import re
 import traceback
@@ -79,6 +80,7 @@ class CrashReporter(wx.Dialog):
             self.traceback = '\n'.join(traceback.format_exception(type,value,tb))
 
         self.Create()
+        self.SetIcon(icons.main.GetIcon())
 
     def Create(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -197,7 +199,6 @@ class MainFrame(wx.Frame):
         self.SetStatusText("Ready...")
 
     def Create(self):
-        global DEBUG
 
         # Set Frame icon
         if os.path.isfile(os.path.join(sys.executable,'DSicon.ico')):
@@ -205,9 +206,7 @@ class MainFrame(wx.Frame):
         else:
             self.exedir = sys.path[0]
 
-        path = os.path.join(self.exedir,'DSicon.ico')
-        icon = wx.Icon(path,wx.BITMAP_TYPE_ICO,16,16)
-        self.SetIcon(icon)
+        self.SetIcon(icons.main.GetIcon())
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
