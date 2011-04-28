@@ -149,11 +149,11 @@ class PathEditCtrl(wx.Panel):
     def ValidateDropFiles(self,x,y,filenames):
         for file in filenames:
             if not os.path.isdir(file):
-                gui.ThrowError('All Dropped Items must be Directories')
+                gui.ThrowError('All Dropped Items must be Directories',parent=self.Parent)
                 return
             elif len(filenames) > 1:
                 # Temporary until we get this figured out
-                gui.ThrowError('You can only specify one folder at a time')
+                gui.ThrowError('You can only specify one folder at a time',parent=self.Parent)
                 return
 
         self.edit.SetValue(';'.join(filenames))
@@ -192,7 +192,7 @@ class PathEditCtrl(wx.Panel):
         if len(badPaths):
             p = ', '.join(badPaths)
             errorMsg = 'The Following directories are invalid paths: %s' % p
-            gui.ThrowError(errorMsg,'Invalid Paths')
+            gui.ThrowError(errorMsg,'Invalid Paths',parent=self.Parent)
             return
 
         self.path = paths

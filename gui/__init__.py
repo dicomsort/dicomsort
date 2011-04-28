@@ -42,11 +42,12 @@ def ExceptHook(type,value,tb):
     dlg = CrashReporter(type,value,tb)
     dlg.ShowModal()
 
-def ThrowError(message,title='Error'):
+def ThrowError(message,title='Error',parent=None):
     """
     Generic way to throw an error and display the appropriate dialog
     """
-    dlg = wx.MessageDialog(None,message,title,wx.OK | wx.ICON_ERROR)
+    dlg = wx.MessageDialog(parent,message,title,wx.OK | wx.ICON_ERROR)
+    dlg.CenterOnParent()
     dlg.ShowModal()
     dlg.Destroy()
 
@@ -165,7 +166,7 @@ class CrashReporter(wx.Dialog):
         regex = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
 
         if not re.search(regex,email,re.UNICODE|re.IGNORECASE):
-            ThrowError('Please enter a valid email address')
+            ThrowError('Please enter a valid email address',parent=self)
 
         return email
 
@@ -357,7 +358,7 @@ class MainFrame(wx.Frame):
             fields = self.dicomSorter.GetAvailableFields()
         except dicomsorter.DicomFolderError:
             errMsg = ''.join([';'.join(evnt.path),' contains no DICOMs'])
-            ThrowError(errMsg,'No DICOMs Present')
+            ThrowError(errMsg,'No DICOMs Present',parent=self)
             return
 
         self.selector.SetOptions(fields)
