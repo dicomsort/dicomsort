@@ -36,10 +36,8 @@ class UpdateDlg(wx.Dialog):
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        fnt = wx.Font(14,wx.DEFAULT,wx.NORMAL,wx.BOLD)
-
         head = wx.StaticText(self,-1,label="Update Available",style=wx.ALIGN_CENTER)
-        head.SetFont(fnt)
+        head.SetFont(wx.Font(12,wx.DEFAULT,wx.NORMAL,wx.BOLD))
 
         vbox.Add(head,0,wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 15)
 
