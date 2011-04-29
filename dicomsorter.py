@@ -1,6 +1,7 @@
 import collections
 import os
 import dicom
+import sys
 import gui
 import shutil
 import itertools
@@ -96,8 +97,16 @@ class Dicom():
 
     def check_dir(self,dest):
         dest = os.path.dirname(dest)
-        if not os.path.exists(dest):
+
+        if sys.platform == "win32":
+            exceptions = WindowsError
+        else:
+            exceptions = OSError
+
+        try:
             os.makedirs(dest)
+        except exceptions:
+            return
 
     def sort(self,root,dirFields,fnameString,test=False):
         destination = self.get_destination(root,dirFields,fnameString)
