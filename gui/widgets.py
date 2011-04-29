@@ -5,6 +5,7 @@ import re
 import sys
 import wx
 
+import wx.lib.agw.hyperlink as hyperlink
 import wx.html
 
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
@@ -13,6 +14,49 @@ from wx.lib.mixins.listctrl import CheckListCtrlMixin,TextEditMixin
 from wx.lib.agw.multidirdialog import MultiDirDialog
 
 #TODO: Create searcheable ListCtrl item
+
+class UpdateDlg(wx.Dialog):
+    def __init__(self,parent,version):
+        super(UpdateDlg,self).__init__(parent,size=(300,170),style=wx.OK)
+        message = ''.join(["A new version of DICOM Sorting is available.\n",
+                        "You are running Version %s and the newest is %s.\n"])
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        fnt = wx.Font(14,wx.DEFAULT,wx.BOLD,wx.BOLD)
+
+        head = wx.StaticText(self,-1,label="Update Available",style=wx.ALIGN_CENTER)
+        head.SetFont(fnt)
+
+        vbox.Add(head,0,wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 15)
+
+        txt = wx.StaticText(self,-1,label=message % (gui.__version__,version),
+                        style=wx.ALIGN_CENTER)
+        vbox.Add(txt,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+
+        self.link = hyperlink.HyperLinkCtrl(self,-1)
+        self.link.SetURL(URL='http://www.suever.net/software/dicomSort/')
+        self.link.SetLabel(label='Click here to obtain the update')
+        self.link.SetToolTipString('http://www.suever.net/software/dicomSort/')
+        self.link.AutoBrowse(False)
+
+        self.Bind(hyperlink.EVT_HYPERLINK_LEFT,self.OnUpdate,self.link)
+
+        vbox.Add(self.link,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 0)
+
+        ok = wx.Button(self,-1,"OK")
+        vbox.Add(ok,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 15)
+        self.Bind(wx.EVT_BUTTON,self.OnClose,ok)
+
+        self.SetSizer(vbox)
+        self.CenterOnParent()
+
+    def OnUpdate(self,*evnt):
+        self.link.GotoURL(self.link.GetURL())
+        self.Destroy()
+
+    def OnClose(self,*evnt):
+        self.Destroy()
 
 class FileDropTarget(wx.FileDropTarget):
     def __init__(self,callback):

@@ -51,6 +51,14 @@ def ThrowError(message,title='Error',parent=None):
     dlg.ShowModal()
     dlg.Destroy()
 
+def AvailableUpdate():
+    f = urllib.urlopen("http://www.suever.net/software/dicomSort/current.php")
+    current = f.read()
+
+    if current == __version__:
+        return None
+    else:
+        return current
 
 class DicomSort(wx.App):
 
@@ -62,9 +70,14 @@ class DicomSort(wx.App):
 
         sys.excepthook = ExceptHook
 
+        # Check for updates
+        ver = AvailableUpdate()
+        if ver:
+            dlg =widgets.UpdateDlg(self.frame,ver)
+            dlg.ShowModal()
+
     def MainLoop(self,*args):
         wx.App.MainLoop(self,*args)
-
 
 from gui import preferences
 
