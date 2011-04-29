@@ -15,6 +15,19 @@ from wx.lib.agw.multidirdialog import MultiDirDialog
 
 #TODO: Create searcheable ListCtrl item
 
+class MultiDirDlg(MultiDirDialog):
+    """
+    We have to over-ride this because of the IndexError on win7
+    """
+    def __init__(self,*args,**kwargs):
+        super(MultiDirDlg,self).__init__(*args,**kwargs)
+
+    def SetupDirCtrl(self,*args,**kwargs):
+        try:
+            super(MultiDirDlg,self).SetupDirCtrl(*args,**kwargs)
+        except IndexError:
+            self.folderText.SetValue('')
+
 class UpdateDlg(wx.Dialog):
     def __init__(self,parent,version):
         super(UpdateDlg,self).__init__(parent,size=(300,170),style=wx.OK)
@@ -247,7 +260,7 @@ class PathEditCtrl(wx.Panel):
             defaultPath = os.getcwd()
 
         # Use multi-directory dialog
-        pathDlg = MultiDirDialog(self.GetParent(),"Please Select Directory",
+        pathDlg = MultiDirDlg(self.GetParent(),"Please Select Directory",
                                     defaultPath=defaultPath)
         pathDlg.CenterOnParent()
 
