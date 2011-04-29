@@ -55,7 +55,10 @@ def AvailableUpdate():
     f = urllib.urlopen("http://www.suever.net/software/dicomSort/current.php")
     current = f.read()
 
-    if current == __version__:
+    if re.search('404',current):
+        return None
+
+    if current.rstrip() == __version__:
         return None
     else:
         return current
