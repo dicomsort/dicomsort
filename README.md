@@ -9,11 +9,5 @@ This software has the following dependencies:
 * [wxPython 2.8](http://www.wxpython.org/download.php)
 * [pydicom](http://code.google.com/p/pydicom/)
 
+Windows binaries are available at [My Website](http://www.suever.net/software/dicomSort)
 
-Currently, this software performs decently day-to-day but has much room for
-improvement.
-
-The main thing I have been messing with lately is porting it to pyQt instead
-of wxPython for improved portability and more available features.
-
-Eventually, I will setup the wiki and generate some complete documentation.
