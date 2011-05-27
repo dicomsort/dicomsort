@@ -68,6 +68,7 @@ class Dicom():
         phaseSet = set(['P',])
         magSet   = set(['FFE','M'])
         reconSet = set(['CSA 3D EDITOR',])
+        phoenix  = set(['CSA REPORT',])
 
         imType = set(self.dicom.ImageType)
 
@@ -78,6 +79,8 @@ class Dicom():
         elif len(reconSet.intersection(imType)):
             self.dicom.InstanceNumber = self.dicom.SeriesNumber
             return '3DRecon'
+        elif len(phoenix.intersection(imType)):
+            return 'Phoenix'
         else:
             return 'Image'
 
