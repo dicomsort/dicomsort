@@ -65,8 +65,9 @@ class Dicom():
         """
         Determines the human-readable type of the image
         """
-        phaseSet = set(['P',]);
+        phaseSet = set(['P',])
         magSet   = set(['FFE','M'])
+        reconSet = set(['CSA 3D EDITOR',])
 
         imType = set(self.dicom.ImageType)
 
@@ -74,6 +75,9 @@ class Dicom():
             return 'Phase'
         elif len(magSet.intersection(imType)) == 2:
             return 'Mag'
+        elif len(reconSet.intersection(imType)):
+            self.dicom.InstanceNumber = self.dicom.SeriesNumber
+            return '3DRecon'
         else:
             return 'Image'
 
@@ -109,6 +113,7 @@ class Dicom():
             return
 
     def sort(self,root,dirFields,fnameString,test=False):
+
         destination = self.get_destination(root,dirFields,fnameString)
 
         if test:
@@ -173,6 +178,8 @@ class Sorter(Thread):
             if dcm:
                 dcm = Dicom(file,dcm)
                 dcm.SetAnonRules(self.anondict)
+
+                # Use the original filename for 3d recons
                 if self.keep_filename:
                     origFile = os.path.basename(file)
                     dcm.sort(self.outDir,self.dirFormat,origFile,test=self.test)
