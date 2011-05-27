@@ -65,24 +65,22 @@ class Dicom():
         """
         Determines the human-readable type of the image
         """
-        phaseSet = set(['P',])
-        magSet   = set(['FFE','M'])
-        reconSet = set(['CSA 3D EDITOR',])
-        phoenix  = set(['CSA REPORT',])
+    
+        types = {'Phase':set(['P',]),
+                 '3DRecon':set(['CSA 3D EDITOR',]),
+                 'Phoenix':set(['CSA REPORT',]),
+                 'Mag':set(['FFE','M'])}
 
         imType = set(self.dicom.ImageType)
 
-        if len(phaseSet.intersection(imType)):
-            return 'Phase'
-        elif len(magSet.intersection(imType)) == 2:
-            return 'Mag'
-        elif len(reconSet.intersection(imType)):
-            self.dicom.InstanceNumber = self.dicom.SeriesNumber
-            return '3DRecon'
-        elif len(phoenix.intersection(imType)):
-            return 'Phoenix'
-        else:
-            return 'Image'
+        for typeString,match in types.iteritems():
+            if match.issubset(imType):
+                if typeString == '3DRecon':
+                    self.dicom.InstanceNumber = self.dicom.SeriesNumber
+
+                return typeString
+
+        return 'Image'
 
     def get_destination(self,root,dirFormat,fileFormat):
         directory = os.path.join(root,*dirFormat)
