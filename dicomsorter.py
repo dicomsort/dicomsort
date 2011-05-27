@@ -253,8 +253,11 @@ class DicomSorter():
 
         for path in self.pathname:
             for root,dir,files in os.walk(path):
+                print(os.path.join(root,file))
                 for file in files[2:]:
                     fileList.append(os.path.join(root,file))
+
+        return
 
         # Make sure that we don't have duplicates
         fileList = list(set(fileList))
@@ -283,7 +286,7 @@ class DicomSorter():
     def GetAvailableFields(self):
         for path in self.pathname:
             for root,dirs,files in os.walk(path):
-                for file in files[2:]:
+                for file in files:
                     filename = os.path.join(root,file)
                     dcm = isdicom(filename)
                     if dcm:
