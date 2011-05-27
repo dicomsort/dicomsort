@@ -253,11 +253,8 @@ class DicomSorter():
 
         for path in self.pathname:
             for root,dir,files in os.walk(path):
-                print(os.path.join(root,file))
-                for file in files[2:]:
+                for file in files:
                     fileList.append(os.path.join(root,file))
-
-        return
 
         # Make sure that we don't have duplicates
         fileList = list(set(fileList))
