@@ -267,13 +267,16 @@ class PathEditCtrl(wx.Panel):
             home = os.getenv('USERPROFILE') or os.getenv('HOME')
 
             paths = pathDlg.GetPaths()
+            paths = [path.replace('Home directory',home) for path in paths]
+            p = paths[:]
 
-            fixed = []
-
-            for path in paths:
-                fixed.append(path.replace('Home directory',home))
-
-            self.SetPaths(fixed)
+            # Check to see if this is a mac
+            if sys.platform == 'darwin':
+                for i in range(len(paths)):
+                    if paths[i][0] != '/':
+                        paths[i] = os.path.join('/Volumes',paths[i])
+                    
+            self.SetPaths(paths)
 
         pathDlg.Destroy()
 
