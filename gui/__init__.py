@@ -14,8 +14,8 @@ import wx.lib.newevent
 
 configFile = 'dicomSort.ini'
 
-__version__ = '2.0.2'
-Version = (2,0,2)
+__version__ = '2.0.3'
+Version = (2,0,3)
 
 defaultConfig = {'Anonymization':
                     {'Fields':['OtherPatientsIDS',
