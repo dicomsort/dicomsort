@@ -6,6 +6,7 @@ import sys
 import wx
 
 import wx.lib.agw.hyperlink as hyperlink
+import wx.grid
 import wx.html
 
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
@@ -102,6 +103,201 @@ class AboutDlg(wx.AboutDialogInfo):
                        "anonymization of DICOM images for patient privacy.")
 
         self.SetDescription(description)
+
+class CustomDataTable(wx.grid.PyGridTableBase):
+    def __init__(self,data):
+        super(CustomDataTable,self).__init__()
+
+        self.colLabels = ['','DICOM Property','Replacement Value']
+
+        self.dataTypes = [wx.grid.GRID_VALUE_BOOL,
+                          wx.grid.GRID_VALUE_STRING,
+                          wx.grid.GRID_VALUE_STRING]
+        if data == None:
+            data = [['','',''],]
+
+        self.data = data
+
+   #--------------------------------------------------
+    # required methods for the wxPyGridTableBase interface
+
+    def GetNumberRows(self):
+        return len(self.data)
+
+    def GetNumberCols(self):
+        return len(self.data[0])
+
+    def IsEmptyCell(self, row, col):
+        try:
+            return not self.data[row][col]
+        except IndexError:
+            return True
+
+    # Get/Set values in the table.  The Python version of these
+    # methods can handle any data-type, (as long as the Editor and
+    # Renderer understands the type too,) not just strings as in the
+    # C++ version.
+    def GetValue(self, row, col):
+        try:
+            return self.data[row][col]
+        except IndexError:
+            return ''
+
+    def SetValue(self, row, col, value):
+        def innerSetValue(row, col, value):
+            try:
+                self.data[row][col] = value
+            except IndexError:
+                # add a new row
+                self.data.append([''] * self.GetNumberCols())
+                innerSetValue(row, col, value)
+
+                # tell the grid we've added a row
+                msg = wx.grid.GridTableMessage(self,            # The table
+                        wx.grid.GRIDTABLE_NOTIFY_ROWS_APPENDED, # what we did to it
+                        1                                       # how many
+                        )
+
+                self.GetView().ProcessTableMessage(msg)
+        innerSetValue(row, col, value) 
+
+    #--------------------------------------------------
+    # Some optional methods
+
+    # Called when the grid needs to display labels
+    def GetColLabelValue(self, col):
+        return self.colLabels[col]
+
+    # Called to determine the kind of editor/renderer to use by
+    # default, doesn't necessarily have to be the same type used
+    # natively by the editor/renderer if they know how to convert.
+    def GetTypeName(self, row, col):
+        return self.dataTypes[col]
+
+    # Called to determine how the data can be fetched and stored by the
+    # editor and renderer.  This allows you to enforce some type-safety
+    # in the grid.
+    def CanGetValueAs(self, row, col, typeName):
+        colType = self.dataTypes[col].split(':')[0]
+        if typeName == colType:
+            return True
+        else:
+            return False
+
+    def CanSetValueAs(self, row, col, typeName):
+        return self.CanGetValueAs(row, col, typeName)
+
+ 
+
+class CheckListCtrlXP(wx.grid.Grid):
+    def __init__(self,parent):
+        wx.grid.Grid.__init__(self,parent,-1)
+
+        table = CustomDataTable(None);
+
+        self.SetTable(table,True)
+
+        self.SetRowLabelSize(0)
+        self.SetMargins(0,0)
+        self.AutoSizeColumns(True)
+        self.DisableDragGridSize()
+        self.DisableDragColSize()
+        self.SetSelectionBackground(wx.Colour(255,255,255,0))
+        self.SetSelectionForeground(wx.Colour(0,0,0,0))
+
+        self.SetColumnEditable(1,False)
+
+        self.SetColumnSizes([20,175,155])
+
+    def SetColumnSizes(self,sizes):
+        for i,size in enumerate(sizes):
+            self.SetColSize(i,size)
+
+    # Now we need to define methods to match CheckListCtrl
+    def _GetCheckedIndexes(self):
+        column = 0;
+        table = self.GetTable()
+        checked = [table.GetValue(i,column) for i in range(self.GetNumberRows())]
+
+        inds = list()
+
+        for i,val in enumerate(checked):
+            if val:
+                inds.append(i)
+
+        return inds
+
+    def ClearColumn(self,col):
+        for i in range(self.GetNumberRows()):
+            self.GetTable().SetValue(i,col,'')
+
+    def SetColumnEditable(self,column,edit=True):
+        for i in range(self.GetNumberRows()):
+            self.SetReadOnly(i,column,edit)
+
+    def DeleteAllItems(self):
+        self.SetTable(CustomDataTable([['','',''],]))
+
+    def SetStringItems(self,items):
+        self.DeleteAllItems()
+        for i,item in enumerate(items):
+            self.GetTable().SetValue(i,1,item)
+
+    def CheckItems(self,itemIndex):
+        [self.GetTable().SetValue(i,0,1) for i in itemIndex]
+
+    def GetCheckedItems(self,col=None):
+        return [self.GetItem(r,col) for r in self._GetCheckedIndexes()]
+
+    def GetNumberRows(self):
+        return self.GetTable().GetNumberRows()
+
+    def GetNumberCols(self):
+        return self.GetTable().GetNumberCols()
+
+    def UnCheckAll(self):
+        [self.GetTable().SetValue(i,0,0) for i in range(self.GetNumberRows())]
+
+    def GetItemList(self,r,col):
+        return self.GetTable().GetValue(r,col)
+
+    def GetCheckedStrings(self,col=None):
+        return [self.GetItem(r,col) for r in self._GetCheckedIndexes()]
+
+
+    def FindStrings(self,strings,col=0):
+        strings = [unicode(string) for string in strings]
+
+        fields = [item for item in self.GetItemList(col)]
+
+        inds = list()
+
+        for string in strings:
+            try:
+                inds.append(fields.index(unicode(string)))
+            except ValueError:
+                inds.append(None)
+
+        return inds
+
+    def GetItem(self,r,c):
+        if c == None:
+            return [self.GetItem(r,col) for col in range(1,self.GetNumberCols())]
+        else:
+            return self.GetTable().GetValue(r,c)
+
+    def GetItemList(self,column=None):
+        if column == None:
+            return [self.GetItemList(c) for c in range(self.GetNumberCols())]
+        else:
+            return [self.GetItem(r,column) for r in range(self.GetNumberRows())]
+
+    def GetStringItem(self,row,column=None):
+        if column == None:
+            return [self.GetItemList(c) for c in range(self.GetNumberCols())]
+        else:
+            return self.GetTable().GetValue(row,column)        
+
 
 class CheckListCtrl(wx.ListCtrl,ListCtrlAutoWidthMixin,
         CheckListCtrlMixin,TextEditMixin):

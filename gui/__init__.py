@@ -25,7 +25,8 @@ defaultConfig = {'Anonymization':
                                'ReferringPhysiciansName',
                                'RequestingPhysician'],
                      'Replacements':
-                        {'PatientsName':'ANONYMOUS'}},
+                        {'PatientsName':'ANONYMOUS',
+                         'PatientID':'%(PatientsName)s'}},
                  'FilenameFormat':
                     {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)',
                      'Selection':0},
@@ -177,7 +178,6 @@ class CrashReporter(wx.Dialog):
 
     def ValidateEmail(self):
         email = self.emailAddress.GetValue()
-        print email
 
         regex = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
 

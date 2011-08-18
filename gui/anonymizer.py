@@ -1,6 +1,49 @@
 import configobj
 import wx
+import platform
 from gui import widgets
+
+class AnonymizeListXP(widgets.CheckListCtrlXP):
+
+    def __init__(self,*args,**kwargs):
+        super(AnonymizeListXP,self).__init__(*args,**kwargs)
+
+        self.SetColumnEditable(2)
+
+    def GetReplacementDict(self):
+        res = dict()
+
+        x = [i for i in range(self.GetNumberRows()) if len(self.GetStringItem(i,2))]
+
+        for row in x:
+            res[self.GetStringItem(row,1)] = self.GetStringItem(row,2)
+
+        return res
+
+    def GetAnonDict(self):
+        anonDict = dict()
+
+        for key,val in self.GetCheckedStrings():
+            anonDict[key] = val
+
+        return anonDict
+
+    def SetReplacementDict(self,dictionary):
+        keys = dictionary.keys()
+        inds = self.FindStrings(keys,1)
+
+        for i,row in enumerate(inds):
+            if row == None:
+                continue
+
+            self.GetTable().SetValue(row,2,dictionary[keys[i]])
+
+    def CheckStrings(self,strings,col=1):
+        inds = [ind for ind in self.FindStrings(strings,col) if ind != None]
+        self.CheckItems(inds)
+
+    def GetDicomField(self,row):
+        return self.GetTable().GetValue(row,1)
 
 class AnonymizeList(widgets.CheckListCtrl):
 
@@ -59,8 +102,13 @@ class AnonymousPanel(preferences.PreferencePanel):
         self.create()
 
     def GetState(self):
-        dat =  {'Fields':self.anonList.GetCheckedStrings(0),
-                'Replacements':self.anonList.GetReplacementDict()}
+        if platform.win32_ver()[0] == 'XP':
+            dat = {'Fields':self.anonList.GetCheckedStrings(1),
+                    'Replacements':self.anonList.GetReplacementDict()}
+        else:
+            dat =  {'Fields':self.anonList.GetCheckedStrings(0),
+                    'Replacements':self.anonList.GetReplacementDict()}
+
         return dat
 
     def RevertState(self,*evnt):
@@ -80,10 +128,15 @@ class AnonymousPanel(preferences.PreferencePanel):
         # The fields that we care about are "Fields" and "Replacements"
         fields = data['Fields']
         self.anonList.UnCheckAll()
-        self.anonList.CheckStrings(fields,col=0)
+        if platform.win32_ver()[0] == 'XP':
+            self.anonList.CheckStrings(fields,col=1)
+            self.anonList.ClearColumn(2)
+            self.anonList.SetColumnSizes([20,175,155])
+        else:
+            self.anonList.CheckStrings(fields,col=0)
+            self.anonList.ClearColumn(1)
 
         # Now put in substitutes
-        self.anonList.ClearColumn(1)
         self.anonList.SetReplacementDict(data['Replacements'])
 
     def create(self):
@@ -92,7 +145,10 @@ class AnonymousPanel(preferences.PreferencePanel):
         title = wx.StaticText(self,-1,"Fields to Omit")
         vbox.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP | wx.BOTTOM, 10)
 
-        self.anonList = AnonymizeList(self)
+        if platform.win32_ver()[0] == 'XP':
+            self.anonList = AnonymizeListXP(self)
+        else:
+            self.anonList = AnonymizeList(self)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
