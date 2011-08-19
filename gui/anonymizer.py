@@ -103,11 +103,24 @@ class AnonymousPanel(preferences.PreferencePanel):
 
     def GetState(self):
         if platform.win32_ver()[0] == 'XP':
-            dat = {'Fields':self.anonList.GetCheckedStrings(1),
-                    'Replacements':self.anonList.GetReplacementDict()}
+            index = 1;
         else:
-            dat =  {'Fields':self.anonList.GetCheckedStrings(0),
-                    'Replacements':self.anonList.GetReplacementDict()}
+            index = 0;
+        
+        # Get all fields that are stored in config but not present in current
+        defFields = self.config[self.shortname]['Fields']
+
+        fields = list()
+        # Keep only the empty ones
+        for i,val in enumerate(self.anonList.FindStrings(defFields)):
+                if val == None:
+                    fields.append(unicode(defFields[i]))
+
+        # Add to this list the newly checked ones
+        fields.extend(self.anonList.GetCheckedStrings(index))
+
+        dat = {'Fields':fields,
+               'Replacements':self.anonList.GetReplacementDict()}
 
         return dat
 
