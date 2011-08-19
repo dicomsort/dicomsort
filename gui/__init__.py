@@ -11,6 +11,8 @@ import urllib2
 import widgets
 import wx
 import wx.lib.newevent
+from threading import *
+import gui
 
 configFile = 'dicomSort.ini'
 
@@ -38,6 +40,7 @@ PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
 PopulateEvent,EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
 SortEvent,EVT_SORT = wx.lib.newevent.NewEvent()
 CounterEvent,EVT_COUNTER = wx.lib.newevent.NewEvent()
+UpdateEvent,EVT_UPDATE = wx.lib.newevent.NewEvent()
 
 def ExceptHook(type,value,tb):
     dlg = CrashReporter(type,value,tb)
@@ -53,8 +56,12 @@ def ThrowError(message,title='Error',parent=None):
     dlg.Destroy()
 
 def AvailableUpdate():
-    f = urllib.urlopen("http://www.suever.net/software/dicomSort/current.php")
-    current = f.read()
+    # First try to see if we can connect
+    try:
+        f = urllib.urlopen("http://www.suever.net/software/dicomSort/current.php")
+        current = f.read()
+    except IOError:
+        return None
 
     if re.search('404',current):
         return None
@@ -63,6 +70,26 @@ def AvailableUpdate():
         return None
     else:
         return current
+
+class UpdateChecker(Thread):
+    
+    def __init__(self,frame,listener):
+        self.frame = frame
+        self.listener = listener
+
+        Thread.__init__(self)
+        self.name = 'UpdateThread'
+
+        # Make it a daemon so that when the MainThread exits, it is terminated
+        self.daemon = True
+        self.start()
+
+    def run(self):
+        ver = AvailableUpdate()
+        if ver:
+            # Send an event to the main thread to tell them
+            event = gui.UpdateEvent(version=ver)
+            wx.PostEvent(self.listener,event)
 
 class DicomSort(wx.App):
 
@@ -75,10 +102,8 @@ class DicomSort(wx.App):
         sys.excepthook = ExceptHook
 
         # Check for updates
-        ver = AvailableUpdate()
-        if ver:
-            dlg =widgets.UpdateDlg(self.frame,ver)
-            dlg.ShowModal()
+        updateCheck = UpdateChecker(self.frame,listener=self.frame)
+        self.frame.Bind(EVT_UPDATE,self.frame.OnNewVersion)
 
     def MainLoop(self,*args):
         wx.App.MainLoop(self,*args)
@@ -216,6 +241,10 @@ class MainFrame(wx.Frame):
         self.CreateStatusBar()
         self.SetStatusText("Ready...")
 
+    def OnNewVersion(self,evnt):
+        dlg = widgets.UpdateDlg(self,evnt.version)
+        dlg.Show()
+
     def Create(self):
 
         # Set Frame icon
@@ -297,7 +326,8 @@ class MainFrame(wx.Frame):
 
     def SelectOutputDir(self):
         # TODO: Set default path
-        dlg = wx.DirDialog(None,"Please select an output directory")
+        dlg = wx.DirDialog(self,"Please select an output directory")
+        dlg.CenterOnParent()
 
         if dlg.ShowModal() == wx.ID_OK:
             outputDir = dlg.GetPath()

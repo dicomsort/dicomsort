@@ -451,28 +451,18 @@ class PathEditCtrl(wx.Panel):
         if len(self.path):
             defaultPath = self.path[0]
         else:
-            defaultPath = os.getcwd()
+            defaultPath = ''
 
-        # Use multi-directory dialog
-        pathDlg = MultiDirDlg(self.GetParent(),"Please Select Directory",
-                                    defaultPath=defaultPath)
+        pathDlg = wx.DirDialog(self.GetParent(),"Please Select Directory",
+                                     defaultPath)
         pathDlg.CenterOnParent()
 
         if pathDlg.ShowModal() == wx.ID_OK:
 
             home = os.getenv('USERPROFILE') or os.getenv('HOME')
 
-            paths = pathDlg.GetPaths()
-            paths = [path.replace('Home directory',home) for path in paths]
-            p = paths[:]
-
-            # Check to see if this is a mac
-            if sys.platform == 'darwin':
-                for i in range(len(paths)):
-                    if paths[i][0] != '/':
-                        paths[i] = os.path.join('/Volumes',paths[i])
-                    
-            self.SetPaths(paths)
+            path = pathDlg.GetPath()
+            self.SetPaths([path,])
 
         pathDlg.Destroy()
 
