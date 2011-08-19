@@ -16,8 +16,8 @@ import gui
 
 configFile = 'dicomSort.ini'
 
-__version__ = '2.0.3'
-Version = (2,0,3)
+__version__ = '2.0.4'
+Version = (2,0,4)
 
 defaultConfig = {'Anonymization':
                     {'Fields':['OtherPatientsIDS',
