@@ -14,7 +14,10 @@ import wx.lib.newevent
 from threading import *
 import gui
 
-configFile = 'dicomSort.ini'
+if os.name == 'nt':
+    configFile = 'dicomSort.ini'
+else:
+    configFile = os.path.join(os.getenv("HOME"),'.dicomSort.ini')
 
 __version__ = '2.0.3'
 Version = (2,0,3)
@@ -223,7 +226,7 @@ class MainFrame(wx.Frame):
         self.dicomSorter = dicomsorter.DicomSorter()
 
         # Get config from parent
-        self.config = configobj.ConfigObj('dicomSort.ini')
+        self.config = configobj.ConfigObj(gui.configFile)
         # Set interpolation to false since we use formatted strings
         self.config.interpolation = False
 

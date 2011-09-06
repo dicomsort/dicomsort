@@ -174,7 +174,7 @@ class PreferenceDlg(wx.Dialog):
         if kwargs.has_key('config'):
             self.config = kwargs.pop('config')
         else:
-            self.config = configobj.ConfigObj('dicomSort.ini')
+            self.config = configobj.ConfigObj(gui.configFile)
 
         wx.Dialog.__init__(self,*args,**kwargs)
 
