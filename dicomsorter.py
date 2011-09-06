@@ -113,9 +113,14 @@ class Dicom():
         except exceptions:
             return
 
-    def sort(self,root,dirFields,fnameString,test=False):
+    def sort(self,root,dirFields,fnameString,test=False,rootdir=None):
 
-        destination = self.get_destination(root,dirFields,fnameString)
+        # If we want to sort in place
+        if dirFields == None:
+            destination = os.path.relpath(self.filename,rootdir[0]);
+            destination = os.path.join(root,destination)
+        else:
+            destination = self.get_destination(root,dirFields,fnameString)
 
         if test:
             print(destination)
@@ -137,7 +142,7 @@ class Dicom():
 class Sorter(Thread):
     def __init__(self,files,outDir,dirFormat,fileFormat,
                     anon=dict(),keep_filename=False,iterator=None,test=False,
-                    listener=None,total=None):
+                    listener=None,total=None,root=None):
 
         self.dirFormat = dirFormat
         self.fileFormat = fileFormat
@@ -147,6 +152,7 @@ class Sorter(Thread):
         self.outDir = outDir
         self.test = test
         self.iter = iterator
+        self.root = root
         
         if total == None:
             self.total = len(self.fileList)
@@ -183,9 +189,9 @@ class Sorter(Thread):
                 # Use the original filename for 3d recons
                 if self.keep_filename:
                     origFile = os.path.basename(file)
-                    dcm.sort(self.outDir,self.dirFormat,origFile,test=self.test)
+                    dcm.sort(self.outDir,self.dirFormat,origFile,test=self.test,rootdir=self.root)
                 else:
-                    dcm.sort(self.outDir,self.dirFormat,self.fileFormat,test=self.test)
+                    dcm.sort(self.outDir,self.dirFormat,self.fileFormat,test=self.test,rootdir=self.root)
 
             if self.iter:
                 count = self.iter.next()
@@ -236,6 +242,10 @@ class DicomSorter():
             raise Exception('Anon rules must be a dictionary')
 
     def GetFolderFormat(self):
+        # Check to see if we are using the origin directory structure
+        if self.folders == None or len(self.folders) == 0:
+            return None
+
         # Make a local copy
         folderList = self.folders[:]
 
@@ -275,7 +285,7 @@ class DicomSorter():
         for group in fileGroups:
             self.sorters.append(Sorter(group,outputDir,dirFormat,self.filename,
                     self.anondict,self.keep_filename,iterator=iterator,
-                    test=test,listener=listener,total=numberOfFiles))
+                    test=test,listener=listener,total=numberOfFiles,root=self.pathname))
 
     def SetIncludeSeriesAuto(self,val):
         self.includeSeries = val

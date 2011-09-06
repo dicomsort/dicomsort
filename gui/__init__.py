@@ -302,6 +302,12 @@ class MainFrame(wx.Frame):
         elif filenameMethod == 2:
             # Use custom format
             fFormat = self.config['FilenameFormat']['FilenameString']
+
+        # Basically over-ride everything that we just did
+        if evnt.inplace:
+            keepSeries = True;
+            fFormat = '';
+            folders = None
         
         self.dicomSorter.filename = fFormat
         self.dicomSorter.folders = dFormat

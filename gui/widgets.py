@@ -491,6 +491,7 @@ class FieldSelector(wx.Panel):
 
     def _sort_callback(self,*evnt):
         event = gui.SortEvent(anon=self.anonQ.IsChecked(),
+                              inplace=self.inPlaceQ.IsChecked(),
                               fields=self.GetFormatFields())
         wx.PostEvent(self,event)
 
@@ -513,6 +514,7 @@ class FieldSelector(wx.Panel):
 
         self.sortBtn    = wx.Button(self,-1,label="Sort Images")
         self.anonQ      = wx.CheckBox(self,-1,label="Anonymize Data")
+        self.inPlaceQ   = wx.CheckBox(self,-1,label="Maintain Directory Structure")
 
         self.sortBtn.Bind(wx.EVT_BUTTON,self._sort_callback)
 
@@ -534,8 +536,26 @@ class FieldSelector(wx.Panel):
         self.bRemove.Bind(wx.EVT_BUTTON, self.DeselectItem)
         self.bUp.Bind(wx.EVT_BUTTON, self.PromoteSelection)
         self.bDown.Bind(wx.EVT_BUTTON, self.DemoteSelection)
+        self.inPlaceQ.Bind(wx.EVT_CHECKBOX, self.InPlaceSelect)
 
         self._initialize_layout()
+
+    def WidgetList(self):
+        a = [self.options,self.search,self.selected,
+                    self.bAdd,self.bRemove,self.bUp,self.bDown]
+        return a
+
+    def DisableAll(self):
+        [item.Disable() for item in self.WidgetList()]
+
+    def EnableAll(self):
+        [item.Enable(True) for item in self.WidgetList()]
+
+    def InPlaceSelect(self,*args):
+        if self.inPlaceQ.IsChecked():
+            self.DisableAll()
+        else:
+            self.EnableAll()
 
     def _initialize_layout(self):
         # BoxSizer containing the options to select
@@ -553,7 +573,8 @@ class FieldSelector(wx.Panel):
         vboxSelect.Add(self.titleR, 0, wx.ALIGN_CENTER_HORIZONTAL)
         vboxSelect.Add(self.selected, 1,
                         wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 10)
-        vboxSelect.Add(self.anonQ,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+        vboxSelect.Add(self.anonQ,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+        vboxSelect.Add(self.inPlaceQ,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
         vboxSelect.Add(self.sortBtn,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
 
         # BoxSizer housing the controls
