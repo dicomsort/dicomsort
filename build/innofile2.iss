@@ -7,7 +7,7 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{6638951C-0E99-4FAF-AAF1-B283912E7DE8}
 AppName=DICOM Sort
-AppVerName=DICOM Sort 2.0.1
+AppVerName=DICOM Sort 2.1.0
 AppPublisher=Jonathan Suever
 AppPublisherURL=http://www.suever.net
 AppSupportURL=http://www.suever.net/software/dicomSort
@@ -15,7 +15,7 @@ AppUpdatesURL=http://www.suever.net/software/dicomSort
 DefaultDirName={pf}\DICOM Sort
 DefaultGroupName=DICOM Sort
 OutputDir=dicomSort-installer
-OutputBaseFilename=DicomSort_2_0_1.setup
+OutputBaseFilename=DicomSort_2_1_0.setup
 Compression=lzma
 SolidCompression=yes
 
@@ -26,8 +26,14 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
 
 [Files]
-Source: "..\dist\*"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\DicomSort.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
+[Icons]
+Name: "{group}\DICOM Sort"; Filename: "{app}\DicomSort.exe"; IconFilename: {app}\DSicon.ico; IconIndex: 0; WorkingDir: "{app}"
+Name: "{userdesktop}\DICOM Sort"; Filename: "{app}\DicomSort.exe"; Tasks: desktopicon; IconFilename: {app}\DSicon.ico; IconIndex: 0
 
 [Run]
-Filename: "{app}\DicomSort.exe"; Description: "{cm:LaunchProgram,DICOM Sort}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\DicomSort.exe"; Description: "{cm:LaunchProgram,Dicom Sort}"; Flags: nowait postinstall skipifsilent
 
