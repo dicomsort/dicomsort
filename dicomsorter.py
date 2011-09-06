@@ -1,6 +1,7 @@
 import collections
 import os
 import dicom
+import re
 import sys
 import gui
 import shutil
@@ -52,7 +53,7 @@ class Dicom():
                 return item()
             return item
         except KeyError:
-            return getattr(self.dicom,attr)
+            return getattr(self.dicom,attr) 
 
     def _get_series_description(self):
         if not hasattr(self.dicom,'SeriesDescription'):
@@ -85,7 +86,16 @@ class Dicom():
     def get_destination(self,root,dirFormat,fileFormat):
         directory = os.path.join(root,*dirFormat)
 
-        return os.path.join(directory,fileFormat) % self
+        # Maximum recursion = 5
+        out = os.path.join(directory,fileFormat) % self
+
+        rep = 0
+
+        while re.search('%\(.*\)',out) and rep < 5:
+            out = out % self
+            rep = rep + 1
+
+        return out
 
     def SetAnonRules(self,anondict):
         # Appends the rules to the overrides so that we can alter them
