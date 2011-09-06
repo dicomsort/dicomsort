@@ -6,7 +6,6 @@ import icons
 import sys
 import re
 import traceback
-import urllib
 import urllib2
 import widgets
 import wx
@@ -19,8 +18,8 @@ if os.name == 'nt':
 else:
     configFile = os.path.join(os.getenv("HOME"),'.dicomSort.ini')
 
-__version__ = '2.0.3'
-Version = (2,0,3)
+__version__ = '2.1.0'
+Version = (2,1,0)
 
 defaultConfig = {'Anonymization':
                     {'Fields':['OtherPatientsIDS',
@@ -61,7 +60,7 @@ def ThrowError(message,title='Error',parent=None):
 def AvailableUpdate():
     # First try to see if we can connect
     try:
-        f = urllib.urlopen("http://www.suever.net/software/dicomSort/current.php")
+        f = urllib2.urlopen("http://www.suever.net/software/dicomSort/current.php")
         current = f.read()
     except IOError:
         return None
@@ -200,7 +199,7 @@ class CrashReporter(wx.Dialog):
                   'email':email,
                   'comments':self.comments.GetValue().strip('\n')}
 
-        data = urllib.urlencode(values)
+        data = urllib2.urlencode(values)
         urllib2.urlopen(url,data)
         self.OnCancel()
 
