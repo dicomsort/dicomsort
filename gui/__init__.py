@@ -249,7 +249,7 @@ class MainFrame(wx.Frame):
         dlg.Show()
 
     def Create(self):
-
+        
         # Set Frame icon
         if os.path.isfile(os.path.join(sys.executable,'DSicon.ico')):
             self.exedir = sys.executable
@@ -384,6 +384,11 @@ class MainFrame(wx.Frame):
         self.crust = wx.py.crust.Crust(self.debug)
         self.debug.Show()
 
+    def QuickRename(self,*evnt):
+        self.anonList = self.prefDlg.pages['Anonymization'].anonList
+        dlg = anonymizer.QuickRenameDlg(None,
+                -1,'Quick Rename',size=(250,130),anonList=self.anonList);
+
     def _InitializeMenus(self):
         menubar = wx.MenuBar()
 
@@ -395,7 +400,8 @@ class MainFrame(wx.Frame):
 
         self._MenuGenerator(menubar,'&File',file)
 
-        win = [['&Debug Window','Ctrl+D',self.LoadDebug],]
+        win = [['Quick &Rename','Ctrl+R',self.QuickRename],'----',
+                ['&Debug Window','Ctrl+D',self.LoadDebug]]
 
         self._MenuGenerator(menubar, '&Window', win)
 

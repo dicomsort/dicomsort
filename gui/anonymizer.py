@@ -3,6 +3,65 @@ import wx
 import platform
 from gui import widgets
 
+class QuickRenameDlg(wx.Dialog):
+
+    def __init__(self,*args,**kwargs):
+        tmp =kwargs.pop('anonList')
+        wx.Dialog.__init__(self,*args,**kwargs)
+        self.anonList = tmp;
+        self.values = dict()
+        
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        self.values = self.anonList.GetReplacementDict()
+        if self.values.has_key('PatientsName'):
+            initial = self.values['PatientsName']
+        else:
+            initial = ''
+
+        vbox.Add(wx.StaticText(self,-1,'Patient Name'),0,wx.TOP | wx.ALIGN_CENTER,15)
+        self.patientName = wx.TextCtrl(self,-1,initial,size=(200,20),
+                                style=wx.TE_PROCESS_ENTER)
+
+        self.Bind(wx.EVT_TEXT_ENTER,self.OnAccept,self.patientName)
+
+        vbox.Add(self.patientName,0,wx.TOP | wx.ALIGN_CENTER, 5)
+
+        self.samecheck = wx.CheckBox(self,-1,'Use as Patient ID')
+        self.samecheck.SetValue(True)
+
+        vbox.Add(self.samecheck,0,wx.TOP | wx.ALIGN_CENTER, 10)
+
+        self.btnOK = wx.Button(self,-1,'Ok')
+        self.btnOK.Bind(wx.EVT_BUTTON,self.OnAccept)
+
+        vbox.Add(self.btnOK,0,wx.TOP | wx.ALIGN_CENTER, 15)
+
+        self.SetSizer(vbox)
+
+        self.patientName.SetFocus()
+
+        self.ShowModal()
+        self.Destroy()
+
+    def GetValues(self):
+        res = dict()
+        res['PatientsName'] = self.patientName.GetValue()
+        
+        if self.samecheck.IsChecked():
+            res['PatientID'] = '%(PatientsName)s'
+        
+        return res
+
+    def OnAccept(self,*evnt):
+        oldDict = self.anonList.GetReplacementDict()
+        oldDict.update(self.GetValues())
+        self.anonList.SetReplacementDict(oldDict)
+        self.Destroy()
+
+    def OnCancel(self,*evnt):
+        self.Destroy()
+
 class AnonymizeListXP(widgets.CheckListCtrlXP):
 
     def __init__(self,*args,**kwargs):
