@@ -387,7 +387,7 @@ class MainFrame(wx.Frame):
     def QuickRename(self,*evnt):
         self.anonList = self.prefDlg.pages['Anonymization'].anonList
         dlg = anonymizer.QuickRenameDlg(None,
-                -1,'Quick Rename',size=(250,130),anonList=self.anonList);
+                -1,'Quick Rename',size=(250,160),anonList=self.anonList);
 
     def _InitializeMenus(self):
         menubar = wx.MenuBar()
