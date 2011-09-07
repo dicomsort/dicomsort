@@ -62,6 +62,19 @@ class Dicom():
             d = {'d':self.dicom.SeriesDescription,'n':self.dicom.SeriesNumber}
             return '%(d)s_Series%(n)04d' % d
 
+    def _get_patient_age(self):
+        """
+        Computes the age of the patient
+        """
+        if self.dicom.has_key('PatientsAge'):
+            age = self.dicom.PatientsAge
+        else:
+            age = (int(self.dicom.StudyDate) - 
+                   int(self.dicom.PatientsBirthDate))/10000;
+            age = '%03dY' % age
+
+        return age
+
     def _get_image_type(self):
         """
         Determines the human-readable type of the image
