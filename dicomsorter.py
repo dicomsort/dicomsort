@@ -117,6 +117,30 @@ class Dicom():
         else:
             raise Exception('Anon rules must be a dictionary')
 
+        if self.anondict.has_key('PatientsBirthDate'):
+
+            # First we need to figure out how old they are
+            if not self.dicom.has_key('PatientsAge'):
+                if self.dicom.has_key('StudyDate'):
+                    self.dicom.PatientsAge = self._get_patient_age()
+
+            if self.dicom.has_key('StudyDate'):
+
+                # Now set it so it is just the birth year but make it so that
+                # the proper age is returned when doing year math
+                birthDate = int(self.dicom.PatientsBirthDate[4:])
+                studyDate = int(self.dicom.StudyDate[4:])
+
+                # If the study was performed after their birthday this year
+                if studyDate >= birthDate:
+                    # Keep original birthyear
+                    newBirth = '%s0101' % self.dicom.PatientsBirthDate[:4]
+                else:
+                    byear = self.dicom.PatientsBirthDate[:4]
+                    newBirth = '%d0101' % (int(byear) + 1)
+    
+                self.anondict['PatientsBirthDate'] = newBirth
+
         # Update the override dictionary
         self.overrides = dict(self.default_overrides,**anondict)
 
