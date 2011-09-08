@@ -37,6 +37,9 @@ shutil.rmtree(os.path.join('build','bdist.win32'))
 shutil.rmtree(os.path.join('build','lib'))
 os.remove('msvcp90.dll')
 
+INSTALLER = '%s_%s.setup' % (EXE.replace('.exe',''),VER.replace('.','_'))
+INSTALLER = INSTALLER.replace(' ','_')
+
 # Construct the configuration string for Inno Setup
 innoDict = {'AppId':ID,
             'AppName':NAME,
@@ -48,7 +51,7 @@ innoDict = {'AppId':ID,
             'DefaultDirName':'{pf}\%s' % NAME,
             'DefaultGroupName':NAME,
             'OutputDir':os.path.expanduser(os.path.join('~','Desktop')),
-            'OutputBaseFilename':'%s %s Setup' % (NAME,VER),
+            'OutputBaseFilename':INSTALLER,
             'Compression':'lzma',
             'SolidCompression':'yes'}
 
