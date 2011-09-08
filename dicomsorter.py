@@ -57,10 +57,13 @@ class Dicom():
 
     def _get_series_description(self):
         if not hasattr(self.dicom,'SeriesDescription'):
-            return 'Series%(n)04d' % {'n':self.dicom.SeriesNumber}
+            out = 'Series%(n)04d' % {'n':self.dicom.SeriesNumber}
         else:
             d = {'d':self.dicom.SeriesDescription,'n':self.dicom.SeriesNumber}
-            return '%(d)s_Series%(n)04d' % d
+            out = '%(d)s_Series%(n)04d' % d
+
+        # Strip so we don't have any leading/trailing spaces
+        return out.strip()
 
     def _get_patient_age(self):
         """
@@ -180,7 +183,10 @@ class Dicom():
             # write everything in anondict -> Parse it so we can have dynamic fields
             for key in self.anondict.keys():
                 replacementvalue = self.anondict[key] % self
-                self.dicom.data_element(key).value = replacementvalue
+                try:
+                    self.dicom.data_element(key).value = replacementvalue
+                except KeyError:
+                    continue
 
             self.dicom.SaveAs(destination)
         else:
@@ -263,10 +269,6 @@ class DicomSorter():
         self.folders    = []
         self.filename   = '%(ImageType)s (%(InstanceNumber)04d)' 
 
-        # Include the series subdirectory by default
-        self.includeSeries = True
-        self.seriesDefault = '%(SeriesDescription)s'
-
         self.sorters = list()
 
         # Don't anonymize by default
@@ -295,9 +297,6 @@ class DicomSorter():
 
         # Make a local copy
         folderList = self.folders[:]
-
-        if self.includeSeries:
-            folderList.append(self.seriesDefault)
 
         return folderList           
 
@@ -333,9 +332,6 @@ class DicomSorter():
             self.sorters.append(Sorter(group,outputDir,dirFormat,self.filename,
                     self.anondict,self.keep_filename,iterator=iterator,
                     test=test,listener=listener,total=numberOfFiles,root=self.pathname))
-
-    def SetIncludeSeriesAuto(self,val):
-        self.includeSeries = val
 
     def GetAvailableFields(self):
         for path in self.pathname:

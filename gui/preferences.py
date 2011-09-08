@@ -199,7 +199,7 @@ class PreferenceDlg(wx.Dialog):
         self.nb = wx.Notebook(self)
         self.AddModule(anonymizer.AnonymousPanel)
         self.AddModule(FileNamePanel)
-        self.AddModule(MiscPanel)
+        #self.AddModule(MiscPanel)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(self.nb, 1, wx.EXPAND)

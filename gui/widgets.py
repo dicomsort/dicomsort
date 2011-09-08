@@ -466,6 +466,54 @@ class PathEditCtrl(wx.Panel):
 
         pathDlg.Destroy()
 
+class SeriesRemoveWarningDlg(wx.Dialog):
+
+    def __init__(self,parent,id=-1,size=(300,200),config=None):
+        wx.Dialog.__init__(self,parent,id,'Remove Series Description?',size=size)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        inputText = ''.join(['Are you sure you want to remove the default\n',
+                             'attribute SeriesDescription?\n\n',
+                             'This may cause filename conflicts unless you\n',
+                             'use the original filenames.'])
+
+
+        txt = wx.StaticText(self,-1,inputText,style=wx.ALIGN_CENTER)
+        
+        change = wx.Button(self,-1,'Yes. Use original Filenames',size=(-1,20))
+        accept = wx.Button(self,-1,'Yes. Use Custom Filenames',size=(-1,20))
+        cancel = wx.Button(self,-1,'Cancel',size=(-1,20))
+
+        change.Bind(wx.EVT_BUTTON,self.OnChange)
+        accept.Bind(wx.EVT_BUTTON,self.OnAccept)
+        cancel.Bind(wx.EVT_BUTTON,self.OnCancel)
+
+        self.Bind(wx.EVT_CLOSE,self.OnCancel)
+
+        vbox.Add(txt,1,wx.ALL | wx.ALIGN_CENTER,10)
+        vbox.Add(change,0,wx.ALL | wx.ALIGN_CENTER,5)
+        vbox.Add(accept,0,wx.ALL | wx.ALIGN_CENTER,5)
+        vbox.Add(cancel,0,wx.ALL | wx.ALIGN_CENTER,5)
+
+        self.SetSizer(vbox)
+
+        self.ShowModal()
+
+        self.Destroy()
+
+    def OnChange(self,*evnt):
+        self.choice = 1
+        self.Destroy()
+
+    def OnCancel(self,*evnt):
+        self.choice = 0
+        self.Destroy()
+
+    def OnAccept(self,*evnt):
+        self.choice = 2
+        self.Destroy()
+
 class FieldSelector(wx.Panel):
 
     def __init__(self,parent,id=-1,size=(250,300),choices=[],titles=['','']):
@@ -491,7 +539,6 @@ class FieldSelector(wx.Panel):
 
     def _sort_callback(self,*evnt):
         event = gui.SortEvent(anon=self.anonQ.IsChecked(),
-                              inplace=self.inPlaceQ.IsChecked(),
                               fields=self.GetFormatFields())
         wx.PostEvent(self,event)
 
@@ -514,7 +561,6 @@ class FieldSelector(wx.Panel):
 
         self.sortBtn    = wx.Button(self,-1,label="Sort Images")
         self.anonQ      = wx.CheckBox(self,-1,label="Anonymize Data")
-        self.inPlaceQ   = wx.CheckBox(self,-1,label="Maintain Directory Structure")
 
         self.sortBtn.Bind(wx.EVT_BUTTON,self._sort_callback)
 
@@ -536,7 +582,6 @@ class FieldSelector(wx.Panel):
         self.bRemove.Bind(wx.EVT_BUTTON, self.DeselectItem)
         self.bUp.Bind(wx.EVT_BUTTON, self.PromoteSelection)
         self.bDown.Bind(wx.EVT_BUTTON, self.DemoteSelection)
-        self.inPlaceQ.Bind(wx.EVT_CHECKBOX, self.InPlaceSelect)
 
         self._initialize_layout()
 
@@ -550,12 +595,6 @@ class FieldSelector(wx.Panel):
 
     def EnableAll(self):
         [item.Enable(True) for item in self.WidgetList()]
-
-    def InPlaceSelect(self,*args):
-        if self.inPlaceQ.IsChecked():
-            self.DisableAll()
-        else:
-            self.EnableAll()
 
     def _initialize_layout(self):
         # BoxSizer containing the options to select
@@ -574,7 +613,6 @@ class FieldSelector(wx.Panel):
         vboxSelect.Add(self.selected, 1,
                         wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 10)
         vboxSelect.Add(self.anonQ,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
-        vboxSelect.Add(self.inPlaceQ,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
         vboxSelect.Add(self.sortBtn,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
 
         # BoxSizer housing the controls
@@ -594,6 +632,15 @@ class FieldSelector(wx.Panel):
 
         self.SetSizer(hbox)
 
+    def has_default(self):
+        if self.selected.GetCount() == 0:
+            return False
+
+        if self.selected.GetItems()[-1] == 'SeriesDescription':
+            return True
+        else:
+            return False
+
     def PromoteSelection(self,*evnt):
         self._move_selection(-1)
 
@@ -608,6 +655,9 @@ class FieldSelector(wx.Panel):
 
         index = self.selected.GetSelection()
 
+        if index == self.selected.GetCount()-1 and self.has_default():
+            return
+
         if inc < 0 and (self.selected.Count == 1 or index == 0):
             return
         elif (inc > 0 and index == self.selected.Count-1):
@@ -621,10 +671,25 @@ class FieldSelector(wx.Panel):
 
     def SelectItem(self,*evnt):
         item = self.options.GetStringSelection()
-        self.selected.Append(item)
+        if self.has_default():
+            self.selected.Insert(item,self.selected.GetCount()-1)
+        else:
+            self.selected.Append(item)
 
     def DeselectItem(self,*evnt):
         index = self.selected.GetSelection()
+
+        if index == self.selected.GetCount()-1 and self.has_default():
+            warn = SeriesRemoveWarningDlg(None)
+
+            if warn.choice == 0:
+                return
+            elif warn.choice == 1:
+                # change to original filenames
+                cfg = self.GetParent().config
+                cfg['FilenameFormat']['Selection'] = 1
+                self.GetParent().prefDlg.pages['FilenameFormat'].UpdateFromConfig(cfg)
+
         self.selected.Delete(index)
 
         self.selected.Select(index-1)

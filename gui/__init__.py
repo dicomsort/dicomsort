@@ -292,8 +292,6 @@ class MainFrame(wx.Frame):
 
         dFormat = evnt.fields 
 
-        keepSeries = eval(self.config['Miscpanel']['KeepSeries'])
-
         filenameMethod = int(self.config['FilenameFormat']['Selection'])
 
         if filenameMethod == 0:
@@ -308,15 +306,8 @@ class MainFrame(wx.Frame):
             # Use custom format
             fFormat = self.config['FilenameFormat']['FilenameString']
 
-        # Basically over-ride everything that we just did
-        if evnt.inplace:
-            keepSeries = True;
-            fFormat = '';
-            folders = None
-        
         self.dicomSorter.filename = fFormat
         self.dicomSorter.folders = dFormat
-        self.dicomSorter.includeSeries = keepSeries
 
         outputDir = self.SelectOutputDir()
 
@@ -425,6 +416,9 @@ class MainFrame(wx.Frame):
             return
 
         self.selector.SetOptions(fields)
+
+        # Now set seriesDescription as the default
+        self.selector.selected.Append('SeriesDescription')
 
         # This is clunky
         # TODO: Change PrefDlg to a dict
