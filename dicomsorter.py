@@ -71,6 +71,8 @@ class Dicom():
         """
         if self.dicom.has_key('PatientsAge'):
             age = self.dicom.PatientsAge
+        elif self.dicom.PatientsBirthDate == '':
+            age = ''
         else:
             age = (int(self.dicom.StudyDate) - 
                    int(self.dicom.PatientsBirthDate))/10000;
@@ -121,6 +123,9 @@ class Dicom():
             raise Exception('Anon rules must be a dictionary')
 
         if self.anondict.has_key('PatientsBirthDate'):
+            if self.anondict['PatientsBirthDate'] != '' or self.dicom.PatientsBirthDate == '':
+                self.overrides = dict(self.default_overrides,**anondict);
+                return
 
             # First we need to figure out how old they are
             if not self.dicom.has_key('PatientsAge'):
@@ -128,7 +133,6 @@ class Dicom():
                     self.dicom.PatientsAge = self._get_patient_age()
 
             if self.dicom.has_key('StudyDate'):
-
                 # Now set it so it is just the birth year but make it so that
                 # the proper age is returned when doing year math
                 birthDate = int(self.dicom.PatientsBirthDate[4:])
