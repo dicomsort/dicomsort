@@ -1,20 +1,25 @@
 import os
+import help
 import configobj
 import dicomsorter
 import icons
 import sys
 import re
 import traceback
-import urllib
 import urllib2
 import widgets
 import wx
 import wx.lib.newevent
+from threading import *
+import gui
 
-configFile = 'dicomSort.ini'
+if os.name == 'nt':
+    configFile = 'dicomSort.ini'
+else:
+    configFile = os.path.join(os.getenv("HOME"),'.dicomSort.ini')
 
-__version__ = '2.0.0'
-Version = (2,0,0)
+__version__ = '2.1.1'
+Version = (2,1,1)
 
 defaultConfig = {'Anonymization':
                     {'Fields':['OtherPatientsIDS',
@@ -24,7 +29,8 @@ defaultConfig = {'Anonymization':
                                'ReferringPhysiciansName',
                                'RequestingPhysician'],
                      'Replacements':
-                        {'PatientsName':'ANONYMOUS'}},
+                        {'PatientsName':'ANONYMOUS',
+                         'PatientID':'%(PatientsName)s'}},
                  'FilenameFormat':
                     {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)',
                      'Selection':0},
@@ -36,19 +42,59 @@ PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
 PopulateEvent,EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
 SortEvent,EVT_SORT = wx.lib.newevent.NewEvent()
 CounterEvent,EVT_COUNTER = wx.lib.newevent.NewEvent()
+UpdateEvent,EVT_UPDATE = wx.lib.newevent.NewEvent()
 
 def ExceptHook(type,value,tb):
     dlg = CrashReporter(type,value,tb)
     dlg.ShowModal()
 
-def ThrowError(message,title='Error'):
+def ThrowError(message,title='Error',parent=None):
     """
     Generic way to throw an error and display the appropriate dialog
     """
-    dlg = wx.MessageDialog(None,message,title,wx.OK | wx.ICON_ERROR)
+    dlg = wx.MessageDialog(parent,message,title,wx.OK | wx.ICON_ERROR)
+    dlg.CenterOnParent()
     dlg.ShowModal()
     dlg.Destroy()
 
+def AvailableUpdate():
+    # First try to see if we can connect
+    try:
+        f = urllib2.urlopen("http://www.suever.net/software/dicomSort/current.php")
+        current = f.read()
+    except IOError:
+        return None
+
+    if re.search('404',current):
+        return None
+
+    if current.rstrip() == __version__:
+        return None
+    else:
+        return current
+
+class UpdateChecker(Thread):
+    
+    def __init__(self,frame,listener):
+        self.frame = frame
+        self.listener = listener
+
+        Thread.__init__(self)
+        self.name = 'UpdateThread'
+
+        # Make it a daemon so that when the MainThread exits, it is terminated
+        self.daemon = True
+        self.start()
+
+    def run(self):
+        ver = AvailableUpdate()
+        
+        print 'Current Version is %s' % ver
+
+        if ver:
+            # Send an event to the main thread to tell them
+            event = gui.UpdateEvent(version=ver)
+            wx.PostEvent(self.listener,event)
 
 class DicomSort(wx.App):
 
@@ -60,9 +106,12 @@ class DicomSort(wx.App):
 
         sys.excepthook = ExceptHook
 
+        # Check for updates
+        updateCheck = UpdateChecker(self.frame,listener=self.frame)
+        self.frame.Bind(EVT_UPDATE,self.frame.OnNewVersion)
+
     def MainLoop(self,*args):
         wx.App.MainLoop(self,*args)
-
 
 from gui import preferences
 
@@ -153,18 +202,17 @@ class CrashReporter(wx.Dialog):
                   'email':email,
                   'comments':self.comments.GetValue().strip('\n')}
 
-        data = urllib.urlencode(values)
-        resp = urllib2.urlopen(url,data)
+        data = urllib2.urlencode(values)
+        urllib2.urlopen(url,data)
         self.OnCancel()
 
     def ValidateEmail(self):
         email = self.emailAddress.GetValue()
-        print email
 
         regex = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
 
         if not re.search(regex,email,re.UNICODE|re.IGNORECASE):
-            ThrowError('Please enter a valid email address')
+            ThrowError('Please enter a valid email address',parent=self)
 
         return email
 
@@ -180,7 +228,7 @@ class MainFrame(wx.Frame):
         self.dicomSorter = dicomsorter.DicomSorter()
 
         # Get config from parent
-        self.config = configobj.ConfigObj('dicomSort.ini')
+        self.config = configobj.ConfigObj(gui.configFile)
         # Set interpolation to false since we use formatted strings
         self.config.interpolation = False
 
@@ -198,8 +246,12 @@ class MainFrame(wx.Frame):
         self.CreateStatusBar()
         self.SetStatusText("Ready...")
 
-    def Create(self):
+    def OnNewVersion(self,evnt):
+        dlg = widgets.UpdateDlg(self,evnt.version)
+        dlg.Show()
 
+    def Create(self):
+        
         # Set Frame icon
         if os.path.isfile(os.path.join(sys.executable,'DSicon.ico')):
             self.exedir = sys.executable
@@ -240,8 +292,6 @@ class MainFrame(wx.Frame):
 
         dFormat = evnt.fields 
 
-        keepSeries = eval(self.config['Miscpanel']['KeepSeries'])
-
         filenameMethod = int(self.config['FilenameFormat']['Selection'])
 
         if filenameMethod == 0:
@@ -255,10 +305,9 @@ class MainFrame(wx.Frame):
         elif filenameMethod == 2:
             # Use custom format
             fFormat = self.config['FilenameFormat']['FilenameString']
-        
+
         self.dicomSorter.filename = fFormat
         self.dicomSorter.folders = dFormat
-        self.dicomSorter.includeSeries = keepSeries
 
         outputDir = self.SelectOutputDir()
 
@@ -279,7 +328,8 @@ class MainFrame(wx.Frame):
 
     def SelectOutputDir(self):
         # TODO: Set default path
-        dlg = wx.DirDialog(None,"Please select an output directory")
+        dlg = wx.DirDialog(self,"Please select an output directory")
+        dlg.CenterOnParent()
 
         if dlg.ShowModal() == wx.ID_OK:
             outputDir = dlg.GetPath()
@@ -300,10 +350,7 @@ class MainFrame(wx.Frame):
         widgets.AboutDlg()
 
     def OnHelp(self,*evnt):
-        handle = open(os.path.join(self.exedir,'help.inc'),"r")
-        helpText = handle.read()
-
-        widgets.HelpDlg(self,text=helpText)
+        help.HelpDlg(self)
 
     def _MenuGenerator(self,parent,name,arguments):
         menu = wx.Menu()
@@ -330,6 +377,11 @@ class MainFrame(wx.Frame):
         self.crust = wx.py.crust.Crust(self.debug)
         self.debug.Show()
 
+    def QuickRename(self,*evnt):
+        self.anonList = self.prefDlg.pages['Anonymization'].anonList
+        dlg = anonymizer.QuickRenameDlg(None,
+                -1,'Quick Rename',size=(250,160),anonList=self.anonList);
+
     def _InitializeMenus(self):
         menubar = wx.MenuBar()
 
@@ -341,7 +393,8 @@ class MainFrame(wx.Frame):
 
         self._MenuGenerator(menubar,'&File',file)
 
-        win = [['&Debug Window','Ctrl+D',self.LoadDebug],]
+        win = [['Quick &Rename','Ctrl+R',self.QuickRename],'----',
+                ['&Debug Window','Ctrl+D',self.LoadDebug]]
 
         self._MenuGenerator(menubar, '&Window', win)
 
@@ -359,10 +412,13 @@ class MainFrame(wx.Frame):
             fields = self.dicomSorter.GetAvailableFields()
         except dicomsorter.DicomFolderError:
             errMsg = ''.join([';'.join(evnt.path),' contains no DICOMs'])
-            ThrowError(errMsg,'No DICOMs Present')
+            ThrowError(errMsg,'No DICOMs Present',parent=self)
             return
 
         self.selector.SetOptions(fields)
+
+        # Now set seriesDescription as the default
+        self.selector.selected.Append('SeriesDescription')
 
         # This is clunky
         # TODO: Change PrefDlg to a dict

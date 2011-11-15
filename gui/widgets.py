@@ -5,6 +5,8 @@ import re
 import sys
 import wx
 
+import wx.lib.agw.hyperlink as hyperlink
+import wx.grid
 import wx.html
 
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
@@ -13,6 +15,60 @@ from wx.lib.mixins.listctrl import CheckListCtrlMixin,TextEditMixin
 from wx.lib.agw.multidirdialog import MultiDirDialog
 
 #TODO: Create searcheable ListCtrl item
+
+class MultiDirDlg(MultiDirDialog):
+    """
+    We have to over-ride this because of the IndexError on win7
+    """
+    def __init__(self,*args,**kwargs):
+        super(MultiDirDlg,self).__init__(*args,**kwargs)
+
+    def SetupDirCtrl(self,*args,**kwargs):
+        try:
+            super(MultiDirDlg,self).SetupDirCtrl(*args,**kwargs)
+        except IndexError:
+            self.folderText.SetValue('')
+
+class UpdateDlg(wx.Dialog):
+    def __init__(self,parent,version):
+        super(UpdateDlg,self).__init__(parent,size=(300,170),style=wx.OK)
+        message = ''.join(["A new version of DICOM Sorting is available.\n",
+                        "You are running Version %s and the newest is %s.\n"])
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        head = wx.StaticText(self,-1,label="Update Available",style=wx.ALIGN_CENTER)
+        head.SetFont(wx.Font(12,wx.DEFAULT,wx.NORMAL,wx.BOLD))
+
+        vbox.Add(head,0,wx.ALIGN_CENTER_HORIZONTAL|wx.TOP, 15)
+
+        txt = wx.StaticText(self,-1,label=message % (gui.__version__,version),
+                        style=wx.ALIGN_CENTER)
+        vbox.Add(txt,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+
+        self.link = hyperlink.HyperLinkCtrl(self,-1)
+        self.link.SetURL(URL='http://www.suever.net/software/dicomSort/')
+        self.link.SetLabel(label='Click here to obtain the update')
+        self.link.SetToolTipString('http://www.suever.net/software/dicomSort/')
+        self.link.AutoBrowse(False)
+
+        self.Bind(hyperlink.EVT_HYPERLINK_LEFT,self.OnUpdate,self.link)
+
+        vbox.Add(self.link,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 0)
+
+        ok = wx.Button(self,-1,"OK")
+        vbox.Add(ok,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 15)
+        self.Bind(wx.EVT_BUTTON,self.OnClose,ok)
+
+        self.SetSizer(vbox)
+        self.CenterOnParent()
+
+    def OnUpdate(self,*evnt):
+        self.link.GotoURL(self.link.GetURL())
+        self.Destroy()
+
+    def OnClose(self,*evnt):
+        self.Destroy()
 
 class FileDropTarget(wx.FileDropTarget):
     def __init__(self,callback):
@@ -36,7 +92,7 @@ class AboutDlg(wx.AboutDialogInfo):
 
         self.GenerateDescription()
 
-        box = wx.AboutBox(self)
+        wx.AboutBox(self)
 
 
     def GenerateDescription(self):
@@ -47,6 +103,201 @@ class AboutDlg(wx.AboutDialogInfo):
                        "anonymization of DICOM images for patient privacy.")
 
         self.SetDescription(description)
+
+class CustomDataTable(wx.grid.PyGridTableBase):
+    def __init__(self,data):
+        super(CustomDataTable,self).__init__()
+
+        self.colLabels = ['','DICOM Property','Replacement Value']
+
+        self.dataTypes = [wx.grid.GRID_VALUE_BOOL,
+                          wx.grid.GRID_VALUE_STRING,
+                          wx.grid.GRID_VALUE_STRING]
+        if data == None:
+            data = [['','',''],]
+
+        self.data = data
+
+   #--------------------------------------------------
+    # required methods for the wxPyGridTableBase interface
+
+    def GetNumberRows(self):
+        return len(self.data)
+
+    def GetNumberCols(self):
+        return len(self.data[0])
+
+    def IsEmptyCell(self, row, col):
+        try:
+            return not self.data[row][col]
+        except IndexError:
+            return True
+
+    # Get/Set values in the table.  The Python version of these
+    # methods can handle any data-type, (as long as the Editor and
+    # Renderer understands the type too,) not just strings as in the
+    # C++ version.
+    def GetValue(self, row, col):
+        try:
+            return self.data[row][col]
+        except IndexError:
+            return ''
+
+    def SetValue(self, row, col, value):
+        def innerSetValue(row, col, value):
+            try:
+                self.data[row][col] = value
+            except IndexError:
+                # add a new row
+                self.data.append([''] * self.GetNumberCols())
+                innerSetValue(row, col, value)
+
+                # tell the grid we've added a row
+                msg = wx.grid.GridTableMessage(self,            # The table
+                        wx.grid.GRIDTABLE_NOTIFY_ROWS_APPENDED, # what we did to it
+                        1                                       # how many
+                        )
+
+                self.GetView().ProcessTableMessage(msg)
+        innerSetValue(row, col, value) 
+
+    #--------------------------------------------------
+    # Some optional methods
+
+    # Called when the grid needs to display labels
+    def GetColLabelValue(self, col):
+        return self.colLabels[col]
+
+    # Called to determine the kind of editor/renderer to use by
+    # default, doesn't necessarily have to be the same type used
+    # natively by the editor/renderer if they know how to convert.
+    def GetTypeName(self, row, col):
+        return self.dataTypes[col]
+
+    # Called to determine how the data can be fetched and stored by the
+    # editor and renderer.  This allows you to enforce some type-safety
+    # in the grid.
+    def CanGetValueAs(self, row, col, typeName):
+        colType = self.dataTypes[col].split(':')[0]
+        if typeName == colType:
+            return True
+        else:
+            return False
+
+    def CanSetValueAs(self, row, col, typeName):
+        return self.CanGetValueAs(row, col, typeName)
+
+ 
+
+class CheckListCtrlXP(wx.grid.Grid):
+    def __init__(self,parent):
+        wx.grid.Grid.__init__(self,parent,-1)
+
+        table = CustomDataTable(None);
+
+        self.SetTable(table,True)
+
+        self.SetRowLabelSize(0)
+        self.SetMargins(0,0)
+        self.AutoSizeColumns(True)
+        self.DisableDragGridSize()
+        self.DisableDragColSize()
+        self.SetSelectionBackground(wx.Colour(255,255,255,0))
+        self.SetSelectionForeground(wx.Colour(0,0,0,0))
+
+        self.SetColumnEditable(1,False)
+
+        self.SetColumnSizes([20,175,155])
+
+    def SetColumnSizes(self,sizes):
+        for i,size in enumerate(sizes):
+            self.SetColSize(i,size)
+
+    # Now we need to define methods to match CheckListCtrl
+    def _GetCheckedIndexes(self):
+        column = 0;
+        table = self.GetTable()
+        checked = [table.GetValue(i,column) for i in range(self.GetNumberRows())]
+
+        inds = list()
+
+        for i,val in enumerate(checked):
+            if val:
+                inds.append(i)
+
+        return inds
+
+    def ClearColumn(self,col):
+        for i in range(self.GetNumberRows()):
+            self.GetTable().SetValue(i,col,'')
+
+    def SetColumnEditable(self,column,edit=True):
+        for i in range(self.GetNumberRows()):
+            self.SetReadOnly(i,column,edit)
+
+    def DeleteAllItems(self):
+        self.SetTable(CustomDataTable([['','',''],]))
+
+    def SetStringItems(self,items):
+        self.DeleteAllItems()
+        for i,item in enumerate(items):
+            self.GetTable().SetValue(i,1,item)
+
+    def CheckItems(self,itemIndex):
+        [self.GetTable().SetValue(i,0,1) for i in itemIndex]
+
+    def GetCheckedItems(self,col=None):
+        return [self.GetItem(r,col) for r in self._GetCheckedIndexes()]
+
+    def GetNumberRows(self):
+        return self.GetTable().GetNumberRows()
+
+    def GetNumberCols(self):
+        return self.GetTable().GetNumberCols()
+
+    def UnCheckAll(self):
+        [self.GetTable().SetValue(i,0,0) for i in range(self.GetNumberRows())]
+
+    def GetItemList(self,r,col):
+        return self.GetTable().GetValue(r,col)
+
+    def GetCheckedStrings(self,col=None):
+        return [self.GetItem(r,col) for r in self._GetCheckedIndexes()]
+
+
+    def FindStrings(self,strings,col=0):
+        strings = [unicode(string) for string in strings]
+
+        fields = [item for item in self.GetItemList(col)]
+
+        inds = list()
+
+        for string in strings:
+            try:
+                inds.append(fields.index(unicode(string)))
+            except ValueError:
+                inds.append(None)
+
+        return inds
+
+    def GetItem(self,r,c):
+        if c == None:
+            return [self.GetItem(r,col) for col in range(1,self.GetNumberCols())]
+        else:
+            return self.GetTable().GetValue(r,c)
+
+    def GetItemList(self,column=None):
+        if column == None:
+            return [self.GetItemList(c) for c in range(self.GetNumberCols())]
+        else:
+            return [self.GetItem(r,column) for r in range(self.GetNumberRows())]
+
+    def GetStringItem(self,row,column=None):
+        if column == None:
+            return [self.GetItemList(c) for c in range(self.GetNumberCols())]
+        else:
+            return self.GetTable().GetValue(row,column)        
+
 
 class CheckListCtrl(wx.ListCtrl,ListCtrlAutoWidthMixin,
         CheckListCtrlMixin,TextEditMixin):
@@ -147,17 +398,7 @@ class PathEditCtrl(wx.Panel):
         self.edit.SetDropTarget(dt)
 
     def ValidateDropFiles(self,x,y,filenames):
-        for file in filenames:
-            if not os.path.isdir(file):
-                gui.ThrowError('All Dropped Items must be Directories')
-                return
-            elif len(filenames) > 1:
-                # Temporary until we get this figured out
-                gui.ThrowError('You can only specify one folder at a time')
-                return
-
-        self.edit.SetValue(';'.join(filenames))
-        self.ValidatePath()
+        self.SetPaths(filenames)
 
     def ValidatePath(self,*evnt):
         paths = self.edit.GetValue()
@@ -192,7 +433,7 @@ class PathEditCtrl(wx.Panel):
         if len(badPaths):
             p = ', '.join(badPaths)
             errorMsg = 'The Following directories are invalid paths: %s' % p
-            gui.ThrowError(errorMsg,'Invalid Paths')
+            gui.ThrowError(errorMsg,'Invalid Paths',parent=self.Parent)
             return
 
         self.path = paths
@@ -210,27 +451,68 @@ class PathEditCtrl(wx.Panel):
         if len(self.path):
             defaultPath = self.path[0]
         else:
-            defaultPath = os.getcwd()
+            defaultPath = ''
 
-        # Use multi-directory dialog
-        pathDlg = MultiDirDialog(self.GetParent(),"Please Select Directory",
-                                    defaultPath=defaultPath)
+        pathDlg = wx.DirDialog(self.GetParent(),"Please Select Directory",
+                                     defaultPath)
         pathDlg.CenterOnParent()
 
         if pathDlg.ShowModal() == wx.ID_OK:
 
             home = os.getenv('USERPROFILE') or os.getenv('HOME')
 
-            paths = pathDlg.GetPaths()
-
-            fixed = []
-
-            for path in paths:
-                fixed.append(path.replace('Home directory',home))
-
-            self.SetPaths(fixed)
+            path = pathDlg.GetPath()
+            self.SetPaths([path,])
 
         pathDlg.Destroy()
+
+class SeriesRemoveWarningDlg(wx.Dialog):
+
+    def __init__(self,parent,id=-1,size=(300,200),config=None):
+        wx.Dialog.__init__(self,parent,id,'Remove Series Description?',size=size)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        inputText = ''.join(['Are you sure you want to remove the default\n',
+                             'attribute SeriesDescription?\n\n',
+                             'This may cause filename conflicts unless you\n',
+                             'use the original filenames.'])
+
+
+        txt = wx.StaticText(self,-1,inputText,style=wx.ALIGN_CENTER)
+        
+        change = wx.Button(self,-1,'Yes. Use original Filenames',size=(-1,20))
+        accept = wx.Button(self,-1,'Yes. Use Custom Filenames',size=(-1,20))
+        cancel = wx.Button(self,-1,'Cancel',size=(-1,20))
+
+        change.Bind(wx.EVT_BUTTON,self.OnChange)
+        accept.Bind(wx.EVT_BUTTON,self.OnAccept)
+        cancel.Bind(wx.EVT_BUTTON,self.OnCancel)
+
+        self.Bind(wx.EVT_CLOSE,self.OnCancel)
+
+        vbox.Add(txt,1,wx.ALL | wx.ALIGN_CENTER,10)
+        vbox.Add(change,0,wx.ALL | wx.ALIGN_CENTER,5)
+        vbox.Add(accept,0,wx.ALL | wx.ALIGN_CENTER,5)
+        vbox.Add(cancel,0,wx.ALL | wx.ALIGN_CENTER,5)
+
+        self.SetSizer(vbox)
+
+        self.ShowModal()
+
+        self.Destroy()
+
+    def OnChange(self,*evnt):
+        self.choice = 1
+        self.Destroy()
+
+    def OnCancel(self,*evnt):
+        self.choice = 0
+        self.Destroy()
+
+    def OnAccept(self,*evnt):
+        self.choice = 2
+        self.Destroy()
 
 class FieldSelector(wx.Panel):
 
@@ -303,6 +585,17 @@ class FieldSelector(wx.Panel):
 
         self._initialize_layout()
 
+    def WidgetList(self):
+        a = [self.options,self.search,self.selected,
+                    self.bAdd,self.bRemove,self.bUp,self.bDown]
+        return a
+
+    def DisableAll(self):
+        [item.Disable() for item in self.WidgetList()]
+
+    def EnableAll(self):
+        [item.Enable(True) for item in self.WidgetList()]
+
     def _initialize_layout(self):
         # BoxSizer containing the options to select
         vboxOptions = wx.BoxSizer(wx.VERTICAL)
@@ -319,7 +612,7 @@ class FieldSelector(wx.Panel):
         vboxSelect.Add(self.titleR, 0, wx.ALIGN_CENTER_HORIZONTAL)
         vboxSelect.Add(self.selected, 1,
                         wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 10)
-        vboxSelect.Add(self.anonQ,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
+        vboxSelect.Add(self.anonQ,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
         vboxSelect.Add(self.sortBtn,0,wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 10)
 
         # BoxSizer housing the controls
@@ -339,6 +632,15 @@ class FieldSelector(wx.Panel):
 
         self.SetSizer(hbox)
 
+    def has_default(self):
+        if self.selected.GetCount() == 0:
+            return False
+
+        if self.selected.GetItems()[-1] == 'SeriesDescription':
+            return True
+        else:
+            return False
+
     def PromoteSelection(self,*evnt):
         self._move_selection(-1)
 
@@ -353,6 +655,9 @@ class FieldSelector(wx.Panel):
 
         index = self.selected.GetSelection()
 
+        if index == self.selected.GetCount()-1 and self.has_default():
+            return
+
         if inc < 0 and (self.selected.Count == 1 or index == 0):
             return
         elif (inc > 0 and index == self.selected.Count-1):
@@ -366,10 +671,25 @@ class FieldSelector(wx.Panel):
 
     def SelectItem(self,*evnt):
         item = self.options.GetStringSelection()
-        self.selected.Append(item)
+        if self.has_default():
+            self.selected.Insert(item,self.selected.GetCount()-1)
+        else:
+            self.selected.Append(item)
 
     def DeselectItem(self,*evnt):
         index = self.selected.GetSelection()
+
+        if index == self.selected.GetCount()-1 and self.has_default():
+            warn = SeriesRemoveWarningDlg(None)
+
+            if warn.choice == 0:
+                return
+            elif warn.choice == 1:
+                # change to original filenames
+                cfg = self.GetParent().config
+                cfg['FilenameFormat']['Selection'] = 1
+                self.GetParent().prefDlg.pages['FilenameFormat'].UpdateFromConfig(cfg)
+
         self.selected.Delete(index)
 
         self.selected.Select(index-1)
@@ -381,36 +701,3 @@ class FieldSelector(wx.Panel):
         # clear
         self.options.SetItems(optionList)
         self.choices = optionList
-
-class HtmlWindow(wx.html.HtmlWindow):
-    def __init__(self, parent, id, size):
-        wx.html.HtmlWindow.__init__(self,parent, id, size=size)
-        if "gtk2" in wx.PlatformInfo:
-            self.SetStandardFonts()
-
-class HelpDlg(wx.Dialog):
-
-    def __init__(self,parent=None,**kwargs):
-
-        self.helpText = kwargs['text']
-
-        super(HelpDlg,self).__init__(parent,-1,"DICOM Sorting Help",
-            style=wx.DEFAULT_DIALOG_STYLE|wx.THICK_FRAME|wx.RESIZE_BORDER|wx.TAB_TRAVERSAL)
-
-        self.hwin = HtmlWindow(self,-1,size=(400,200))
-
-        self.hwin.SetPage(self.helpText)
-        btn = self.hwin.FindWindowById(wx.ID_OK)
-        irep = self.hwin.GetInternalRepresentation()
-
-        self.hwin.SetSize((irep.GetWidth(),int(irep.GetHeight()/4)))
-        self.Show()
-
-        self.SetClientSize(self.hwin.GetSize())
-        self.CenterOnParent(wx.BOTH)
-        self.SetFocus()
-
-        self.Bind(wx.EVT_CLOSE, self.hbquit)
-
-    def hbquit(self,*evnt):
-        self.Destroy()

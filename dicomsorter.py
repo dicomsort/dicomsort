@@ -1,12 +1,11 @@
 import collections
 import os
 import dicom
-import gui
 import re
 import sys
+import gui
 import shutil
 import itertools
-import traceback
 from threading import *
 
 def grouper(iterable,n):
@@ -54,37 +53,65 @@ class Dicom():
                 return item()
             return item
         except KeyError:
-            return getattr(self.dicom,attr)
+            return getattr(self.dicom,attr) 
 
     def _get_series_description(self):
         if not hasattr(self.dicom,'SeriesDescription'):
-            return 'Series%(n)04d' % {'n':self.dicom.SeriesNumber}
+            out = 'Series%(n)04d' % {'n':self.dicom.SeriesNumber}
         else:
             d = {'d':self.dicom.SeriesDescription,'n':self.dicom.SeriesNumber}
-            return '%(d)s_Series%(n)04d' % d
+            out = '%(d)s_Series%(n)04d' % d
+
+        # Strip so we don't have any leading/trailing spaces
+        return out.strip()
+
+    def _get_patient_age(self):
+        """
+        Computes the age of the patient
+        """
+        if self.dicom.has_key('PatientsAge'):
+            age = self.dicom.PatientsAge
+        else:
+            age = (int(self.dicom.StudyDate) - 
+                   int(self.dicom.PatientsBirthDate))/10000;
+            age = '%03dY' % age
+
+        return age
 
     def _get_image_type(self):
         """
         Determines the human-readable type of the image
         """
-        phaseSet = set(['P',]);
-        magSet   = set(['FFE','M'])
+    
+        types = {'Phase':set(['P',]),
+                 '3DRecon':set(['CSA 3D EDITOR',]),
+                 'Phoenix':set(['CSA REPORT',]),
+                 'Mag':set(['FFE','M'])}
 
         imType = set(self.dicom.ImageType)
 
-        if len(phaseSet.intersection(imType)):
-            return 'Phase'
-        elif len(magSet.intersection(imType)):
-            return 'Mag'
-        else:
-            return 'Image'
+        for typeString,match in types.iteritems():
+            if match.issubset(imType):
+                if typeString == '3DRecon':
+                    self.dicom.InstanceNumber = self.dicom.SeriesNumber
+
+                return typeString
+
+        return 'Image'
 
     def get_destination(self,root,dirFormat,fileFormat):
         directory = os.path.join(root,*dirFormat)
 
-        path = os.path.join(directory,fileFormat)
+        # Maximum recursion = 5
+        out = os.path.join(directory,fileFormat) % self
 
-        return os.path.join(directory,fileFormat) % self
+        rep = 0
+
+        while re.search('%\(.*\)',out) and rep < 5:
+            out = out % self
+            rep = rep + 1
+
+        return out
 
     def SetAnonRules(self,anondict):
         # Appends the rules to the overrides so that we can alter them
@@ -92,6 +119,30 @@ class Dicom():
             self.anondict = anondict
         else:
             raise Exception('Anon rules must be a dictionary')
+
+        if self.anondict.has_key('PatientsBirthDate'):
+
+            # First we need to figure out how old they are
+            if not self.dicom.has_key('PatientsAge'):
+                if self.dicom.has_key('StudyDate'):
+                    self.dicom.PatientsAge = self._get_patient_age()
+
+            if self.dicom.has_key('StudyDate'):
+
+                # Now set it so it is just the birth year but make it so that
+                # the proper age is returned when doing year math
+                birthDate = int(self.dicom.PatientsBirthDate[4:])
+                studyDate = int(self.dicom.StudyDate[4:])
+
+                # If the study was performed after their birthday this year
+                if studyDate >= birthDate:
+                    # Keep original birthyear
+                    newBirth = '%s0101' % self.dicom.PatientsBirthDate[:4]
+                else:
+                    byear = self.dicom.PatientsBirthDate[:4]
+                    newBirth = '%d0101' % (int(byear) + 1)
+    
+                self.anondict['PatientsBirthDate'] = newBirth
 
         # Update the override dictionary
         self.overrides = dict(self.default_overrides,**anondict)
@@ -101,11 +152,25 @@ class Dicom():
 
     def check_dir(self,dest):
         dest = os.path.dirname(dest)
-        if not os.path.exists(dest):
-            os.makedirs(dest)
 
-    def sort(self,root,dirFields,fnameString,test=False):
-        destination = self.get_destination(root,dirFields,fnameString)
+        if sys.platform == "win32":
+            exceptions = WindowsError
+        else:
+            exceptions = OSError
+
+        try:
+            os.makedirs(dest)
+        except exceptions:
+            return
+
+    def sort(self,root,dirFields,fnameString,test=False,rootdir=None):
+
+        # If we want to sort in place
+        if dirFields == None:
+            destination = os.path.relpath(self.filename,rootdir[0]);
+            destination = os.path.join(root,destination)
+        else:
+            destination = self.get_destination(root,dirFields,fnameString)
 
         if test:
             print(destination)
@@ -118,7 +183,10 @@ class Dicom():
             # write everything in anondict -> Parse it so we can have dynamic fields
             for key in self.anondict.keys():
                 replacementvalue = self.anondict[key] % self
-                self.dicom.data_element(key).value = replacementvalue
+                try:
+                    self.dicom.data_element(key).value = replacementvalue
+                except KeyError:
+                    continue
 
             self.dicom.SaveAs(destination)
         else:
@@ -127,7 +195,7 @@ class Dicom():
 class Sorter(Thread):
     def __init__(self,files,outDir,dirFormat,fileFormat,
                     anon=dict(),keep_filename=False,iterator=None,test=False,
-                    listener=None,total=None):
+                    listener=None,total=None,root=None):
 
         self.dirFormat = dirFormat
         self.fileFormat = fileFormat
@@ -137,6 +205,7 @@ class Sorter(Thread):
         self.outDir = outDir
         self.test = test
         self.iter = iterator
+        self.root = root
         
         if total == None:
             self.total = len(self.fileList)
@@ -159,8 +228,6 @@ class Sorter(Thread):
 
         files = self.fileList
 
-        root = os.path.dirname(files[0])
-
         for file in files:
             if file == None:
                 continue
@@ -171,11 +238,13 @@ class Sorter(Thread):
             if dcm:
                 dcm = Dicom(file,dcm)
                 dcm.SetAnonRules(self.anondict)
+
+                # Use the original filename for 3d recons
                 if self.keep_filename:
                     origFile = os.path.basename(file)
-                    dcm.sort(self.outDir,self.dirFormat,origFile,test=self.test)
+                    dcm.sort(self.outDir,self.dirFormat,origFile,test=self.test,rootdir=self.root)
                 else:
-                    dcm.sort(self.outDir,self.dirFormat,self.fileFormat,test=self.test)
+                    dcm.sort(self.outDir,self.dirFormat,self.fileFormat,test=self.test,rootdir=self.root)
 
             if self.iter:
                 count = self.iter.next()
@@ -200,10 +269,6 @@ class DicomSorter():
         self.folders    = []
         self.filename   = '%(ImageType)s (%(InstanceNumber)04d)' 
 
-        # Include the series subdirectory by default
-        self.includeSeries = True
-        self.seriesDefault = '%(SeriesDescription)s'
-
         self.sorters = list()
 
         # Don't anonymize by default
@@ -226,11 +291,12 @@ class DicomSorter():
             raise Exception('Anon rules must be a dictionary')
 
     def GetFolderFormat(self):
+        # Check to see if we are using the origin directory structure
+        if self.folders == None or len(self.folders) == 0:
+            return None
+
         # Make a local copy
         folderList = self.folders[:]
-
-        if self.includeSeries:
-            folderList.append(self.seriesDefault)
 
         return folderList           
 
@@ -243,7 +309,7 @@ class DicomSorter():
 
         for path in self.pathname:
             for root,dir,files in os.walk(path):
-                for file in files[2:]:
+                for file in files:
                     fileList.append(os.path.join(root,file))
 
         # Make sure that we don't have duplicates
@@ -265,15 +331,12 @@ class DicomSorter():
         for group in fileGroups:
             self.sorters.append(Sorter(group,outputDir,dirFormat,self.filename,
                     self.anondict,self.keep_filename,iterator=iterator,
-                    test=test,listener=listener,total=numberOfFiles))
-
-    def SetIncludeSeriesAuto(self,val):
-        self.includeSeries = val
+                    test=test,listener=listener,total=numberOfFiles,root=self.pathname))
 
     def GetAvailableFields(self):
         for path in self.pathname:
             for root,dirs,files in os.walk(path):
-                for file in files[2:]:
+                for file in files:
                     filename = os.path.join(root,file)
                     dcm = isdicom(filename)
                     if dcm:

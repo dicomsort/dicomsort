@@ -174,7 +174,7 @@ class PreferenceDlg(wx.Dialog):
         if kwargs.has_key('config'):
             self.config = kwargs.pop('config')
         else:
-            self.config = configobj.ConfigObj('dicomSort.ini')
+            self.config = configobj.ConfigObj(gui.configFile)
 
         wx.Dialog.__init__(self,*args,**kwargs)
 
@@ -189,7 +189,7 @@ class PreferenceDlg(wx.Dialog):
         if config == None:
             config = self.config
 
-        [val.UpdateFromConfig(config) for key,val in self.pages.items()]
+        [val.UpdateFromConfig(config) for val in self.pages.values()]
 
     def Show(self,*args):
         # Call superclass constructor
@@ -199,7 +199,7 @@ class PreferenceDlg(wx.Dialog):
         self.nb = wx.Notebook(self)
         self.AddModule(anonymizer.AnonymousPanel)
         self.AddModule(FileNamePanel)
-        self.AddModule(MiscPanel)
+        #self.AddModule(MiscPanel)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(self.nb, 1, wx.EXPAND)
@@ -225,7 +225,7 @@ class PreferenceDlg(wx.Dialog):
         self.nb.AddPage(newPage,newPage.title)
 
     def OnApply(self,*evnt):
-        [val.StoreState() for key,val in self.pages.items()]
+        [val.StoreState() for val in self.pages.values()]
 
         # For now don't write this to the file because it's a local default
         self.Close()
