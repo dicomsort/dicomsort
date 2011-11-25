@@ -41,9 +41,6 @@ class QuickRenameDlg(wx.Dialog):
 
         self.patientName.SetFocus()
 
-        self.ShowModal()
-        self.Destroy()
-
     def GetValues(self):
         res = dict()
         res['PatientsName'] = self.patientName.GetValue()
@@ -57,10 +54,7 @@ class QuickRenameDlg(wx.Dialog):
         oldDict = self.anonList.GetReplacementDict()
         oldDict.update(self.GetValues())
         self.anonList.SetReplacementDict(oldDict)
-        self.Destroy()
-
-    def OnCancel(self,*evnt):
-        self.Destroy()
+        self.Close()
 
 class AnonymizeListXP(widgets.CheckListCtrlXP):
 
