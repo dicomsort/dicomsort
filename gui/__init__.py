@@ -227,6 +227,9 @@ class MainFrame(wx.Frame):
         # Use os.getcwd() for now
         self.dicomSorter = dicomsorter.DicomSorter()
 
+        # Store the selected output directory to speed it up
+        self.outputDirectory = None
+
         # Get config from parent
         self.config = configobj.ConfigObj(gui.configFile)
         # Set interpolation to false since we use formatted strings
@@ -309,16 +312,16 @@ class MainFrame(wx.Frame):
         self.dicomSorter.filename = fFormat
         self.dicomSorter.folders = dFormat
 
-        outputDir = self.SelectOutputDir()
+        self.outputDirectory = self.SelectOutputDir()
 
-        if outputDir == None:
+        if not self.outputDirectory:
             return
 
         # Use this for testing
         # self.dicomSorter.Sort(outputDir,test=True,listener=self)
 
         # Use for the real deal
-        self.dicomSorter.Sort(outputDir,listener=self)
+        self.dicomSorter.Sort(self.outputDirectory,listener=self)
 
         self.Bind(EVT_COUNTER,self.OnCount)
 
@@ -327,8 +330,13 @@ class MainFrame(wx.Frame):
         self.SetStatusText(statusText)
 
     def SelectOutputDir(self):
-        # TODO: Set default path
-        dlg = wx.DirDialog(self,"Please select an output directory")
+        if not self.outputDirectory:
+            # Then don't set a default path
+            dlg = wx.DirDialog(self,"Please select an output directory")
+        else:
+            dlg = wx.DirDialog(self,"Please select an output directory",
+                                self.outputDirectory)
+
         dlg.CenterOnParent()
 
         if dlg.ShowModal() == wx.ID_OK:
