@@ -13,7 +13,20 @@ def grouper(iterable,n):
 
 def clean_path(path):
     badchars = '[\\\:\*\?\"\<\>\|]+'
-    return e.sub(badchars,'_',path)
+    
+    outpath = ''
+    
+    head,tail = os.path.split(path)
+    
+    while tail:
+        outpath = os.path.join(re.sub(badchars,'_',tail),outpath)
+        head,tail = os.path.split(head)
+        
+    outpath = os.path.join(head,outpath)
+    
+    outpath = outpath[:-1]
+    
+    return outpath 
 
 def isdicom(filename):
     try:
@@ -115,6 +128,8 @@ class Dicom():
 
         # Remove invalid characters for any platform
         out = clean_path(out)
+        
+        print(out)
 
         return out
 
