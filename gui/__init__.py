@@ -18,8 +18,8 @@ if os.name == 'nt':
 else:
     configFile = os.path.join(os.getenv("HOME"),'.dicomSort.ini')
 
-__version__ = '2.1.1'
-Version = (2,1,1)
+__version__ = '2.1.2'
+Version = (2,1,2)
 
 defaultConfig = {'Anonymization':
                     {'Fields':['OtherPatientsIDS',
