@@ -24,13 +24,13 @@ Version = (2,1,2)
 defaultConfig = {'Anonymization':
                     {'Fields':['OtherPatientsIDS',
                                'PatientID',
-                               'PatientsBirthDate',
-                               'PatientsName',
+                               'PatientBirthDate',
+                               'PatientName',
                                'ReferringPhysiciansName',
                                'RequestingPhysician'],
                      'Replacements':
-                        {'PatientsName':'ANONYMOUS',
-                         'PatientID':'%(PatientsName)s'}},
+                        {'PatientName':'ANONYMOUS',
+                         'PatientID':'%(PatientName)s'}},
                  'FilenameFormat':
                     {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)',
                      'Selection':0},

@@ -14,8 +14,8 @@ class QuickRenameDlg(wx.Dialog):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         self.values = self.anonList.GetReplacementDict()
-        if self.values.has_key('PatientsName'):
-            initial = self.values['PatientsName']
+        if self.values.has_key('PatientName'):
+            initial = self.values['PatientName']
         else:
             initial = ''
 
@@ -43,10 +43,10 @@ class QuickRenameDlg(wx.Dialog):
 
     def GetValues(self):
         res = dict()
-        res['PatientsName'] = self.patientName.GetValue()
+        res['PatientName'] = self.patientName.GetValue()
         
         if self.samecheck.IsChecked():
-            res['PatientID'] = '%(PatientsName)s'
+            res['PatientID'] = '%(PatientName)s'
         
         return res
 
