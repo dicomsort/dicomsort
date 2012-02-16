@@ -121,7 +121,12 @@ class Dicom():
         directory = os.path.join(root,*dirFormat)
 
         # Maximum recursion = 5
-        out = os.path.join(directory,fileFormat) % self
+        try:
+            out = os.path.join(directory,fileFormat) % self
+        except AttributeError:
+            # Now just use the initial filename
+            origname = os.path.split(self.filename)[1]
+            out = os.path.join(directory,origname)
 
         rep = 0
 
@@ -132,8 +137,6 @@ class Dicom():
         # Remove invalid characters for any platform
         out = clean_path(out)
         
-        print(out)
-
         return out
 
     def SetAnonRules(self,anondict):
