@@ -21,6 +21,8 @@ else:
 __version__ = '2.1.2'
 Version = (2,1,2)
 
+configVersion = '2.0'
+
 defaultConfig = {'Anonymization':
                     {'Fields':['OtherPatientsIDS',
                                'PatientID',
@@ -35,7 +37,8 @@ defaultConfig = {'Anonymization':
                     {'FilenameString':'%(ImageType)s (%(InstanceNumber)04d)',
                      'Selection':0},
                  'Miscpanel':
-                    {'KeepSeries':'True'}}
+                    {'KeepSeries':'True'},
+                 'Version':'2.0'}
 
 # Define even
 PathEvent,EVT_PATH = wx.lib.newevent.NewEvent()
@@ -237,8 +240,10 @@ class MainFrame(wx.Frame):
 
         # Check to see if we need to populate the config file
         if len(self.config.keys()) == 0:
-            global defaultConfig
-            self.config.update(defaultConfig)
+            self.config.update(gui.defaultConfig)
+            self.config.write()
+        elif not self.config.has_key('Version') or self.config['Version'] != gui.configVersion:
+            self.config.update(gui.defaultConfig)
             self.config.write()
 
         self.prefDlg = preferences.PreferenceDlg(None,-1,"DicomSort Preferences",
