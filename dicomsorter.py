@@ -103,7 +103,10 @@ class Dicom():
                  'Phoenix':set(['CSA REPORT',]),
                  'Mag':set(['FFE','M'])}
 
-        imType = set(self.dicom.ImageType)
+        try:
+            imType = set(self.dicom.ImageType)
+        except AttributeError:
+            return 'Unknown'
 
         for typeString,match in types.iteritems():
             if match.issubset(imType):
