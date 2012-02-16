@@ -203,6 +203,10 @@ class Dicom():
 
         self.check_dir(destination)
 
+        # Check if destination exists
+        while os.path.exists(destination):
+            destination = destination + '.copy';
+
         if self.is_anonymous():
             # Actually write the anononymous data
             # write everything in anondict -> Parse it so we can have dynamic fields
