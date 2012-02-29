@@ -30,8 +30,11 @@ setup(
 				"icon_resources":[(1,"build/DSicon.ico")]}],
     zipfile = None,
 )
+try:
+	shutil.rmtree(os.path.join(OUTDIR,'tcl'))
+except:
+	print('unable to find tcl. skipping')
 
-shutil.rmtree(os.path.join(OUTDIR,'tcl'))
 os.remove(os.path.join(OUTDIR,'w9xpopen.exe'))
 shutil.rmtree(os.path.join('build','bdist.win32'))
 shutil.rmtree(os.path.join('build','lib'))
@@ -92,6 +95,8 @@ f = open('wizard.iss','w')
 f.write(fullfile)
 f.close()
 
-# Compile and remove configuration file
-os.system('"C:\Program Files\Inno Setup 5\Compil32.exe" /cc wizard.iss')
+print('Now Compiling using Inno Setup 5.')
+print('Be sure that it is installed, and added to your system PATH')
+os.system('Compil32 /cc wizard.iss')
 os.remove('wizard.iss')
+print('Successfully created application and installer!')
