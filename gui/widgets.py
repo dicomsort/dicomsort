@@ -549,6 +549,10 @@ class FieldSelector(wx.Panel):
         items = self.GetSelectedItems()
         return ['%(' + item + ')s' for item in items]
 
+    def _anon_tick(self,args):
+        if self.anonQ.IsChecked():
+            self.Parent.QuickRename()
+
     def create(self):
 
         self.titleL     = wx.StaticText(self,-1,self.titles[0])
@@ -561,6 +565,10 @@ class FieldSelector(wx.Panel):
 
         self.sortBtn    = wx.Button(self,-1,label="Sort Images")
         self.anonQ      = wx.CheckBox(self,-1,label="Anonymize Data")
+
+        # Make it so that when we check the checkbox it brings up the quick
+        # rename dialog
+        self.anonQ.Bind(wx.EVT_CHECKBOX,self._anon_tick)
 
         self.sortBtn.Bind(wx.EVT_BUTTON,self._sort_callback)
 
