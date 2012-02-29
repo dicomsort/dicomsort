@@ -18,8 +18,8 @@ if os.name == 'nt':
 else:
     configFile = os.path.join(os.getenv("HOME"),'.dicomSort.ini')
 
-__version__ = '2.1.2'
-Version = (2,1,2)
+__version__ = '2.1.3'
+Version = (2,1,3)
 
 configVersion = '2.0'
 
