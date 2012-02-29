@@ -14,7 +14,7 @@ VER	= gui.__version__
 ID = '{{6638951C-0E99-4FAF-AAF1-B283912E7DE8}'
 URL='http://www.suever.net/software/dicomSort'
 
-OUTDIR = os.path.expanduser(os.path.join('~','Desktop',''.join([NAME,' ',VER])))
+OUTDIR = os.path.join('dist',''.join([NAME,' ',VER]))
 EXE = 'DicomSort.exe'
 
 setup(
@@ -53,7 +53,7 @@ innoDict = {'AppId':ID,
             'AppUpdatesURL':URL,
             'DefaultDirName':'{pf}\%s' % NAME,
             'DefaultGroupName':NAME,
-            'OutputDir':os.path.expanduser(os.path.join('~','Desktop')),
+            'OutputDir':'dist',
             'OutputBaseFilename':INSTALLER,
             'Compression':'lzma',
             'SolidCompression':'yes'}
