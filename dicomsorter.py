@@ -82,13 +82,13 @@ class Dicom():
         """
         Computes the age of the patient
         """
-        if self.dicom.has_key('PatientsAge'):
-            age = self.dicom.PatientsAge
-        elif self.dicom.PatientsBirthDate == '':
+        if self.dicom.has_key('PatientAge'):
+            age = self.dicom.PatientAge
+        elif self.dicom.PatientBirthDate == '':
             age = ''
         else:
             age = (int(self.dicom.StudyDate) - 
-                   int(self.dicom.PatientsBirthDate))/10000;
+                   int(self.dicom.PatientBirthDate))/10000;
             age = '%03dY' % age
 
         return age
@@ -146,31 +146,31 @@ class Dicom():
         else:
             raise Exception('Anon rules must be a dictionary')
 
-        if self.anondict.has_key('PatientsBirthDate'):
-            if self.anondict['PatientsBirthDate'] != '' or self.dicom.PatientsBirthDate == '':
+        if self.anondict.has_key('PatientBirthDate'):
+            if self.anondict['PatientBirthDate'] != '' or self.dicom.PatientBirthDate == '':
                 self.overrides = dict(self.default_overrides,**anondict);
                 return
 
             # First we need to figure out how old they are
-            if not self.dicom.has_key('PatientsAge'):
+            if not self.dicom.has_key('PatientAge'):
                 if self.dicom.has_key('StudyDate'):
-                    self.dicom.PatientsAge = self._get_patient_age()
+                    self.dicom.PatientAge = self._get_patient_age()
 
             if self.dicom.has_key('StudyDate'):
                 # Now set it so it is just the birth year but make it so that
                 # the proper age is returned when doing year math
-                birthDate = int(self.dicom.PatientsBirthDate[4:])
+                birthDate = int(self.dicom.PatientBirthDate[4:])
                 studyDate = int(self.dicom.StudyDate[4:])
 
                 # If the study was performed after their birthday this year
                 if studyDate >= birthDate:
                     # Keep original birthyear
-                    newBirth = '%s0101' % self.dicom.PatientsBirthDate[:4]
+                    newBirth = '%s0101' % self.dicom.PatientBirthDate[:4]
                 else:
-                    byear = self.dicom.PatientsBirthDate[:4]
+                    byear = self.dicom.PatientBirthDate[:4]
                     newBirth = '%d0101' % (int(byear) + 1)
     
-                self.anondict['PatientsBirthDate'] = newBirth
+                self.anondict['PatientBirthDate'] = newBirth
 
         # Update the override dictionary
         self.overrides = dict(self.default_overrides,**anondict)
