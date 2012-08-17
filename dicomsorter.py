@@ -220,7 +220,7 @@ class Dicom():
                 except KeyError:
                     continue
 
-            self.dicom.SaveAs(destination)
+            self.dicom.save_as(destination)
         else:
             shutil.copy(self.filename,destination)
 
