@@ -159,7 +159,7 @@ class CustomDataTable(wx.grid.PyGridTableBase):
                         )
 
                 self.GetView().ProcessTableMessage(msg)
-        innerSetValue(row, col, value) 
+        innerSetValue(row, col, value)
 
     #--------------------------------------------------
     # Some optional methods
@@ -187,7 +187,7 @@ class CustomDataTable(wx.grid.PyGridTableBase):
     def CanSetValueAs(self, row, col, typeName):
         return self.CanGetValueAs(row, col, typeName)
 
- 
+
 
 class CheckListCtrlXP(wx.grid.Grid):
     def __init__(self,parent):
@@ -296,7 +296,7 @@ class CheckListCtrlXP(wx.grid.Grid):
         if column == None:
             return [self.GetItemList(c) for c in range(self.GetNumberCols())]
         else:
-            return self.GetTable().GetValue(row,column)        
+            return self.GetTable().GetValue(row,column)
 
 
 class CheckListCtrl(wx.ListCtrl,ListCtrlAutoWidthMixin,
@@ -480,7 +480,7 @@ class SeriesRemoveWarningDlg(wx.Dialog):
 
 
         txt = wx.StaticText(self,-1,inputText,style=wx.ALIGN_CENTER)
-        
+
         change = wx.Button(self,-1,'Yes. Use original Filenames',size=(-1,20))
         accept = wx.Button(self,-1,'Yes. Use Custom Filenames',size=(-1,20))
         cancel = wx.Button(self,-1,'Cancel',size=(-1,20))
@@ -498,21 +498,26 @@ class SeriesRemoveWarningDlg(wx.Dialog):
 
         self.SetSizer(vbox)
 
-        self.ShowModal()
+        self.ShowModal(True)
 
-        self.Destroy()
 
     def OnChange(self,*evnt):
+        print 'changed'
         self.choice = 1
         self.Destroy()
+        print 'destroyed'
 
     def OnCancel(self,*evnt):
+        print 'cancelled'
         self.choice = 0
         self.Destroy()
+        print 'destroyed'
 
     def OnAccept(self,*evnt):
+        print 'accepted'
         self.choice = 2
         self.Destroy()
+        print 'destroyed'
 
 class FieldSelector(wx.Panel):
 
@@ -609,9 +614,9 @@ class FieldSelector(wx.Panel):
         vboxOptions = wx.BoxSizer(wx.VERTICAL)
 
         vboxOptions.Add(self.titleL, 0, wx.ALIGN_CENTER_HORIZONTAL)
-        vboxOptions.Add(self.options, 1, 
+        vboxOptions.Add(self.options, 1,
                         wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 10)
-        vboxOptions.Add(self.search, 0, 
+        vboxOptions.Add(self.search, 0,
                         wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
 
         # BoxSizer containing the selected options
@@ -633,7 +638,7 @@ class FieldSelector(wx.Panel):
 
         # Horizontal Box that contains all elements
         hbox = wx.BoxSizer(wx.HORIZONTAL)
-        
+
         hbox.Add(vboxOptions,1,wx.EXPAND | wx.ALL, 10)
         hbox.Add(vboxControl,0,wx.ALL,0)
         hbox.Add(vboxSelect,1,wx.EXPAND | wx.ALL, 10)

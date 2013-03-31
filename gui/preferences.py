@@ -109,7 +109,7 @@ class FileNamePanel(PreferencePanel):
                       'Custom Filename Format:']
 
         self.radioBox = wx.RadioBox(self,-1,
-                style=wx.VERTICAL | wx.RB_USE_CHECKBOX | wx.BORDER_NONE ,
+                style=wx.VERTICAL | wx.BORDER_NONE ,
                 choices=boxChoices)
 
         self.Bind(wx.EVT_RADIOBOX,self.OnChange,self.radioBox)
@@ -179,7 +179,7 @@ class PreferenceDlg(wx.Dialog):
         wx.Dialog.__init__(self,*args,**kwargs)
 
         # We want to make this a dict instead of list
-        self.pages = dict() 
+        self.pages = dict()
         self.create()
 
         # Initialize from Config on Create
