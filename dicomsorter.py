@@ -46,6 +46,8 @@ def clean_path(path):
     return outpath
 
 def isdicom(filename):
+    if os.path.basename(filename).lower() == 'dicomdir':
+        return False
     try:
         return dicom.read_file(filename)
     except dicom.filereader.InvalidDicomError:
