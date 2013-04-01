@@ -8,29 +8,46 @@ import shutil
 import itertools
 from threading import *
 
-def grouper(iterable,n):
-    return map(None, *[iter(iterable),] * n)
+
+def recursive_replace_tokens(formatString, repobj):
+    max_rep = 5
+    rep = 0
+
+    while re.search('%\(.*\)', formatString) and rep < max_rep:
+        formatString = formatString % repobj
+        rep = rep + 1
+
+    return formatString
+
+
+def grouper(iterable, n):
+    return map(None, * [iter(iterable), ] * n)
+
+
+def clean_directory_name(path):
+    badchars = '[\\/\:\*\?\"\<\>\|]+'
+    return re.sub(badchars,'_',path)
 
 def clean_path(path):
-    badchars = '[\\\:\*\?\"\<\>\|]+'
-    
+    badchars = '[\\/\:\*\?\"\<\>\|]+'
+
     outpath = ''
-    
+
     head,tail = os.path.split(path)
-    
+
     while tail:
         outpath = os.path.join(re.sub(badchars,'_',tail),outpath)
         head,tail = os.path.split(head)
-        
+
     outpath = os.path.join(head,outpath)
-    
+
     outpath = outpath[:-1]
-    
-    return outpath 
+
+    return outpath
 
 def isdicom(filename):
     try:
-        return dicom.read_file(filename) 
+        return dicom.read_file(filename)
     except dicom.filereader.InvalidDicomError:
         return False
 
@@ -66,7 +83,7 @@ class Dicom():
                 return item()
             return item
         except KeyError:
-            return getattr(self.dicom,attr) 
+            return getattr(self.dicom,attr)
 
     def _get_series_description(self):
         if not hasattr(self.dicom,'SeriesDescription'):
@@ -87,7 +104,7 @@ class Dicom():
         elif self.dicom.PatientBirthDate == '':
             age = ''
         else:
-            age = (int(self.dicom.StudyDate) - 
+            age = (int(self.dicom.StudyDate) -
                    int(self.dicom.PatientBirthDate))/10000;
             age = '%03dY' % age
 
@@ -97,7 +114,7 @@ class Dicom():
         """
         Determines the human-readable type of the image
         """
-    
+
         types = {'Phase':set(['P',]),
                  '3DRecon':set(['CSA 3D EDITOR',]),
                  'Phoenix':set(['CSA REPORT',]),
@@ -118,25 +135,30 @@ class Dicom():
         return 'Image'
 
     def get_destination(self,root,dirFormat,fileFormat):
-        directory = os.path.join(root,*dirFormat)
 
-        # Maximum recursion = 5
+        # First we need to clean up the elements of dirFormat to make sure that
+        # we don't have any bad characters (including /) in the folder names
+        directory = root
+        for item in dirFormat:
+            try:
+                subdir = recursive_replace_tokens(item, self)
+                subdir = clean_directory_name(subdir)
+            except AttributeError:
+                subdir = 'UNKNOWN'
+
+            directory = os.path.join(directory, subdir)
+
+        # Maximum recursion is 5 so we don't end up with any infinite loop
+        # situations
         try:
-            out = os.path.join(directory,fileFormat) % self
+            filename = recursive_replace_tokens(fileFormat, self)
+            filename = clean_path(filename)
+            out = os.path.join(directory,filename) % self
         except AttributeError:
             # Now just use the initial filename
             origname = os.path.split(self.filename)[1]
             out = os.path.join(directory,origname)
 
-        rep = 0
-
-        while re.search('%\(.*\)',out) and rep < 5:
-            out = out % self
-            rep = rep + 1
-
-        # Remove invalid characters for any platform
-        out = clean_path(out)
-        
         return out
 
     def SetAnonRules(self,anondict):
@@ -169,7 +191,7 @@ class Dicom():
                 else:
                     byear = self.dicom.PatientBirthDate[:4]
                     newBirth = '%d0101' % (int(byear) + 1)
-    
+
                 self.anondict['PatientBirthDate'] = newBirth
 
         # Update the override dictionary
@@ -302,7 +324,7 @@ class DicomSorter():
         self.pathname = pathname
 
         self.folders    = []
-        self.filename   = '%(ImageType)s (%(InstanceNumber)04d)' 
+        self.filename   = '%(ImageType)s (%(InstanceNumber)04d)'
 
         self.sorters = list()
 
@@ -333,7 +355,7 @@ class DicomSorter():
         # Make a local copy
         folderList = self.folders[:]
 
-        return folderList           
+        return folderList
 
     def Sort(self,outputDir,test=False,listener=None):
         # This should be moved to a worker thread
@@ -382,7 +404,7 @@ class DicomSorter():
 class DicomFolderError(Exception):
     def __init__(self,value):
         self.value = value
-    
+
     def __str__(self):
         return repr(self.value)
 
