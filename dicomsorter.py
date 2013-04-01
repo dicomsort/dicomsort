@@ -263,8 +263,8 @@ class Sorter(Thread):
         self.iter = iterator
         self.root = root
 
-        if not isinstance(self.fileList,list):
-            self.fileList = [self.fileList,]
+        if not isinstance(self.fileList,tuple):
+            self.fileList = (self.fileList,)
 
         if total == None:
             self.total = len(self.fileList)
