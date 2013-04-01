@@ -8,6 +8,15 @@ import shutil
 import itertools
 from threading import *
 
+import logging
+
+root = logging.getLogger()
+root.setLevel(logging.INFO)
+root.addHandler(logging.FileHandler("info.log"))
+dbg = logging.getLogger('DebugLog')
+dbg.setLevel(logging.NOTSET)
+dbg.addHandler(logging.FileHandler("debug.log"))
+
 def grouper(iterable,n):
     return map(None, *[iter(iterable),] * n)
 
@@ -220,6 +229,7 @@ class Dicom():
                 except KeyError:
                     continue
 
+            print(self.filename)
             self.dicom.save_as(destination)
         else:
             shutil.copy(self.filename,destination)
@@ -265,6 +275,8 @@ class Sorter(Thread):
                 continue
 
             #try:
+
+            dbg.debug("Processing %s" % file)
 
             dcm = isdicom(file)
             if dcm:
@@ -347,7 +359,7 @@ class DicomSorter():
         # Make sure that we don't have duplicates
         fileList = list(set(fileList))
 
-        numberOfThreads = 2
+        numberOfThreads = 1
         numberOfFiles = len(fileList)
 
         numberPerThread = int(round(float(numberOfFiles)/float(numberOfThreads)))
