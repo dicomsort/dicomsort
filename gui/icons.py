@@ -414,4 +414,3 @@ about = PyEmbeddedImage(
     "uPm3//miA3zynttcJyhY7ASsJG3ySlJVIxpJn0Z/AdZXPQHl1GXVwt8PswtwheLGO3dihy/e"
     "c5vrRyVLYUYvP8tPvOMgT3yzpFVuIlWPcdZ6w58zcwFvQ/zrvb/hXj23yurpc6xtjviz+16Y"
     "neMMM8wwwwwzzDDDDDPMMMMMM8wwwwyXx38D/HH6WAMkfKUAAAAASUVORK5CYII=")
-
