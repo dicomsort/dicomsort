@@ -344,10 +344,14 @@ class DicomSorter():
 
     def SetAnonRules(self,anondict):
         # Appends the rules to the overrides so that we can alter them
-        if isinstance(anondict,dict):
-            self.anondict = anondict
-        else:
+        if not isinstance(anondict,dict):
             raise Exception('Anon rules must be a dictionary')
+
+        # Make sure to convert unicode to raw strings (pydicom bug)
+        for key,value in anondict.items():
+            anondict[key] = value.encode()
+
+        self.anondict = anondict
 
     def GetFolderFormat(self):
         # Check to see if we are using the origin directory structure
