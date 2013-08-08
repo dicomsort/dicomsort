@@ -303,6 +303,10 @@ class MainFrame(wx.Frame):
 
         self.anonymize = evnt.anon
 
+        miscTab = self.prefDlg.pages['Miscpanel']
+        seriesFirst = miscTab.seriesFirst.IsChecked()
+        self.dicomSorter.seriesFirst = seriesFirst;
+
         if self.anonymize:
             anonTab = self.prefDlg.pages['Anonymization']
             anonDict = anonTab.anonList.GetAnonDict()

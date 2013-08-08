@@ -66,13 +66,13 @@ class Dicom():
         else:
             self.dicom = dicom.ReadFile(self.filename)
 
-        # Specify which field-types to override
-        self.default_overrides = {'ImageType': self._get_image_type,
-                                  'SeriesDescription': self._get_series_description}
+        self.seriesFirst = False
+
+        self.create_default_overrides()
 
         # Combine with anons - Empty but provides the option to have defaults
-        anondict = dict()
-        self.overrides = dict(self.default_overrides, **anondict)
+        # anondict = dict()
+        # self.overrides = dict(self.default_overrides, **anondict)
 
     def __getitem__(self, attr):
         """
@@ -87,12 +87,22 @@ class Dicom():
         except KeyError:
             return getattr(self.dicom, attr)
 
+    def create_default_overrides(self):
+        # Specify which field-types to override
+        self.default_overrides = {'ImageType': self._get_image_type,
+                                  'SeriesDescription': self._get_series_description}
+        self.overrides = dict(self.default_overrides)
+
     def _get_series_description(self):
         if not hasattr(self.dicom, 'SeriesDescription'):
             out = 'Series%04d' % self.dicom.SeriesNumber
         else:
-            out = '%s_Series%04d' % (self.dicom.SeriesDescription,
-                                     self.dicom.SeriesNumber)
+            if self.seriesFirst:
+                out = 'Series%04d_%s' % (self.dicom.SeriesNumber,
+                                         self.dicom.SeriesDescription)
+            else:
+                out = '%s_Series%04d' % (self.dicom.SeriesDescription,
+                                         self.dicom.SeriesNumber)
 
         # Strip so we don't have any leading/trailing spaces
         return out.strip()
@@ -162,6 +172,7 @@ class Dicom():
             out = os.path.join(directory, origname)
 
         return out
+
 
     def SetAnonRules(self, anondict):
         # Appends the rules to the overrides so that we can alter them
@@ -251,13 +262,14 @@ class Dicom():
 class Sorter(Thread):
     def __init__(self, files, outDir, dirFormat, fileFormat,
                  anon=dict(), keep_filename=False, iterator=None,
-                 test=False, listener=None, total=None, root=None):
+                 test=False, listener=None, total=None, root=None, seriesFirst=False):
 
         self.dirFormat = dirFormat
         self.fileFormat = fileFormat
         self.fileList = files
         self.anondict = anon
         self.keep_filename = keep_filename
+        self.seriesFirst = seriesFirst
         self.outDir = outDir
         self.test = test
         self.iter = iterator
@@ -297,6 +309,9 @@ class Sorter(Thread):
             if dcm:
                 dcm = Dicom(file, dcm)
                 dcm.SetAnonRules(self.anondict)
+                dcm.seriesFirst = self.seriesFirst
+
+                #print(dcm.overrides['SeriesDescription']())
 
                 # Use the original filename for 3d recons
                 if self.keep_filename:
@@ -337,6 +352,7 @@ class DicomSorter():
         self.anondict = dict()
 
         self.keep_filename = False
+        self.seriesFirst = False
 
     def IsSorting(self):
         for sorter in self.sorters:
@@ -398,7 +414,8 @@ class DicomSorter():
                                        self.filename, self.anondict,
                                        self.keep_filename, iterator=iterator,
                                        test=test, listener=listener,
-                                       total=numberOfFiles, root=self.pathname))
+                                       total=numberOfFiles, root=self.pathname,
+                                       seriesFirst=self.seriesFirst))
 
     def GetAvailableFields(self):
         for path in self.pathname:

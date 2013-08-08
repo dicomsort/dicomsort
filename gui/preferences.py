@@ -46,6 +46,8 @@ class PreferencePanel(wx.Panel):
 import anonymizer
 
 
+
+
 class MiscPanel(PreferencePanel):
     def __init__(self, parent, config):
         super(MiscPanel, self).__init__(parent, 'Miscpanel',
@@ -53,7 +55,8 @@ class MiscPanel(PreferencePanel):
         self.create()
 
     def GetState(self):
-        d = {'KeepSeries': str(self.keepSeries.IsChecked())}
+        d = {'KeepSeries': str(self.keepSeries.IsChecked()),
+                'SeriesFirst': str(self.seriesFirst.IsChecked())}
         return d
 
     def RevertState(self, *evnt):
@@ -66,8 +69,15 @@ class MiscPanel(PreferencePanel):
         if 'KeepSeries' not in tmp:
             tmp['KeepSeries'] = 'True'
 
+        if 'SeriesFirst' not in tmp:
+            tmp['SeriesFirst'] = 'False'
+
         if tmp['KeepSeries']:
             self.keepSeries.SetValue(eval(tmp['KeepSeries']))
+
+        if tmp['SeriesFirst']:
+            self.seriesFirst.SetValue(eval(tmp['SeriesFirst']))
+
 
     def create(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -78,6 +88,12 @@ class MiscPanel(PreferencePanel):
         vbox.Add((30, 40), 0, wx.ALL | 30)
 
         vbox.Add(self.keepSeries, 0, wx.ALIGN_LEFT | wx.ALL | 15)
+
+        self.seriesFirst = wx.CheckBox(self, -1,
+                                       "Series Name First")
+
+        vbox.Add(self.seriesFirst, 0, wx.ALIGN_LEFT | wx.ALL | 15)
+
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
@@ -200,7 +216,7 @@ class PreferenceDlg(wx.Dialog):
         self.nb = wx.Notebook(self)
         self.AddModule(anonymizer.AnonymousPanel)
         self.AddModule(FileNamePanel)
-        #self.AddModule(MiscPanel)
+        self.AddModule(MiscPanel)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(self.nb, 1, wx.EXPAND)
