@@ -71,19 +71,19 @@ def AvailableUpdate():
     try:
         f = urllib2.urlopen(
             "http://www.suever.net/software/dicomSort/current.php")
-        current = f.read()
+        current = f.read().rstrip()
     except IOError:
         return None
 
     if re.search('404', current):
         return None
 
-    if current.rstrip() == __version__:
+    if current == __version__:
         return None
     else:
         # Break it up to see if it's a dev version
         I = [int(part) for part in current.split('.')]
-        for ind in len(I):
+        for ind in range(len(I)):
             if I[ind] > Version[ind]:
                 return current
         return None
