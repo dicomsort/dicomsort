@@ -88,6 +88,7 @@ class MiscPanel(PreferencePanel):
         vbox.Add((30, 40), 0, wx.ALL | 30)
 
         vbox.Add(self.keepSeries, 0, wx.ALIGN_LEFT | wx.ALL | 15)
+        vbox.Add((30, 20), 0, wx.ALL | 30)
 
         self.seriesFirst = wx.CheckBox(self, -1,
                                        "Series Name First")
