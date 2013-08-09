@@ -3,96 +3,113 @@ import os
 import shutil
 import sys
 import gui
-		
-includefiles = ['DSicon.ico',]
+
+base = None
+if sys.platform == 'win32':
+    base = "Win32GUI"
+    ICON = 'DSicon.ico'
+    EXE = 'DicomSort.exe'
+
+if sys.platform == 'darwin':
+    ICON = 'DSicon.icns'
+    EXE = 'DICOM Sort.app'
+
+includefiles = [ICON,]
 
 NAME = 'DICOM Sort'
 VER = gui.__version__
 ID = '{{6638951C-0E99-4FAF-AAF1-B283912E7DE8}'
 URL = 'http://www.suever.net/software/dicomSort'
 
-OUTDIR = os.path.join('dist', ''.join([NAME, ' ', VER]))
-EXE = 'DicomSort.exe'
+if sys.platform == 'darwin':
+    OUTDIR = os.path.join('dist',NAME)
+else:
+    OUTDIR = os.path.join('dist', ''.join([NAME, ' ', VER]))
 
 build_exe_options = {
-	"include_msvcr": True,
-	"build_exe": OUTDIR,
-	"icon":'DSicon.ico',
-	"include_files": includefiles
-			}
-
-base = None
-if sys.platform == 'win32':
-	base = "Win32GUI"
+    "include_msvcr": True,
+    "icon":ICON,
+    "include_files": includefiles
+            }
 
 exe = Executable(
-	script='DicomSort.pyw',
-	base=base,
-	icon='DSicon.ico')
-	
-setup(name = NAME, 
-	  version = VER, 
-	  description = 'A DICOM Sorting Utility', 
-	  options = {"build_exe": build_exe_options},
-	  executables=[exe])
+    script='DicomSort.pyw',
+    base=base,
+    targetName=EXE,
+    icon=ICON)
 
-INSTALLER = '%s_%s.setup' % (EXE.replace('.exe', ''), VER.replace('.', '_'))
-INSTALLER = INSTALLER.replace(' ', '_')
+bdist_mac_options = {'iconfile':ICON}
+bdist_dmg_options = {'volume_label':'DICOM Sort'}
+#"iconfile": 'DSicon.icns'}
 
-# Construct the configuration string for Inno Setup
-innoDict = {'AppId': ID,
-            'AppName': NAME,
-            'AppVerName': '%s %s' % (NAME, VER),
-            'AppPublisher': 'Jonathan Suever',
-            'AppPublisherURL': URL,
-            'AppSupportURL': URL,
-            'AppUpdatesURL': URL,
-            'DefaultDirName': '{pf}\%s' % NAME,
-            'DefaultGroupName': NAME,
-            'OutputDir': 'dist',
-            'OutputBaseFilename': INSTALLER,
-            'Compression': 'lzma',
-            'SolidCompression': 'yes'}
+setup(name = NAME,
+      version = VER,
+      description = 'A DICOM Sorting Utility',
+      options = {"build_exe": build_exe_options,
+                 "bdist_mac": bdist_mac_options,
+                 "bdist_dmg": bdist_dmg_options},
+      executables=[exe])
 
-innoinput = '[Setup]\n'
+if sys.platform == 'win32':
 
-for key, value in innoDict.items():
-    innoinput = ''.join([innoinput, '%s=%s\n' % (key, value)])
+    INSTALLER = '%s_%s.setup' % (EXE.replace('.exe', ''), VER.replace('.', '_'))
+    INSTALLER = INSTALLER.replace(' ', '_')
 
-lang = '[Languages]\nName: "english"; MessagesFile: "compiler:Default.isl"\n'
-task = '[Tasks]\nName:"desktopicon"; Description: "{cm:CreateDesktopIcon}";GroupDescription:"{cm:AdditionalIcons}";\n'
+    # Construct the configuration string for Inno Setup
+    innoDict = {'AppId': ID,
+                'AppName': NAME,
+                'AppVerName': '%s %s' % (NAME, VER),
+                'AppPublisher': 'Jonathan Suever',
+                'AppPublisherURL': URL,
+                'AppSupportURL': URL,
+                'AppUpdatesURL': URL,
+                'DefaultDirName': '{pf}\%s' % NAME,
+                'DefaultGroupName': NAME,
+                'OutputDir': 'dist',
+                'OutputBaseFilename': INSTALLER,
+                'Compression': 'lzma',
+                'SolidCompression': 'yes'}
 
-OUTEXE = os.path.join(OUTDIR, EXE)
-INCLUDES = os.path.join(OUTDIR, '*')
+    innoinput = '[Setup]\n'
 
-files = '''[Files]
-Source: "%s"; DestDir: "{app}"; Flags: ignoreversion
-Source: "%s"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs'''
+    for key, value in innoDict.items():
+        innoinput = ''.join([innoinput, '%s=%s\n' % (key, value)])
 
-files = files % (OUTEXE, INCLUDES)
+    lang = '[Languages]\nName: "english"; MessagesFile: "compiler:Default.isl"\n'
+    task = '[Tasks]\nName:"desktopicon"; Description: "{cm:CreateDesktopIcon}";GroupDescription:"{cm:AdditionalIcons}";\n'
 
-ICONFILE = 'DSicon.ico'
+    OUTEXE = os.path.join(OUTDIR, EXE)
+    INCLUDES = os.path.join(OUTDIR, '*')
 
-icons = '''[Icons]
-Name: "{group}\%s"; Filename: "{app}\%s"; IconFilename: {app}\%s; IconIndex: 0; WorkingDir: "{app}"
-Name: "{userdesktop}\%s"; Filename: "{app}\%s"; Tasks: desktopicon; IconFilename: {app}\%s; IconIndex: 0'''
+    files = '''[Files]
+    Source: "%s"; DestDir: "{app}"; Flags: ignoreversion
+    Source: "%s"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs'''
 
-icons = icons % (NAME, EXE, ICONFILE, NAME, EXE, ICONFILE)
+    files = files % (OUTEXE, INCLUDES)
 
-run = '''[Run]
-Filename: "{app}\%s"; Description: "{cm:LaunchProgram,%s}"; Flags: nowait postinstall skipifsilent'''
+    ICONFILE = ICON
 
-run = run % (EXE, NAME)
+    icons = '''[Icons]
+    Name: "{group}\%s"; Filename: "{app}\%s"; IconFilename: {app}\%s; IconIndex: 0; WorkingDir: "{app}"
+    Name: "{userdesktop}\%s"; Filename: "{app}\%s"; Tasks: desktopicon; IconFilename: {app}\%s; IconIndex: 0'''
 
-fullfile = '\n'.join([innoinput, lang, task, files, icons, run])
+    icons = icons % (NAME, EXE, ICONFILE, NAME, EXE, ICONFILE)
 
-# Write configuration to a temporary file
-f = open('wizard.iss', 'w')
-f.write(fullfile)
-f.close()
+    run = '''[Run]
+    Filename: "{app}\%s"; Description: "{cm:LaunchProgram,%s}"; Flags: nowait postinstall skipifsilent'''
 
-print('Now Compiling using Inno Setup 5.')
-print('Be sure that it is installed, and added to your system PATH')
-os.system('Compil32 /cc wizard.iss')
-os.remove('wizard.iss')
+    run = run % (EXE, NAME)
+
+    fullfile = '\n'.join([innoinput, lang, task, files, icons, run])
+
+    # Write configuration to a temporary file
+    f = open('wizard.iss', 'w')
+    f.write(fullfile)
+    f.close()
+
+    print('Now Compiling using Inno Setup 5.')
+    print('Be sure that it is installed, and added to your system PATH')
+    os.system('Compil32 /cc wizard.iss')
+    os.remove('wizard.iss')
+
 print('Successfully created application and installer!')
