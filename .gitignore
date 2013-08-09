@@ -3,5 +3,6 @@
 *.pyc
 *.log
 dist
+build
 
 dicomSort.ini
