@@ -80,7 +80,12 @@ def AvailableUpdate():
     if current.rstrip() == __version__:
         return None
     else:
-        return current
+        # Break it up to see if it's a dev version
+        I = [int(part) for part in current.split('.')]
+        for ind in len(I):
+            if I[ind] > Version[ind]:
+                return current
+        return None
 
 
 class UpdateChecker(Thread):
