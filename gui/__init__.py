@@ -39,7 +39,8 @@ defaultConfig = {'Anonymization':
                  {'FilenameString': '%(ImageType)s (%(InstanceNumber)04d)',
                      'Selection': 0},
                  'Miscpanel':
-                 {'KeepSeries': 'True'},
+                 {'KeepSeries': 'True',
+				  'SeriesFirst': 'False'},
                  'Version': '2.0'}
 
 # Define even
