@@ -70,7 +70,7 @@ def AvailableUpdate():
     # First try to see if we can connect
     try:
         f = urllib2.urlopen(
-            "http://www.suever.net/software/dicomSort/current.php")
+            "http://www.dicomsort.com/current")
         current = f.read().rstrip()
     except IOError:
         return None
