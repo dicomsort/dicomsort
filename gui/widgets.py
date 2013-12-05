@@ -51,9 +51,9 @@ class UpdateDlg(wx.Dialog):
         vbox.Add(txt, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
 
         self.link = hyperlink.HyperLinkCtrl(self, -1)
-        self.link.SetURL(URL='http://www.suever.net/software/dicomSort/')
+        self.link.SetURL(URL='http://www.dicomsort.com')
         self.link.SetLabel(label='Click here to obtain the update')
-        self.link.SetToolTipString('http://www.suever.net/software/dicomSort/')
+        self.link.SetToolTipString('http://www.dicomsort.com')
         self.link.AutoBrowse(False)
 
         self.Bind(hyperlink.EVT_HYPERLINK_LEFT, self.OnUpdate, self.link)
@@ -94,7 +94,7 @@ class AboutDlg(wx.AboutDialogInfo):
         self.SetVersion(gui.__version__)
 
         self.SetCopyright('(C) 2013 Jonathan Suever')
-        self.SetWebSite('http://www.suever.net')
+        self.SetWebSite('http://www.dicomsort.com')
 
         self.GenerateDescription()
 

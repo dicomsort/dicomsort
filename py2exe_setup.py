@@ -12,7 +12,7 @@ shutil.copy('build/msvcp90.dll', 'msvcp90.dll')
 NAME = 'DICOM Sort'
 VER = gui.__version__
 ID = '{{6638951C-0E99-4FAF-AAF1-B283912E7DE8}'
-URL = 'http://www.suever.net/software/dicomSort'
+URL = 'http://www.dicomsort.com'
 
 OUTDIR = os.path.join('dist', ''.join([NAME, ' ', VER]))
 EXE = 'DicomSort.exe'
