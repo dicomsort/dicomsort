@@ -90,8 +90,13 @@ class Dicom():
     def create_default_overrides(self):
         # Specify which field-types to override
         self.default_overrides = {'ImageType': self._get_image_type,
+                                  'FileExtension': self._get_file_extension,
                                   'SeriesDescription': self._get_series_description}
         self.overrides = dict(self.default_overrides)
+
+    def _get_file_extension(self):
+        filename, extension = os.path.splitext(self.dicom.filename)
+        return extension
 
     def _get_series_description(self):
         if not hasattr(self.dicom, 'SeriesDescription'):
@@ -344,7 +349,7 @@ class DicomSorter():
         self.pathname = pathname
 
         self.folders = []
-        self.filename = '%(ImageType)s (%(InstanceNumber)04d)'
+        self.filename = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
 
         self.sorters = list()
 

@@ -20,7 +20,7 @@ if os.name == 'nt':
 else:
     configFile = os.path.join(os.getenv("HOME"), '.dicomSort.ini')
 
-Version = (2, 1, 6)
+Version = (2, 1, 7)
 __version__ = '.'.join([str(x) for x in Version])
 
 configVersion = '2.0'
@@ -36,7 +36,7 @@ defaultConfig = {'Anonymization':
                   {'PatientName': 'ANONYMOUS',
                    'PatientID': '%(PatientName)s'}},
                  'FilenameFormat':
-                 {'FilenameString': '%(ImageType)s (%(InstanceNumber)04d)',
+                 {'FilenameString': '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s',
                      'Selection': 0},
                  'Miscpanel':
                  {'KeepSeries': 'True',
@@ -326,7 +326,7 @@ class MainFrame(wx.Frame):
 
         if filenameMethod == 0:
             # Image (0001)
-            fFormat = '%(ImageType)s (%(InstanceNumber)04d)'
+            fFormat = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
         elif filenameMethod == 1:
             # Use the original filename
             fFormat = ''
