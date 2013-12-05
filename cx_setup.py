@@ -26,6 +26,10 @@ if sys.platform == 'darwin':
 else:
     OUTDIR = os.path.join('dist', ''.join([NAME, ' ', VER]))
 
+build_options = {
+    "build_exe": OUTDIR
+	}
+	
 build_exe_options = {
     "include_msvcr": True,
     "icon":ICON,
@@ -45,7 +49,8 @@ bdist_dmg_options = {'volume_label':'DICOM Sort'}
 setup(name = NAME,
       version = VER,
       description = 'A DICOM Sorting Utility',
-      options = {"build_exe": build_exe_options,
+      options = {"build": build_options,
+	             "build_exe": build_exe_options,
                  "bdist_mac": bdist_mac_options,
                  "bdist_dmg": bdist_dmg_options},
       executables=[exe])
