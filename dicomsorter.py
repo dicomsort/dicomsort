@@ -170,7 +170,10 @@ class Dicom():
         try:
             filename = recursive_replace_tokens(fileFormat, self)
             filename = clean_path(filename)
-            out = os.path.join(directory, filename) % self
+            out = os.path.join(directory, filename)
+
+            print out
+            #out = os.path.join(directory, filename) % self
         except AttributeError:
             # Now just use the initial filename
             origname = os.path.split(self.filename)[1]
