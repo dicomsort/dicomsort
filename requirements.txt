@@ -1,2 +1,2 @@
 pydicom==0.9.9
-wxpython==3.0.1.1
+wxpython
