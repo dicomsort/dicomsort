@@ -173,9 +173,6 @@ class Dicom():
             filename = recursive_replace_tokens(fileFormat, self)
             filename = clean_path(filename)
             out = os.path.join(directory, filename)
-
-            print out
-            #out = os.path.join(directory, filename) % self
         except AttributeError:
             # Now just use the initial filename
             origname = os.path.split(self.filename)[1]
@@ -313,15 +310,11 @@ class Sorter(Thread):
             if not file:
                 continue
 
-            #try:
-
             dcm = isdicom(file)
             if dcm:
                 dcm = Dicom(file, dcm)
                 dcm.SetAnonRules(self.anondict)
                 dcm.seriesFirst = self.seriesFirst
-
-                #print(dcm.overrides['SeriesDescription']())
 
                 # Use the original filename for 3d recons
                 if self.keep_filename:
@@ -337,9 +330,6 @@ class Sorter(Thread):
                 if self.isgui:
                     event = gui.CounterEvent(Count=count, total=self.total)
                     wx.PostEvent(self.listener, event)
-            #except:
-            #    dlg = gui.CrashReporter(fullstack=traceback.format_exc())
-            #    dlg.ShowModal()
 
 
 class DicomSorter():
