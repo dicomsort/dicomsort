@@ -6,8 +6,8 @@ a directory tree based upon the header fields selected.
 
 This software has the following dependencies:
 
-* [wxPython 2.9](http://www.wxpython.org/download.php)
-* [pydicom 0.9.8](http://code.google.com/p/pydicom/)
+* [wxPython 3.0.1](http://www.wxpython.org/download.php)
+* [pydicom 0.9.9](https://github.com/darcymason/pydicom)
 
 Windows binaries are available at [the project website](http://www.dicomsort.com).
 
@@ -17,9 +17,13 @@ To install from source, first clone the git repository
 $ git clone https://github.com/suever/dicomSort.git
 ```
 
-Once you have downloaded the source code and installed the appropriate
-dependencies, you should be able to launch the software by running the
-DicomSort.pyw file.
+Install dependencies (if you haven't already)
+
+```
+$ pip install -r requirements.txt
+```
+
+Then you should be able to launch the software using the `DicomSort.pyw` file.
 
 ```
 $ python DicomSort.pyw 
