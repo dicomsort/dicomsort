@@ -93,7 +93,7 @@ class AboutDlg(wx.AboutDialogInfo):
         self.SetName('DICOM Sorting')
         self.SetVersion(gui.__version__)
 
-        self.SetCopyright('(C) 2013 Jonathan Suever')
+        self.SetCopyright('(C) 2016 Jonathan Suever')
         self.SetWebSite('http://www.dicomsort.com')
 
         self.GenerateDescription()

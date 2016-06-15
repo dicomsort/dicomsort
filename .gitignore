@@ -4,5 +4,6 @@
 *.log
 dist
 build
+env
 
 dicomSort.ini
