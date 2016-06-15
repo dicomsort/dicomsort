@@ -14,9 +14,10 @@ from threading import Thread
 import gui
 from gui import preferences
 from gui.anonymizer import QuickRenameDlg
+from os.path import expanduser
 
 if os.name == 'nt':
-    configFile = 'dicomSort.ini'
+    configFile = os.path.join(expanduser('~'), 'dicomSort.ini')
 else:
     configFile = os.path.join(os.getenv("HOME"), '.dicomSort.ini')
 
