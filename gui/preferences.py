@@ -55,9 +55,11 @@ class MiscPanel(PreferencePanel):
         self.create()
 
     def GetState(self):
-        d = {'KeepSeries': str(self.keepSeries.IsChecked()),
-                'SeriesFirst': str(self.seriesFirst.IsChecked())}
-        return d
+        return {
+            'KeepSeries': str(self.keepSeries.IsChecked()),
+            'SeriesFirst': str(self.seriesFirst.IsChecked()),
+            'KeepOriginal': str(self.keepOriginal.IsChecked())
+        }
 
     def RevertState(self, *evnt):
         super(MiscPanel, self).RevertState()
@@ -72,11 +74,17 @@ class MiscPanel(PreferencePanel):
         if 'SeriesFirst' not in tmp:
             tmp['SeriesFirst'] = 'False'
 
+        if 'KeepOriginal' not in tmp:
+            tmp['KeepOriginal'] = 'True'
+
         if tmp['KeepSeries']:
             self.keepSeries.SetValue(eval(tmp['KeepSeries']))
 
         if tmp['SeriesFirst']:
             self.seriesFirst.SetValue(eval(tmp['SeriesFirst']))
+
+        if tmp['KeepOriginal']:
+            self.keepOriginal.SetValue(eval(tmp['KeepOriginal']))
 
 
     def create(self):
@@ -85,15 +93,20 @@ class MiscPanel(PreferencePanel):
         self.keepSeries = wx.CheckBox(self, -1,
                                       "Automatically include SeriesDescription")
 
+        # Vertical spacing
         vbox.Add((30, 40), 0, wx.ALL | 30)
-
         vbox.Add(self.keepSeries, 0, wx.ALIGN_LEFT | wx.ALL | 15)
+
+        self.seriesFirst = wx.CheckBox(self, -1, "Series Name First")
+
+        # Vertical spacing
         vbox.Add((30, 20), 0, wx.ALL | 30)
-
-        self.seriesFirst = wx.CheckBox(self, -1,
-                                       "Series Name First")
-
         vbox.Add(self.seriesFirst, 0, wx.ALIGN_LEFT | wx.ALL | 15)
+
+        self.keepOriginal = wx.CheckBox(self, -1, "Keep Original Files")
+
+        vbox.Add((30, 20), 0, wx.ALL | 30)
+        vbox.Add(self.keepOriginal, 0, wx.ALIGN_LEFT | wx.ALL | 15)
 
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -234,6 +247,8 @@ class PreferenceDlg(wx.Dialog):
         hbox.Add(self.apply, 0, wx.ALIGN_RIGHT | wx.LEFT, 10)
 
         vbox.Add(hbox, 0, wx.ALIGN_RIGHT | wx.TOP, 5)
+        vbox.Add((10, 10), 0, wx.ALL | 30)
+
         self.SetSizer(vbox)
 
     def AddModule(self, panel):
