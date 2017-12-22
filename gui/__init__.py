@@ -464,7 +464,8 @@ class MainFrame(wx.Frame):
         self.selector.SetOptions(fields)
 
         # Now set seriesDescription as the default
-        self.selector.selected.Append('SeriesDescription')
+        if len(self.selector.selected.Items) == 0:
+            self.selector.selected.Append('SeriesDescription')
 
         # This is clunky
         # TODO: Change PrefDlg to a dict
