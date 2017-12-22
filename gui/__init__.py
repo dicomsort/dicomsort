@@ -26,25 +26,33 @@ __version__ = '.'.join([str(x) for x in Version])
 
 configVersion = '2.0'
 
-defaultConfig = {'Anonymization':
-                 {'Fields': ['OtherPatientsIDS',
-                             'PatientID',
-                             'PatientBirthDate',
-                             'PatientName',
-                             'ReferringPhysiciansName',
-                             'RequestingPhysician'],
-                     'Replacements':
-                  {'PatientName': 'ANONYMOUS',
-                   'PatientID': '%(PatientName)s'}},
-                 'FilenameFormat':
-                 {'FilenameString': '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s',
-                     'Selection': 0},
-                 'Miscpanel':
-                 {'KeepSeries': 'True',
-				  'SeriesFirst': 'False'},
-                 'Version': '2.0'}
+defaultConfig = {
+    'Version': configVersion,
+    'Anonymization': {
+        'Fields': [
+            'OtherPatientsIDS',
+            'PatientID',
+            'PatientBirthDate',
+            'PatientName',
+            'ReferringPhysiciansName',
+            'RequestingPhysician'
+        ],
+        'Replacements': {
+            'PatientName': 'ANONYMOUS',
+            'PatientID': '%(PatientName)s'
+        }
+    },
+    'FilenameFormat': {
+        'FilenameString': '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s',
+        'Selection': 0
+    },
+    'Miscpanel': {
+        'KeepSeries': 'True',
+        'SeriesFirst': 'False',
+        'KeepOriginal': 'True'
+    }
+}
 
-# Define even
 PathEvent, EVT_PATH = wx.lib.newevent.NewEvent()
 PopulateEvent, EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
 SortEvent, EVT_SORT = wx.lib.newevent.NewEvent()
@@ -311,8 +319,8 @@ class MainFrame(wx.Frame):
         self.anonymize = evnt.anon
 
         miscTab = self.prefDlg.pages['Miscpanel']
-        seriesFirst = miscTab.seriesFirst.IsChecked()
-        self.dicomSorter.seriesFirst = seriesFirst;
+        self.dicomSorter.seriesFirst = miscTab.seriesFirst.IsChecked()
+        self.dicomSorter.keepOriginal = miscTab.keepOriginal.IsChecked()
 
         if self.anonymize:
             anonTab = self.prefDlg.pages['Anonymization']

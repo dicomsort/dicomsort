@@ -232,7 +232,7 @@ class Dicom():
         except exceptions:
             return
 
-    def sort(self, root, dirFields, fnameString, test=False, rootdir=None):
+    def sort(self, root, dirFields, fnameString, test=False, rootdir=None, keepOriginal=True):
 
         # If we want to sort in place
         if dirFields is None:
@@ -262,14 +262,22 @@ class Dicom():
                     continue
 
             self.dicom.save_as(destination)
+
+            if keepOriginal == False:
+                os.remove(self.filename)
+
         else:
-            shutil.copy(self.filename, destination)
+            if keepOriginal == True:
+                shutil.copy(self.filename, destination)
+            else:
+                shutil.move(self.filename, destination)
 
 
 class Sorter(Thread):
     def __init__(self, files, outDir, dirFormat, fileFormat,
                  anon=dict(), keep_filename=False, iterator=None,
-                 test=False, listener=None, total=None, root=None, seriesFirst=False):
+                 test=False, listener=None, total=None, root=None,
+                 seriesFirst=False, keepOriginal=True):
 
         self.dirFormat = dirFormat
         self.fileFormat = fileFormat
@@ -277,6 +285,7 @@ class Sorter(Thread):
         self.anondict = anon
         self.keep_filename = keep_filename
         self.seriesFirst = seriesFirst
+        self.keepOriginal = keepOriginal
         self.outDir = outDir
         self.test = test
         self.iter = iterator
@@ -318,12 +327,16 @@ class Sorter(Thread):
 
                 # Use the original filename for 3d recons
                 if self.keep_filename:
-                    origFile = os.path.basename(file)
-                    dcm.sort(self.outDir, self.dirFormat, origFile,
-                             test=self.test, rootdir=self.root)
+                    filename = os.path.basename(file)
                 else:
-                    dcm.sort(self.outDir, self.dirFormat, self.fileFormat,
-                             test=self.test, rootdir=self.root)
+                    filename = self.fileFormat
+
+                dcm.sort(self.outDir,
+                         self.dirFormat,
+                         filename,
+                         test=self.test,
+                         rootdir=self.root,
+                         keepOriginal=self.keepOriginal)
 
             if self.iter:
                 count = self.iter.next()
@@ -353,6 +366,7 @@ class DicomSorter():
 
         self.keep_filename = False
         self.seriesFirst = False
+        self.keepOriginal = True
 
     def IsSorting(self):
         for sorter in self.sorters:
@@ -410,12 +424,15 @@ class DicomSorter():
         iterator = itertools.count(1)
 
         for group in fileGroups:
-            self.sorters.append(Sorter(group, outputDir, dirFormat,
-                                       self.filename, self.anondict,
-                                       self.keep_filename, iterator=iterator,
-                                       test=test, listener=listener,
-                                       total=numberOfFiles, root=self.pathname,
-                                       seriesFirst=self.seriesFirst))
+
+            sorter = Sorter(group, outputDir, dirFormat, self.filename,
+                            self.anondict, self.keep_filename,
+                            iterator=iterator, test=test, listener=listener,
+                            total=numberOfFiles, root=self.pathname,
+                            seriesFirst=self.seriesFirst,
+                            keepOriginal=self.keepOriginal)
+
+            self.sorters.append(sorter)
 
     def GetAvailableFields(self):
         for path in self.pathname:
