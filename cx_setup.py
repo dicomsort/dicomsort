@@ -17,45 +17,74 @@ if sys.platform == 'darwin':
 includefiles = [ICON,]
 
 NAME = 'DICOM Sort'
-VER = gui.__version__
+VERSION = gui.__version__
 ID = '{{6638951C-0E99-4FAF-AAF1-B283912E7DE8}'
 URL = 'https://dicomsort.com'
 
 if sys.platform == 'darwin':
     OUTDIR = os.path.join('dist',NAME)
 else:
-    OUTDIR = os.path.join('dist', ''.join([NAME, ' ', VER]))
+    OUTDIR = os.path.join('dist', ''.join([NAME, ' ', VERSION]))
 
-build_options = {
-    "build_exe": OUTDIR
-}
+shortcut_table = [
+    ("DesktopShortcut",          # Shortcut
+     "DesktopFolder",            # Directory_
+     NAME,                       # Name
+     "TARGETDIR",                # Component_
+     "[TARGETDIR]DicomSort.exe", # Target
+     None,                       # Arguments
+     None,                       # Description
+     None,                       # Hotkey
+     None,                       # Icon
+     None,                       # IconIndex
+     None,                       # ShowCmd
+     'TARGETDIR'                 # WkDir
+     ),
+    ("ApplicationStartMenuShortcut",
+     "StartMenuFolder",
+     NAME,
+     "TARGETDIR",
+     "[TARGETDIR]DicomSort.exe",
+     None,
+     None,
+     None,
+     None,
+     None,
+     None,
+     'TARGETDIR'
+    )
+]
 
-bdist_exe_options = {
-    "include_msvcr": True,
-    "include_files": includefiles
-}
-
-exe = Executable(
-    script='DicomSort.pyw',
-    base=base,
-    targetName=EXE,
-    icon=ICON)
-
-bdist_mac_options = {
-    'iconfile': ICON
-}
-
-bdist_dmg_options = {
-    'volume_label': NAME
+msi_data = {
+    "Shortcut": shortcut_table
 }
 
 setup(name = NAME,
-      version = VER,
+      version = VERSION,
       description = 'A DICOM Sorting Utility',
       options = {
-          "build": build_options,
-          "bdist_exe": bdist_exe_options,
-          "bdist_mac": bdist_mac_options,
-          "bdist_dmg": bdist_dmg_options
+        'build': {
+            'build_exe': OUTDIR
+        },
+        'bdist_msi': {
+            'data': msi_data
+        },
+        'bdist_exe': {
+            'include_msvcr': True,
+            'include_files': includefiles
+        },
+        'bdist_mac': {
+            'iconfile': ICON
+        },
+        'bdist_dmg': {
+            'volume_label': "%s-%s" % (NAME, VERSION)
+        }
       },
-      executables=[exe])
+      executables = [
+          Executable(
+              script = 'DicomSort.pyw',
+              base = base,
+              icon = ICON,
+              shortcutName = 'DICOM Sort'
+          ),
+      ])
