@@ -697,6 +697,9 @@ class FieldSelector(wx.Panel):
     def DeselectItem(self, *evnt):
         index = self.selected.GetSelection()
 
+        if index == -1:
+            return
+
         if index == self.selected.GetCount() - 1 and self.has_default():
             warn = SeriesRemoveWarningDlg(None)
 
