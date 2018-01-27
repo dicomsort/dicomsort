@@ -91,9 +91,12 @@ class Dicom():
 
     def create_default_overrides(self):
         # Specify which field-types to override
-        self.default_overrides = {'ImageType': self._get_image_type,
-                                  'FileExtension': self._get_file_extension,
-                                  'SeriesDescription': self._get_series_description}
+        self.default_overrides = {
+            'ImageType': self._get_image_type,
+            'FileExtension': self._get_file_extension,
+            'SeriesDescription': self._get_series_description
+        }
+
         self.overrides = dict(self.default_overrides)
 
     def _get_file_extension(self):
@@ -134,10 +137,12 @@ class Dicom():
         Determines the human-readable type of the image
         """
 
-        types = {'Phase': set(['P', ]),
-                 '3DRecon': set(['CSA 3D EDITOR', ]),
-                 'Phoenix': set(['CSA REPORT', ]),
-                 'Mag': set(['FFE', 'M'])}
+        types = {
+            'Phase': set(['P', ]),
+            '3DRecon': set(['CSA 3D EDITOR', ]),
+            'Phoenix': set(['CSA REPORT', ]),
+            'Mag': set(['FFE', 'M'])
+        }
 
         try:
             imType = set(self.dicom.ImageType)
@@ -388,7 +393,7 @@ class DicomSorter():
 
     def GetFolderFormat(self):
         # Check to see if we are using the origin directory structure
-        if not self.folders or len(self.folders) == 0:
+        if self.folders is None:
             return None
 
         # Make a local copy
