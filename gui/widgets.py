@@ -472,8 +472,7 @@ class PathEditCtrl(wx.Panel):
 class SeriesRemoveWarningDlg(wx.Dialog):
 
     def __init__(self, parent, id=-1, size=(300, 200), config=None):
-        wx.Dialog.__init__(
-            self, parent, id, 'Remove Series Description?', size=size)
+        wx.Dialog.__init__(self, parent, id, 'Remove Series Description?', size=size)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -484,10 +483,8 @@ class SeriesRemoveWarningDlg(wx.Dialog):
 
         txt = wx.StaticText(self, -1, inputText, style=wx.ALIGN_CENTER)
 
-        change = wx.Button(
-            self, -1, 'Yes. Use original Filenames', size=(-1, 20))
-        accept = wx.Button(
-            self, -1, 'Yes. Use Custom Filenames', size=(-1, 20))
+        change = wx.Button(self, -1, 'Yes. Use original Filenames', size=(-1, 20))
+        accept = wx.Button(self, -1, 'Yes. Use Custom Filenames', size=(-1, 20))
         cancel = wx.Button(self, -1, 'Cancel', size=(-1, 20))
 
         change.Bind(wx.EVT_BUTTON, self.OnChange)
@@ -709,8 +706,7 @@ class FieldSelector(wx.Panel):
                 # change to original filenames
                 cfg = self.GetParent().config
                 cfg['FilenameFormat']['Selection'] = 1
-                self.GetParent(
-                ).prefDlg.pages['FilenameFormat'].UpdateFromConfig(cfg)
+                self.GetParent().prefDlg.pages['FilenameFormat'].UpdateFromConfig(cfg)
 
         self.selected.Delete(index)
 
