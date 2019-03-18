@@ -9,6 +9,8 @@ import wx.lib.agw.hyperlink as hyperlink
 import wx.grid
 import wx.html
 
+from wx.adv import AboutBox, AboutDialogInfo
+
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from wx.lib.mixins.listctrl import CheckListCtrlMixin, TextEditMixin
 
@@ -84,7 +86,7 @@ class FileDropTarget(wx.FileDropTarget):
         self.callback(x, y, filenames)
 
 
-class AboutDlg(wx.AboutDialogInfo):
+class AboutDlg(AboutDialogInfo):
 
     def __init__(self, *args):
         super(AboutDlg, self).__init__(*args)
@@ -98,7 +100,7 @@ class AboutDlg(wx.AboutDialogInfo):
 
         self.GenerateDescription()
 
-        wx.AboutBox(self)
+        AboutBox(self)
 
     def GenerateDescription(self):
         description = ("      Program designed to sort DICOM images       \n" +
