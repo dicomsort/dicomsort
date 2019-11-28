@@ -322,7 +322,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
         return [i for i in range(self.ItemCount) if self.IsChecked(i)]
 
     def ClearColumn(self, col):
-        [self.SetStringItem(i, col, '') for i in range(self.ItemCount)]
+        [self.SetItem(i, col, '') for i in range(self.ItemCount)]
 
     def SetColumnEditable(self, column, edit=True):
         if edit:
@@ -339,10 +339,10 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
             if isinstance(item, str):
                 item = [item, ]
 
-            row = self.InsertStringItem(sys.maxint, item[0])
+            row = self.InsertItem(sys.maxint, item[0])
 
             for col in range(1, len(item)):
-                self.SetStringItem(row, col, item[col])
+                self.SetItem(row, col, item[col])
 
     def CheckItems(self, itemIndex):
         [self.CheckItem(index) for index in itemIndex]
