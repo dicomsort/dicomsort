@@ -9,7 +9,7 @@ import wx.lib.agw.hyperlink as hyperlink
 import wx.grid
 import wx.html
 
-from wx.adv import AboutDialogInfo
+from wx.adv import AboutBox, AboutDialogInfo
 
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from wx.lib.mixins.listctrl import CheckListCtrlMixin, TextEditMixin
@@ -100,7 +100,7 @@ class AboutDlg(AboutDialogInfo):
 
         self.GenerateDescription()
 
-        wx.AboutBox(self)
+        AboutBox(self)
 
     def GenerateDescription(self):
         description = ("      Program designed to sort DICOM images       \n" +
