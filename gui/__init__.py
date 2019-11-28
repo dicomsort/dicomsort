@@ -1,19 +1,16 @@
-import os
-import help
 import configobj
 import dicomsorter
-import icons
-import sys
+import os
 import re
+import sys
 import traceback
-import urllib2
-import widgets
 import wx
 import wx.lib.newevent
+
+from six.moves.urllib.request import urlopen
 from threading import Thread
-import gui
-from gui import preferences
-from gui.anonymizer import QuickRenameDlg
+
+from gui import anonymizer, help, icons, preferences, widgets
 from os.path import expanduser
 
 if os.name == 'nt':
@@ -78,8 +75,7 @@ def ThrowError(message, title='Error', parent=None):
 def AvailableUpdate():
     # First try to see if we can connect
     try:
-        f = urllib2.urlopen(
-            "http://www.dicomsort.com/current")
+        f = urlopen("http://www.dicomsort.com/current")
         current = f.read().rstrip()
     except IOError:
         return None
@@ -114,11 +110,11 @@ class UpdateChecker(Thread):
     def run(self):
         ver = AvailableUpdate()
 
-        print 'Current Version is %s' % ver
+        print('Current Version is {}'.format(ver))
 
         if ver:
             # Send an event to the main thread to tell them
-            event = gui.UpdateEvent(version=ver)
+            event = UpdateEvent(version=ver)
             wx.PostEvent(self.listener, event)
 
 
@@ -260,16 +256,16 @@ class MainFrame(wx.Frame):
         self.outputDirectory = None
 
         # Get config from parent
-        self.config = configobj.ConfigObj(gui.configFile)
+        self.config = configobj.ConfigObj(configFile)
         # Set interpolation to false since we use formatted strings
         self.config.interpolation = False
 
         # Check to see if we need to populate the config file
         if len(self.config.keys()) == 0:
-            self.config.update(gui.defaultConfig)
+            self.config.update(defaultConfig)
             self.config.write()
-        elif 'Version' not in self.config or self.config['Version'] != gui.configVersion:
-            self.config.update(gui.defaultConfig)
+        elif 'Version' not in self.config or self.config['Version'] != configVersion:
+            self.config.update(defaultConfig)
             self.config.write()
 
         self.prefDlg = preferences.PreferenceDlg(
@@ -424,7 +420,7 @@ class MainFrame(wx.Frame):
 
     def QuickRename(self, *evnt):
         self.anonList = self.prefDlg.pages['Anonymization'].anonList
-        dlg = QuickRenameDlg(None, -1, 'Anonymize', size=(250, 160),
+        dlg = anonymizer.QuickRenameDlg(None, -1, 'Anonymize', size=(250, 160),
                              anonList=self.anonList)
         dlg.ShowModal()
         dlg.Destroy()

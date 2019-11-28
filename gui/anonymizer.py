@@ -1,7 +1,7 @@
 import configobj
 import wx
 import platform
-from gui import widgets
+from gui import preferences, widgets
 
 
 class QuickRenameDlg(wx.Dialog):
@@ -86,7 +86,7 @@ class AnonymizeListXP(widgets.CheckListCtrlXP):
         return anonDict
 
     def SetReplacementDict(self, dictionary):
-        keys = dictionary.keys()
+        keys = list(dictionary.keys())
         inds = self.FindStrings(keys, 1)
 
         for i, row in enumerate(inds):
@@ -134,7 +134,7 @@ class AnonymizeList(widgets.CheckListCtrl):
         return anonDict
 
     def SetReplacementDict(self, dictionary):
-        keys = dictionary.keys()
+        keys = list(dictionary.keys())
         inds = self.FindStrings(keys, 0)
 
         for i, row in enumerate(inds):
@@ -150,8 +150,6 @@ class AnonymizeList(widgets.CheckListCtrl):
 
     def GetDicomField(self, row):
         return self.GetItem(row, 0).Text
-
-import preferences
 
 
 class AnonymousPanel(preferences.PreferencePanel):

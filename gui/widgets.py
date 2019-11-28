@@ -1,23 +1,21 @@
 import gui
-import icons
 import os
 import re
 import sys
 import wx
-
-import wx.lib.agw.hyperlink as hyperlink
 import wx.grid
 import wx.html
+import wx.lib.agw.hyperlink as hyperlink
 
+from six import MAXSIZE
 from wx.adv import AboutBox, AboutDialogInfo
-
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from wx.lib.mixins.listctrl import CheckListCtrlMixin, TextEditMixin
-
 from wx.lib.agw.multidirdialog import MultiDirDialog
 
-#TODO: Create searcheable ListCtrl item
+from gui import icons
 
+#TODO: Create searcheable ListCtrl item
 
 class MultiDirDlg(MultiDirDialog):
     """
@@ -272,7 +270,7 @@ class CheckListCtrlXP(wx.grid.Grid):
         return [self.GetItem(r, col) for r in self._GetCheckedIndexes()]
 
     def FindStrings(self, strings, col=0):
-        strings = [unicode(string) for string in strings]
+        strings = [string for string in strings]
 
         fields = [item for item in self.GetItemList(col)]
 
@@ -280,7 +278,7 @@ class CheckListCtrlXP(wx.grid.Grid):
 
         for string in strings:
             try:
-                inds.append(fields.index(unicode(string)))
+                inds.append(fields.index(string))
             except ValueError:
                 inds.append(None)
 
@@ -339,7 +337,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
             if isinstance(item, str):
                 item = [item, ]
 
-            row = self.InsertItem(sys.maxint, item[0])
+            row = self.InsertItem(MAXSIZE, item[0])
 
             for col in range(1, len(item)):
                 self.SetItem(row, col, item[col])
@@ -357,7 +355,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
         return [self.GetStringItem(r, col) for r in self._GetCheckedIndexes()]
 
     def FindStrings(self, strings, col=0):
-        strings = [unicode(string) for string in strings]
+        strings = [string for string in strings]
 
         fields = [item.Text for item in self.GetItemList(col)]
 
@@ -365,7 +363,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
 
         for string in strings:
             try:
-                inds.append(fields.index(unicode(string)))
+                inds.append(fields.index(string))
             except ValueError:
                 inds.append(None)
 

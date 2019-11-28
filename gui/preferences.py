@@ -3,6 +3,8 @@ import gui
 import wx.py
 import configobj
 
+from gui import anonymizer
+
 
 class PreferencePanel(wx.Panel):
 
@@ -42,10 +44,6 @@ class PreferencePanel(wx.Panel):
         raise TypeError('Abstract Method!')
 
         config[self.shortname] = self.GetState()
-
-import anonymizer
-
-
 
 
 class MiscPanel(PreferencePanel):
