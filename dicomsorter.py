@@ -1,6 +1,6 @@
 import collections
 import os
-import dicom
+import pydicom
 import re
 import sys
 import gui
@@ -8,7 +8,7 @@ import shutil
 import itertools
 
 from threading import Thread
-from dicom.errors import InvalidDicomError
+from pydicom.errors import InvalidDicomError
 
 
 def recursive_replace_tokens(formatString, repobj):
@@ -49,7 +49,7 @@ def isdicom(filename):
     if os.path.basename(filename).lower() == 'dicomdir':
         return False
     try:
-        return dicom.read_file(filename)
+        return pydicom.read_file(filename)
     except InvalidDicomError:
         return False
 
@@ -66,7 +66,7 @@ class Dicom():
         if dcm:
             self.dicom = dcm
         else:
-            self.dicom = dicom.read_file(self.filename)
+            self.dicom = pydicom.read_file(self.filename)
 
         self.seriesFirst = False
 
