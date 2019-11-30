@@ -173,7 +173,7 @@ class AnonymousPanel(preferences.PreferencePanel):
         # Keep only the empty ones
         for i, val in enumerate(self.anonList.FindStrings(defFields)):
                 if val is None:
-                    fields.append(unicode(defFields[i]))
+                    fields.append(defFields[i])
 
         # Add to this list the newly checked ones
         fields.extend(self.anonList.GetCheckedStrings(index))
