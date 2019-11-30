@@ -23,7 +23,7 @@ def recursive_replace_tokens(formatString, repobj):
 
 
 def grouper(iterable, n):
-    return map(None, * [iter(iterable), ] * n)
+    return zip(* [iter(iterable), ] * n)
 
 
 def clean_directory_name(path):
