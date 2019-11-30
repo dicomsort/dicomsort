@@ -2,19 +2,22 @@ from cx_Freeze import setup, Executable
 import os
 import shutil
 import sys
-import gui
+
+from dicomsort import gui
+
+ICON_DIR = os.path.join('dicomsort', 'icons')
 
 base = None
 if sys.platform == 'win32':
     base = "Win32GUI"
-    ICON = 'DSicon.ico'
+    ICON = os.path.join(ICON_DIR, 'DSicon.ico')
     EXE = 'DicomSort.exe'
 
 if sys.platform == 'darwin':
-    ICON = 'DSicon.icns'
+    ICON = os.path.join(ICON_DIR, 'DSicon.icns')
     EXE = 'DICOM Sort.app'
 
-includefiles = [ICON,]
+includefiles = [ICON, ]
 
 NAME = 'DICOM Sort'
 VERSION = gui.__version__

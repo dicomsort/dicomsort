@@ -1,7 +1,7 @@
 import configobj
 import wx
 import platform
-from gui import preferences, widgets
+from dicomsort.gui import preferences, widgets
 
 
 class QuickRenameDlg(wx.Dialog):

@@ -1,4 +1,3 @@
-import gui
 import os
 import re
 import sys
@@ -13,7 +12,8 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 from wx.lib.mixins.listctrl import CheckListCtrlMixin, TextEditMixin
 from wx.lib.agw.multidirdialog import MultiDirDialog
 
-from gui import icons
+from dicomsort import gui
+from dicomsort.gui import icons
 
 #TODO: Create searcheable ListCtrl item
 

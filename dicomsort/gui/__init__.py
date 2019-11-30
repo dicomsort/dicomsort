@@ -1,5 +1,5 @@
 import configobj
-import dicomsorter
+from dicomsort import dicomsorter
 import os
 import re
 import sys
@@ -10,7 +10,7 @@ import wx.lib.newevent
 from six.moves.urllib.request import urlopen
 from threading import Thread
 
-from gui import anonymizer, help, icons, preferences, widgets
+from dicomsort.gui import anonymizer, help, icons, preferences, widgets
 from os.path import expanduser
 
 if os.name == 'nt':

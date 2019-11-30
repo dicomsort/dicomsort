@@ -1,9 +1,9 @@
 import wx
-import gui
 import wx.py
 import configobj
 
-from gui import anonymizer
+from dicomsort import gui
+from dicomsort.gui import anonymizer
 
 
 class PreferencePanel(wx.Panel):

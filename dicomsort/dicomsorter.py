@@ -3,10 +3,10 @@ import os
 import pydicom
 import re
 import sys
-import gui
 import shutil
 import itertools
 
+from dicomsort import gui
 from threading import Thread
 from pydicom.errors import InvalidDicomError
 
