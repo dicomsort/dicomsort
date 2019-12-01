@@ -6,6 +6,7 @@ import sys
 import shutil
 import itertools
 
+from six.moves.queue import Queue, Empty
 from dicomsort import gui
 from threading import Thread
 from pydicom.errors import InvalidDicomError
@@ -278,14 +279,14 @@ class Dicom():
 
 
 class Sorter(Thread):
-    def __init__(self, files, outDir, dirFormat, fileFormat,
+    def __init__(self, file_queue, outDir, dirFormat, fileFormat,
                  anon=dict(), keep_filename=False, iterator=None,
                  test=False, listener=None, total=None, root=None,
                  seriesFirst=False, keepOriginal=True):
 
         self.dirFormat = dirFormat
         self.fileFormat = fileFormat
-        self.fileList = files
+        self.fileQueue = file_queue
         self.anondict = anon
         self.keep_filename = keep_filename
         self.seriesFirst = seriesFirst
@@ -294,14 +295,7 @@ class Sorter(Thread):
         self.test = test
         self.iter = iterator
         self.root = root
-
-        if not isinstance(self.fileList, tuple):
-            self.fileList = (self.fileList,)
-
-        if total is None:
-            self.total = len(self.fileList)
-        else:
-            self.total = total
+        self.total = total
 
         self.isgui = False
 
@@ -317,11 +311,11 @@ class Sorter(Thread):
         if self.isgui:
             import wx
 
-        files = self.fileList
-
-        for file in files:
-            if not file:
-                continue
+        while True:
+            try:
+                file = self.fileQueue.get_nowait()
+            except Empty:
+                return
 
             dcm = isdicom(file)
             if dcm:
@@ -343,7 +337,7 @@ class Sorter(Thread):
                          keepOriginal=self.keepOriginal)
 
             if self.iter:
-                count = self.iter.next()
+                count = next(self.iter)
                 if self.isgui:
                     event = gui.CounterEvent(Count=count, total=self.total)
                     wx.PostEvent(self.listener, event)
@@ -405,21 +399,20 @@ class DicomSorter():
 
         dirFormat = self.GetFolderFormat()
 
+        queue = Queue()
+
         fileList = list()
 
         for path in self.pathname:
             for root, dir, files in os.walk(path):
                 for file in files:
+                    # Append to the queue
                     fileList.append(os.path.join(root, file))
 
         # Make sure that we don't have duplicates
         fileList = list(set(fileList))
-
-        numberOfThreads = 2
-        numberOfFiles = len(fileList)
-        numberPerThread = int(round(float(numberOfFiles) / float(numberOfThreads)))
-
-        fileGroups = grouper(fileList, numberPerThread)
+        for item in fileList:
+            queue.put(item)
 
         dirFormat = self.GetFolderFormat()
 
@@ -427,12 +420,12 @@ class DicomSorter():
 
         iterator = itertools.count(1)
 
-        for group in fileGroups:
+        for group in range(2):
 
-            sorter = Sorter(group, outputDir, dirFormat, self.filename,
+            sorter = Sorter(queue, outputDir, dirFormat, self.filename,
                             self.anondict, self.keep_filename,
                             iterator=iterator, test=test, listener=listener,
-                            total=numberOfFiles, root=self.pathname,
+                            total=queue.qsize(), root=self.pathname,
                             seriesFirst=self.seriesFirst,
                             keepOriginal=self.keepOriginal)
 
