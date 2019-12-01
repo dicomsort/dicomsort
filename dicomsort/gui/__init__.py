@@ -1,5 +1,4 @@
 import configobj
-from dicomsort import dicomsorter
 import os
 import re
 import sys
@@ -10,6 +9,7 @@ import wx.lib.newevent
 from six.moves.urllib.request import urlopen
 from threading import Thread
 
+from dicomsort import dicomsorter
 from dicomsort.gui import anonymizer, help, icons, preferences, widgets
 from os.path import expanduser
 

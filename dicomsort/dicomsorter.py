@@ -59,8 +59,7 @@ class Dicom():
         """
         Takes a dicom filename in and returns instance that can be used to sort
         """
-        # Be sure to do encoding because Windows sucks
-        self.filename = filename.encode("UTF-8")
+        self.filename = filename
 
         # Load the DICOM object
         if dcm:
