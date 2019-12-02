@@ -89,7 +89,7 @@ class HelpDlg(wx.Dialog):
     def __init__(self, parent=None, **kwargs):
 
         super(HelpDlg, self).__init__(parent, -1, "DICOM Sorting Help",
-                                      style=wx.DEFAULT_DIALOG_STYLE | wx.THICK_FRAME | wx.RESIZE_BORDER | wx.TAB_TRAVERSAL)
+                                      style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.TAB_TRAVERSAL)
 
         self.hwin = HtmlWindow(self, -1, size=(400, 200))
 
