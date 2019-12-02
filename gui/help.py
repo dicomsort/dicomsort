@@ -12,11 +12,11 @@ program when a directory of DICOM images is selected.
 <strong><u>Operation</u></strong><br>
 You must first Browse for the directory that contains the DICOM
 images to be sorted. <strong>This folder should preferably be the DICOM
-folder on the CD\<strong>
+folder on the CD</strong>
 <br><br>
 When the images are loaded the available DICOM header values are listed in the
-<strong>DICOM Properties<strong> listbox. Double-click or push
-the <strong>>></strong> button to add the selected property to
+<strong>DICOM Properties</strong> listbox. Double-click or push
+the <strong>&gt;&gt;</strong> button to add the selected property to
 the listbox on the right.
 <br>
 The properties that are added to the listbox on the right are
@@ -30,7 +30,7 @@ It is important to note that you will select the output directory
 You can also change the ordering of the sorting parameters using the
 <strong>Up and Down Buttons</strong> located between the two boxes.
 <br><br>
-To remove a property from the parameter box, use the <strong><<</strong>
+To remove a property from the parameter box, use the <strong>&lt;&lt;</strong>
 button after selecting the property to remove or double-click the entry.
 Once you are satisfied with your parameter selection, click on the
 <strong>Sort Button</strong> to perform the requested operation.
@@ -66,14 +66,6 @@ requires a certain naming convention. Names will be preserved when the checkbox 
 DICOM images (create an exception).</li>
 <li>Implement a preview of the values of selected DICOM properties</li>
 </ul>
-<br><br>
-<strong><u>Technical Details</u></strong><br>
-<strong>Development Language:</strong> Python<br>
-<strong>Version:</strong> 2.5.2<br>
-<strong>Interface Development:</strong> WxWidgets<br>
-<strong>Additional Modules:</strong> pyDicom<br>
-<strong>OS Compatibility:</strong> Windows, Unix, Linux
-</span>
 """
 
 
