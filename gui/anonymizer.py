@@ -141,7 +141,7 @@ class AnonymizeList(widgets.CheckListCtrl):
             if row is None:
                 continue
 
-            self.SetStringItem(row, 1, dictionary[keys[i]])
+            self.SetItem(row, 1, dictionary[keys[i]])
 
     def CheckStrings(self, strings, col=0):
         inds = [ind for ind in self.FindStrings(strings, col)

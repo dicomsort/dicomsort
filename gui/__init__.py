@@ -407,7 +407,7 @@ class MainFrame(wx.Frame):
                 if item[2] != '':
                     self.Bind(wx.EVT_MENU, item[2], menuitem)
 
-                menu.AppendItem(menuitem)
+                menu.Append(menuitem)
 
         parent.Append(menu, name)
 

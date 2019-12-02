@@ -9,10 +9,10 @@ import wx.lib.agw.hyperlink as hyperlink
 import wx.grid
 import wx.html
 
-from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
-from wx.lib.mixins.listctrl import CheckListCtrlMixin, TextEditMixin
-
+from wx.adv import AboutBox, AboutDialogInfo
 from wx.lib.agw.multidirdialog import MultiDirDialog
+from wx.lib.mixins.listctrl import CheckListCtrlMixin, TextEditMixin
+from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 
 #TODO: Create searcheable ListCtrl item
 
@@ -84,7 +84,7 @@ class FileDropTarget(wx.FileDropTarget):
         self.callback(x, y, filenames)
 
 
-class AboutDlg(wx.AboutDialogInfo):
+class AboutDlg(AboutDialogInfo):
 
     def __init__(self, *args):
         super(AboutDlg, self).__init__(*args)
@@ -98,7 +98,7 @@ class AboutDlg(wx.AboutDialogInfo):
 
         self.GenerateDescription()
 
-        wx.AboutBox(self)
+        AboutBox(self)
 
     def GenerateDescription(self):
         description = ("      Program designed to sort DICOM images       \n" +
@@ -320,7 +320,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
         return [i for i in range(self.ItemCount) if self.IsChecked(i)]
 
     def ClearColumn(self, col):
-        [self.SetStringItem(i, col, '') for i in range(self.ItemCount)]
+        [self.SetItem(i, col, '') for i in range(self.ItemCount)]
 
     def SetColumnEditable(self, column, edit=True):
         if edit:
@@ -337,7 +337,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
             if isinstance(item, str):
                 item = [item, ]
 
-            row = self.InsertStringItem(sys.maxint, item[0])
+            row = self.InsertItem(sys.maxint, item[0])
 
             for col in range(1, len(item)):
                 self.SetStringItem(row, col, item[col])
