@@ -1,90 +1,82 @@
-from cx_Freeze import setup, Executable
+import dicomsort
 import os
-import shutil
 import sys
-import gui
 
-base = None
-if sys.platform == 'win32':
-    base = "Win32GUI"
-    ICON = 'DSicon.ico'
-    EXE = 'DicomSort.exe'
+from cx_Freeze import setup, Executable
 
-if sys.platform == 'darwin':
-    ICON = 'DSicon.icns'
-    EXE = 'DICOM Sort.app'
-
-includefiles = [ICON,]
+ICON_DIR = 'icons'
+ICO_FILE = os.path.join(ICON_DIR, 'DSicon.ico')
+ICNS_FILE = os.path.join(ICON_DIR, 'DSicon.icns')
 
 NAME = 'DICOM Sort'
-VERSION = gui.__version__
-ID = '{{6638951C-0E99-4FAF-AAF1-B283912E7DE8}'
 URL = 'https://dicomsort.com'
 
+base = None
+
 if sys.platform == 'darwin':
-    OUTDIR = os.path.join('dist',NAME)
+    EXE = 'DICOM Sort.app'
+    ICON = ICNS_FILE
 else:
-    OUTDIR = os.path.join('dist', ''.join([NAME, ' ', VERSION]))
+    EXE = 'DicomSort.exe'
+    ICON = ICO_FILE
 
-shortcut_table = [
-    ("DesktopShortcut",          # Shortcut
-     "DesktopFolder",            # Directory_
-     NAME,                       # Name
-     "TARGETDIR",                # Component_
-     "[TARGETDIR]DicomSort.exe", # Target
-     None,                       # Arguments
-     None,                       # Description
-     None,                       # Hotkey
-     None,                       # Icon
-     None,                       # IconIndex
-     None,                       # ShowCmd
-     'TARGETDIR'                 # WkDir
-     ),
-    ("ApplicationStartMenuShortcut",
-     "StartMenuFolder",
-     NAME,
-     "TARGETDIR",
-     "[TARGETDIR]DicomSort.exe",
-     None,
-     None,
-     None,
-     None,
-     None,
-     None,
-     'TARGETDIR'
-    )
-]
 
-msi_data = {
-    "Shortcut": shortcut_table
-}
+if sys.platform == 'win32':
+    OUTDIR = os.path.join('dist', ''.join([NAME, ' ', dicomsort.__version__]))
+else:
+    OUTDIR = os.path.join('dist', NAME)
 
-setup(name = NAME,
-      version = VERSION,
-      description = 'A DICOM Sorting Utility',
-      options = {
-        'build': {
-            'build_exe': OUTDIR
-        },
-        'bdist_msi': {
-            'data': msi_data
-        },
-        'bdist_exe': {
-            'include_msvcr': True,
-            'include_files': includefiles
-        },
-        'bdist_mac': {
-            'iconfile': ICON
-        },
-        'bdist_dmg': {
-            'volume_label': "%s-%s" % (NAME, VERSION)
-        }
+
+def shortcut(name, executable, type, directory):
+    target = "[TARGETDIR]{}".format(executable)
+    return (
+         type,        # Shortcut
+         directory,   # Directory_
+         name,        # Name
+         "TARGETDIR", # Component_
+         target,      # Target
+         None,        # Arguments
+         None,        # Description
+         None,        # Hotkey
+         None,        # Icon
+         None,        # IconIndex
+         None,        # ShowCmd
+         'TARGETDIR'  # WkDir
+     )
+
+setup(
+    name=NAME,
+    version=dicomsort.__version__,
+    description='A DICOM Sorting Utility',
+    options={
+      'build': {
+          'build_exe': OUTDIR
       },
-      executables = [
-          Executable(
-              script = 'DicomSort.pyw',
-              base = base,
-              icon = ICON,
-              shortcutName = 'DICOM Sort'
-          ),
-      ])
+      'bdist_msi': {
+          'data': {
+              'Shortcut': [
+                  shortcut(NAME, 'DicomSort.exe', 'DesktopShortcut', 'DesktopFolder'),
+                  shortcut(NAME, 'DicomSort.exe', 'ApplicationStartMenuShortcut', 'StartMenuFolder')
+              ]
+          }
+      },
+      'bdist_exe': {
+          'include_msvcr': True,
+          'include_files': [ICO_FILE, ]
+      },
+      'bdist_mac': {
+          'iconfile': ICNS_FILE
+      },
+      'bdist_dmg': {
+          'volume_label': "%s-%s" % (NAME, dicomsort.__version__)
+      }
+    },
+    entry_points={
+        'console_scripts': [
+            'dicomsort = dicomsort.gui:main',
+        ],
+    },
+    executables=[
+        Executable(script='bin/dicomsort.py', base=base, icon=ICON, shortcutName='DICOM Sort')
+    ]
+)
