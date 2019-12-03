@@ -1,5 +1,8 @@
-DicomSort README
+DICOM Sort
 ================
+
+[![Maintainability](https://api.codeclimate.com/v1/badges/0113af254aa8a5e7afa4/maintainability)](https://codeclimate.com/github/suever/dicomSort/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/0113af254aa8a5e7afa4/test_coverage)](https://codeclimate.com/github/suever/dicomSort/test_coverage)
 
 DicomSort is a utility that takes a series of DICOM images and sorts them into
 a directory tree based upon the header fields selected.
