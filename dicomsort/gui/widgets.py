@@ -1,5 +1,4 @@
-import gui
-import icons
+import dicomsort
 import os
 import re
 import sys
@@ -13,6 +12,8 @@ from wx.adv import AboutBox, AboutDialogInfo
 from wx.lib.agw.multidirdialog import MultiDirDialog
 from wx.lib.mixins.listctrl import CheckListCtrlMixin, TextEditMixin
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
+
+from dicomsort.gui import errors, events, icons
 
 #TODO: Create searcheable ListCtrl item
 
@@ -46,7 +47,7 @@ class UpdateDlg(wx.Dialog):
         vbox.Add(head, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 15)
 
         txt = wx.StaticText(
-            self, -1, label=message % (gui.__version__, version),
+            self, -1, label=message % (dicomsort__version__, version),
             style=wx.ALIGN_CENTER)
         vbox.Add(txt, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
 
@@ -91,7 +92,7 @@ class AboutDlg(AboutDialogInfo):
         self.SetIcon(icons.about.GetIcon())
 
         self.SetName('DICOM Sorting')
-        self.SetVersion(gui.__version__)
+        self.SetVersion(dicomsort.__version__)
 
         self.SetCopyright('(C) 2016 Jonathan Suever')
         self.SetWebSite('http://www.dicomsort.com')
@@ -438,7 +439,7 @@ class PathEditCtrl(wx.Panel):
         if len(badPaths):
             p = ', '.join(badPaths)
             errorMsg = 'The Following directories are invalid paths: %s' % p
-            gui.ThrowError(errorMsg, 'Invalid Paths', parent=self.Parent)
+            errors.throw_error(errorMsg, 'Invalid Paths', parent=self.Parent)
             return
 
         self.path = paths
@@ -448,7 +449,7 @@ class PathEditCtrl(wx.Panel):
         self.Notify()
 
     def Notify(self, *evnt):
-        event = gui.PathEvent(path=self.path)
+        event = events.PathEvent(path=self.path)
         wx.PostEvent(self, event)
 
     def BrowsePaths(self, *evnt):
@@ -542,7 +543,7 @@ class FieldSelector(wx.Panel):
         return
 
     def _sort_callback(self, *evnt):
-        event = gui.SortEvent(anon=self.anonQ.IsChecked(),
+        event = events.SortEvent(anon=self.anonQ.IsChecked(),
                               fields=self.GetFormatFields())
         wx.PostEvent(self, event)
 
