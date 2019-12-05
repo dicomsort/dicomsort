@@ -1,10 +1,17 @@
-.idea
-.DS_Store
-*.swp
+# Python Artifacts
 *.pyc
 *.log
+
+# Build Artifacts
 dist
 build
+
+# Editor / Development Environment Files
+*.swp
+.idea
+
+# Virtual Environments
 env
 
-dicomSort.ini
+# File System Artifacts
+.DS_Store
