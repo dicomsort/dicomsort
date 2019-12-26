@@ -5,6 +5,7 @@
 # Build Artifacts
 dist
 build
+*.egg-info
 
 # Editor / Development Environment Files
 *.swp
