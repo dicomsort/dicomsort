@@ -94,7 +94,7 @@ class AboutDlg(AboutDialogInfo):
         self.SetName('DICOM Sorting')
         self.SetVersion(dicomsort.__version__)
 
-        self.SetCopyright('(C) 2016 Jonathan Suever')
+        self.SetCopyright('(C) 2019 Jonathan Suever')
         self.SetWebSite('http://www.dicomsort.com')
 
         self.GenerateDescription()
