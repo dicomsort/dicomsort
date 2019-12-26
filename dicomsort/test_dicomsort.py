@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from pydicom.dataset import Dataset, FileDataset
@@ -78,3 +79,25 @@ class TestIsDicom:
         filename = dicom_generator()
 
         assert dicomsorter.isdicom(filename) is not False
+
+
+class TestCleanDirectoryName:
+    def test_no_invalid_chars(self):
+        dirname = 'clean'
+        assert dicomsorter.clean_directory_name(dirname) == dirname
+
+    def test_invalid_chars(self):
+        dirname = 'prefix\\:*?|"<>suffix'
+        assert dicomsorter.clean_directory_name(dirname) == 'prefix_suffix'
+
+
+class TestCleanPath:
+    def test_no_invalid_parts(self):
+        path = os.path.join('/tmp/dir/ok')
+        assert dicomsorter.clean_path(path) == path
+
+    def test_with_invalid_parts(self):
+        dirname = 'prefix:*?|"<>suffix'
+        path = os.path.join('tmp', 'dir', dirname, dirname)
+        expected = os.path.join('tmp', 'dir', 'prefix_suffix', 'prefix_suffix')
+        assert dicomsorter.clean_path(path) ==  expected

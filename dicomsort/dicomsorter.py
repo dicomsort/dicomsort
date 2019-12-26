@@ -17,7 +17,7 @@ def recursive_replace_tokens(formatString, repobj):
     max_rep = 5
     rep = 0
 
-    while re.search('%\(.*\)', formatString) and rep < max_rep:
+    while re.search('%\\(.*\\)', formatString) and rep < max_rep:
         formatString = formatString % repobj
         rep = rep + 1
 
@@ -29,12 +29,12 @@ def grouper(iterable, n):
 
 
 def clean_directory_name(path):
-    badchars = '[\\/\:\*\?\"\<\>\|]+'
+    badchars = '[\\\\/\\:\\*\\?\\"\\<\\>\\|]+'
     return re.sub(badchars, '_', path)
 
 
 def clean_path(path):
-    badchars = '[\\/\:\*\?\"\<\>\|]+'
+    badchars = '[\\/\\:\\*\\?\\"\\<\\>\\|]+'
 
     outpath = ''
 
