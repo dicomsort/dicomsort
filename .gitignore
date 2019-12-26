@@ -12,7 +12,7 @@ build
 .idea
 
 # Virtual Environments
-env
+env*
 
 # File System Artifacts
 .DS_Store
