@@ -32,7 +32,7 @@ def clean_path(path):
     head, tail = os.path.split(path)
 
     while tail:
-        outpath = os.path.join(re.sub(INVALID_FILENAME_CHARS, '_', tail), outpath)
+        outpath = os.path.join(clean_directory_name(tail), outpath)
         head, tail = os.path.split(head)
 
     return os.path.join(head, outpath)[:-1]
