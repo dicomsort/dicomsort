@@ -4,6 +4,8 @@ from os.path import expanduser
 
 configuration_version = '2.0'
 
+default_filename = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
+
 default_configuration = {
     'Version': configuration_version,
     'Anonymization': {
@@ -21,7 +23,7 @@ default_configuration = {
         }
     },
     'FilenameFormat': {
-        'FilenameString': '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s',
+        'FilenameString': default_filename,
         'Selection': 0
     },
     'Miscpanel': {
@@ -34,4 +36,4 @@ default_configuration = {
 if os.name == 'nt':
     configuration_file = os.path.join(expanduser('~'), 'dicomSort.ini')
 else:
-    configuration_file = os.path.join(os.getenv("HOME"), '.dicomSort.ini')
+    configuration_file = os.path.join(os.getenv('HOME'), '.dicomSort.ini')
