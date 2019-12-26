@@ -2,58 +2,13 @@ import collections
 import itertools
 import os
 import pydicom
-import re
 import shutil
 import sys
 
-from dicomsort import errors
-from dicomsort.gui import events
-
 from threading import Thread
-from pydicom.errors import InvalidDicomError
 
-
-def recursive_replace_tokens(formatString, repobj):
-    max_rep = 5
-    rep = 0
-
-    while re.search('%\\(.*\\)', formatString) and rep < max_rep:
-        formatString = formatString % repobj
-        rep = rep + 1
-
-    return formatString
-
-
-def grouper(iterable, n):
-    return map(None, * [iter(iterable), ] * n)
-
-
-def clean_directory_name(path):
-    badchars = '[\\\\/\\:\\*\\?\\"\\<\\>\\|]+'
-    return re.sub(badchars, '_', path)
-
-
-def clean_path(path):
-    badchars = '[\\/\\:\\*\\?\\"\\<\\>\\|]+'
-
-    outpath = ''
-
-    head, tail = os.path.split(path)
-
-    while tail:
-        outpath = os.path.join(re.sub(badchars, '_', tail), outpath)
-        head, tail = os.path.split(head)
-
-    return os.path.join(head, outpath)[:-1]
-
-
-def isdicom(filename):
-    if os.path.basename(filename).lower() == 'dicomdir':
-        return False
-    try:
-        return pydicom.read_file(filename)
-    except InvalidDicomError:
-        return False
+from dicomsort import errors, utils
+from dicomsort.gui import events
 
 
 class Dicom():
@@ -62,7 +17,7 @@ class Dicom():
         Takes a dicom filename in and returns instance that can be used to sort
         """
         # Be sure to do encoding because Windows sucks
-        self.filename = filename.encode("UTF-8")
+        self.filename = filename.encode('UTF-8')
 
         # Load the DICOM object
         if dcm:
@@ -167,8 +122,8 @@ class Dicom():
         directory = root
         for item in dirFormat:
             try:
-                subdir = recursive_replace_tokens(item, self)
-                subdir = clean_directory_name(subdir)
+                subdir = utils.recursive_replace_tokens(item, self)
+                subdir = utils.clean_directory_name(subdir)
             except AttributeError:
                 subdir = 'UNKNOWN'
 
@@ -177,8 +132,8 @@ class Dicom():
         # Maximum recursion is 5 so we don't end up with any infinite loop
         # situations
         try:
-            filename = recursive_replace_tokens(fileFormat, self)
-            filename = clean_path(filename)
+            filename = utils.recursive_replace_tokens(fileFormat, self)
+            filename = utils.clean_path(filename)
             out = os.path.join(directory, filename)
         except AttributeError:
             # Now just use the initial filename
@@ -322,7 +277,7 @@ class Sorter(Thread):
             if not file:
                 continue
 
-            dcm = isdicom(file)
+            dcm = utils.isdicom(file)
             if dcm:
                 dcm = Dicom(file, dcm)
                 dcm.SetAnonRules(self.anondict)
@@ -418,7 +373,7 @@ class DicomSorter():
         numberOfFiles = len(fileList)
         numberPerThread = int(round(float(numberOfFiles) / float(numberOfThreads)))
 
-        fileGroups = grouper(fileList, numberPerThread)
+        fileGroups = utils.grouper(fileList, numberPerThread)
 
         dirFormat = self.GetFolderFormat()
 
@@ -442,7 +397,7 @@ class DicomSorter():
             for root, dirs, files in os.walk(path):
                 for file in files:
                     filename = os.path.join(root, file)
-                    dcm = isdicom(filename)
+                    dcm = utils.isdicom(filename)
                     if dcm:
                         return dcm.dir('')
 
