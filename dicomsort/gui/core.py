@@ -1,129 +1,24 @@
-import os
-import help
 import configobj
-import dicomsorter
-import icons
-import sys
+import dicomsort
+import os
 import re
+import sys
 import traceback
 import urllib2
-import widgets
 import wx
-import wx.lib.newevent
-from threading import Thread
-import gui
-from gui import preferences
-from gui.anonymizer import QuickRenameDlg
-from os.path import expanduser
 
-if os.name == 'nt':
-    configFile = os.path.join(expanduser('~'), 'dicomSort.ini')
-else:
-    configFile = os.path.join(os.getenv("HOME"), '.dicomSort.ini')
-
-Version = (2, 1, 9)
-__version__ = '.'.join([str(x) for x in Version])
-
-configVersion = '2.0'
-
-defaultConfig = {
-    'Version': configVersion,
-    'Anonymization': {
-        'Fields': [
-            'OtherPatientsIDS',
-            'PatientID',
-            'PatientBirthDate',
-            'PatientName',
-            'ReferringPhysiciansName',
-            'RequestingPhysician'
-        ],
-        'Replacements': {
-            'PatientName': 'ANONYMOUS',
-            'PatientID': '%(PatientName)s'
-        }
-    },
-    'FilenameFormat': {
-        'FilenameString': '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s',
-        'Selection': 0
-    },
-    'Miscpanel': {
-        'KeepSeries': 'True',
-        'SeriesFirst': 'False',
-        'KeepOriginal': 'True'
-    }
-}
-
-PathEvent, EVT_PATH = wx.lib.newevent.NewEvent()
-PopulateEvent, EVT_POPULATE_FIELDS = wx.lib.newevent.NewEvent()
-SortEvent, EVT_SORT = wx.lib.newevent.NewEvent()
-CounterEvent, EVT_COUNTER = wx.lib.newevent.NewEvent()
-UpdateEvent, EVT_UPDATE = wx.lib.newevent.NewEvent()
-
+from dicomsort import config, errors
+from dicomsort.dicomsorter import DicomSorter
+from dicomsort.gui import errors, events, help, icons, preferences, widgets
+from dicomsort.gui.anonymizer import QuickRenameDlg
+from dicomsort.gui.update import UpdateChecker
 
 def ExceptHook(type, value, tb):
     dlg = CrashReporter(type, value, tb)
     dlg.ShowModal()
 
 
-def ThrowError(message, title='Error', parent=None):
-    """
-    Generic way to throw an error and display the appropriate dialog
-    """
-    dlg = wx.MessageDialog(parent, message, title, wx.OK | wx.ICON_ERROR)
-    dlg.CenterOnParent()
-    dlg.ShowModal()
-    dlg.Destroy()
-
-
-def AvailableUpdate():
-    # First try to see if we can connect
-    try:
-        f = urllib2.urlopen(
-            "http://www.dicomsort.com/current")
-        current = f.read().rstrip()
-    except IOError:
-        return None
-
-    if re.search('404', current):
-        return None
-
-    if current == __version__:
-        return None
-    else:
-        # Break it up to see if it's a dev version
-        I = [int(part) for part in current.split('.')]
-        for ind in range(len(I)):
-            if I[ind] > Version[ind]:
-                return current
-        return None
-
-
-class UpdateChecker(Thread):
-
-    def __init__(self, frame, listener):
-        self.frame = frame
-        self.listener = listener
-
-        Thread.__init__(self)
-        self.name = 'UpdateThread'
-
-        # Make it a daemon so that when the MainThread exits, it is terminated
-        self.daemon = True
-        self.start()
-
-    def run(self):
-        ver = AvailableUpdate()
-
-        print 'Current Version is %s' % ver
-
-        if ver:
-            # Send an event to the main thread to tell them
-            event = gui.UpdateEvent(version=ver)
-            wx.PostEvent(self.listener, event)
-
-
 class DicomSort(wx.App):
-
     def __init__(self, *args):
         wx.App.__init__(self, *args)
         self.frame = MainFrame(None, -1, "DicomSort", size=(500, 500))
@@ -134,7 +29,7 @@ class DicomSort(wx.App):
 
         # Check for updates
         UpdateChecker(self.frame, listener=self.frame)
-        self.frame.Bind(EVT_UPDATE, self.frame.OnNewVersion)
+        self.frame.Bind(events.EVT_UPDATE, self.frame.OnNewVersion)
 
     def MainLoop(self, *args):
         wx.App.MainLoop(self, *args)
@@ -225,10 +120,12 @@ class CrashReporter(wx.Dialog):
             email = None
 
         url = 'http://www.suever.net/software/dicomSort/bug_report.php'
-        values = {'OS': sys.platform,
-                  'version': __version__,
-                  'email': email,
-                  'comments': self.comments.GetValue().strip('\n')}
+        values = {
+            'OS': sys.platform,
+            'version': dicomsort.__version__,
+            'email': email,
+            'comments': self.comments.GetValue().strip('\n')
+        }
 
         data = urllib2.urlencode(values)
         urllib2.urlopen(url, data)
@@ -240,7 +137,7 @@ class CrashReporter(wx.Dialog):
         regex = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
 
         if not re.search(regex, email, re.UNICODE | re.IGNORECASE):
-            ThrowError('Please enter a valid email address', parent=self)
+            errors.throw_error('Please enter a valid email address', parent=self)
 
         return email
 
@@ -254,22 +151,22 @@ class MainFrame(wx.Frame):
         self._InitializeMenus()
 
         # Use os.getcwd() for now
-        self.dicomSorter = dicomsorter.DicomSorter()
+        self.dicomSorter = DicomSorter()
 
         # Store the selected output directory to speed it up
         self.outputDirectory = None
 
         # Get config from parent
-        self.config = configobj.ConfigObj(gui.configFile)
+        self.config = configobj.ConfigObj(config.configuration_file)
         # Set interpolation to false since we use formatted strings
         self.config.interpolation = False
 
         # Check to see if we need to populate the config file
         if len(self.config.keys()) == 0:
-            self.config.update(gui.defaultConfig)
+            self.config.update(config.default_configuration)
             self.config.write()
-        elif 'Version' not in self.config or self.config['Version'] != gui.configVersion:
-            self.config.update(gui.defaultConfig)
+        elif 'Version' not in self.config or self.config['Version'] != config.configuration_version:
+            self.config.update(config.default_configuration)
             self.config.write()
 
         self.prefDlg = preferences.PreferenceDlg(
@@ -303,13 +200,13 @@ class MainFrame(wx.Frame):
         self.selector = widgets.FieldSelector(self, titles=['DICOM Properties',
                                                             'Properties to Use'])
 
-        self.selector.Bind(EVT_SORT, self.Sort)
+        self.selector.Bind(events.EVT_SORT, self.Sort)
 
         vbox.Add(self.selector, 1, wx.EXPAND)
 
         self.SetSizer(vbox)
 
-        self.pathEditor.Bind(EVT_PATH, self.FillList)
+        self.pathEditor.Bind(events.EVT_PATH, self.FillList)
 
     def Sort(self, evnt):
 
@@ -359,7 +256,7 @@ class MainFrame(wx.Frame):
         # Use for the real deal
         self.dicomSorter.Sort(self.outputDirectory, listener=self)
 
-        self.Bind(EVT_COUNTER, self.OnCount)
+        self.Bind(events.EVT_COUNTER, self.OnCount)
 
     def OnCount(self, evnt):
         statusText = '%s / %s' % (evnt.Count, evnt.total)
@@ -456,9 +353,9 @@ class MainFrame(wx.Frame):
         self.dicomSorter.pathname = evnt.path
         try:
             fields = self.dicomSorter.GetAvailableFields()
-        except dicomsorter.DicomFolderError:
+        except errors.DicomFolderError:
             errMsg = ''.join([';'.join(evnt.path), ' contains no DICOMs'])
-            ThrowError(errMsg, 'No DICOMs Present', parent=self)
+            errors.throw_error(errMsg, 'No DICOMs Present', parent=self)
             return
 
         self.selector.SetOptions(fields)
@@ -471,7 +368,7 @@ class MainFrame(wx.Frame):
         # TODO: Change PrefDlg to a dict
         self.prefDlg.pages['Anonymization'].SetDicomFields(fields)
 
-        self.Notify(PopulateEvent, fields=fields)
+        self.Notify(events.PopulateEvent, fields=fields)
 
     def Notify(self, evntType, **kwargs):
         event = evntType(**kwargs)

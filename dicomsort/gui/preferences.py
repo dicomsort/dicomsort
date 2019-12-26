@@ -1,8 +1,8 @@
 import wx
-import gui
 import wx.py
 import configobj
 
+from dicomsort import config
 
 class PreferencePanel(wx.Panel):
 
@@ -43,7 +43,6 @@ class PreferencePanel(wx.Panel):
 
         config[self.shortname] = self.GetState()
 
-import anonymizer
 
 
 
@@ -205,7 +204,7 @@ class PreferenceDlg(wx.Dialog):
         if 'config' in kwargs:
             self.config = kwargs.pop('config')
         else:
-            self.config = configobj.ConfigObj(gui.configFile)
+            self.config = configobj.ConfigObj(config.configuration_file)
 
         wx.Dialog.__init__(self, *args, **kwargs)
 
@@ -228,7 +227,7 @@ class PreferenceDlg(wx.Dialog):
 
     def create(self):
         self.nb = wx.Notebook(self)
-        self.AddModule(anonymizer.AnonymousPanel)
+        self.AddModule(AnonymousPanel)
         self.AddModule(FileNamePanel)
         self.AddModule(MiscPanel)
 
@@ -274,16 +273,4 @@ class PreferenceDlg(wx.Dialog):
         wx.Dialog.ShowModal(self, *args)
         return self.config
 
-
-if __name__ == "__main__":
-    app = gui.DebugApp(0)
-
-    p = PreferenceDlg(
-        None, -1, "DICOM sort preferences", size=(400, 500), pos=(708, 0))
-    p.Show()
-
-    anonList = p.pages['Anonymization']
-
-    app.SetTopWindow(p)
-
-    app.MainLoop()
+from dicomsort.gui.anonymizer import AnonymousPanel

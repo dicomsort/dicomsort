@@ -1,7 +1,9 @@
 import configobj
 import wx
 import platform
-from gui import widgets
+
+from dicomsort.gui.preferences import PreferencePanel
+from dicomsort.gui import widgets
 
 
 class QuickRenameDlg(wx.Dialog):
@@ -151,10 +153,8 @@ class AnonymizeList(widgets.CheckListCtrl):
     def GetDicomField(self, row):
         return self.GetItem(row, 0).Text
 
-import preferences
 
-
-class AnonymousPanel(preferences.PreferencePanel):
+class AnonymousPanel(PreferencePanel):
 
     def __init__(self, parent, config):
         super(AnonymousPanel, self).__init__(parent, 'Anonymization',

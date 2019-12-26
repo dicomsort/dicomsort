@@ -1,11 +1,13 @@
 import collections
-import gui
 import itertools
 import os
 import pydicom
 import re
 import shutil
 import sys
+
+from dicomsort import errors
+from dicomsort.gui import events
 
 from threading import Thread
 from pydicom.errors import InvalidDicomError
@@ -314,10 +316,6 @@ class Sorter(Thread):
         self.start()
 
     def run(self):
-
-        if self.isgui:
-            import wx
-
         files = self.fileList
 
         for file in files:
@@ -346,8 +344,8 @@ class Sorter(Thread):
             if self.iter:
                 count = self.iter.next()
                 if self.isgui:
-                    event = gui.CounterEvent(Count=count, total=self.total)
-                    wx.PostEvent(self.listener, event)
+                    event = events.CounterEvent(Count=count, total=self.total)
+                    events.post_event(self.listener, event)
 
 
 class DicomSorter():
@@ -449,12 +447,4 @@ class DicomSorter():
                         return dcm.dir('')
 
         msg = ''.join([';'.join(self.pathname), ' contains no DICOMs'])
-        raise DicomFolderError(msg)
-
-
-class DicomFolderError(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+        raise errors.DicomFolderError(msg)
