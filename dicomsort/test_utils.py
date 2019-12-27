@@ -100,4 +100,21 @@ class TestCleanPath:
         dirname = 'prefix:*?|"<>suffix'
         path = os.path.join('tmp', 'dir', dirname, dirname)
         expected = os.path.join('tmp', 'dir', 'prefix_suffix', 'prefix_suffix')
-        assert utils.clean_path(path) ==  expected
+        assert utils.clean_path(path) == expected
+
+
+class TestMkdir:
+    def test_directory_exists(self, tmpdir):
+        utils.mkdir(str(tmpdir))
+
+    def test_new_directory(self, tmpdir):
+        newdir = str(tmpdir.join('newdir'))
+        utils.mkdir(newdir)
+
+        assert os.path.exists(newdir)
+
+    def test_new_nested_directory(self, tmpdir):
+        newdir = str(tmpdir.join('newdir').join('nesteddir'))
+        utils.mkdir(newdir)
+
+        assert os.path.exists(newdir)

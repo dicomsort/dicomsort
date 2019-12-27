@@ -1,10 +1,20 @@
 import os
 import pydicom
 import re
+import sys
 
 from pydicom.errors import InvalidDicomError
 
 INVALID_FILENAME_CHARS = re.compile('[\\\\/\\:\\*\\?\\"\\<\\>\\|]+')
+
+DIRECTORY_EXISTS_EXCEPTION = WindowsError if sys.platform == 'win32' else OSError
+
+
+def mkdir(directory):
+    try:
+        os.makedirs(directory)
+    except DIRECTORY_EXISTS_EXCEPTION:
+        return
 
 
 def recursive_replace_tokens(formatString, repobj):

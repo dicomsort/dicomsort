@@ -142,7 +142,6 @@ class Dicom():
 
         return out
 
-
     def SetAnonRules(self, anondict):
         # Appends the rules to the overrides so that we can alter them
         if isinstance(anondict, dict):
@@ -181,19 +180,6 @@ class Dicom():
     def is_anonymous(self):
         return self.default_overrides != self.overrides
 
-    def check_dir(self, dest):
-        dest = os.path.dirname(dest)
-
-        if sys.platform == "win32":
-            exceptions = WindowsError
-        else:
-            exceptions = OSError
-
-        try:
-            os.makedirs(dest)
-        except exceptions:
-            return
-
     def sort(self, root, dirFields, fnameString, test=False, rootdir=None, keepOriginal=True):
 
         # If we want to sort in place
@@ -207,7 +193,7 @@ class Dicom():
             print(destination)
             return
 
-        self.check_dir(destination)
+        utils.mkdir(os.path.dirname(destination))
 
         # Check if destination exists
         while os.path.exists(destination):
