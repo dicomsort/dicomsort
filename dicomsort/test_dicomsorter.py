@@ -1,4 +1,5 @@
 import pydicom
+import pytest
 
 from dicomsort.dicomsorter import Dicom
 
@@ -141,3 +142,53 @@ class TestDicom:
 
         assert dcm.is_anonymous() is True
 
+    def test_anonymization_invalid_input(self, dicom_generator):
+        filename, dataset = dicom_generator()
+        dcm = Dicom(filename, dcm=dataset)
+
+        with pytest.raises(Exception) as excinfo:
+            dcm.SetAnonRules('')
+
+        assert excinfo.value.args[0] == 'Anon rules must be a dictionary'
+
+    def test_anonymization(self, dicom_generator):
+        filename, dataset = dicom_generator()
+        dcm = Dicom(filename, dcm=dataset)
+
+        adict = {'Key': 'Value'}
+
+        dcm.SetAnonRules(adict)
+
+        assert dcm.anondict == adict
+        assert dcm.overrides['Key'] == 'Value'
+        assert dcm['Key'] == 'Value'
+
+    def test_anonymize_birthdate(self, dicom_generator):
+        date = '20191101'
+        filename, dataset = dicom_generator(PatientBirthDate='20200101')
+        dcm = Dicom(filename, dcm=dataset)
+
+        dcm.SetAnonRules({'PatientBirthDate': date})
+
+        assert dcm.overrides['PatientBirthDate'] == date
+        assert dcm['PatientBirthDate'] == date
+
+    def test_anonymize_empty_birthdate(self, dicom_generator):
+        filename, dataset = dicom_generator(
+            PatientBirthDate='20170601',
+            StudyDate='20180201',
+        )
+        dcm = Dicom(filename, dcm=dataset)
+
+        dcm.SetAnonRules({'PatientBirthDate': ''})
+
+        # Maintains the patient age but uses January 01
+        assert dcm.overrides['PatientBirthDate'] == '20180101'
+        assert dcm['PatientBirthDate'] == '20180101'
+
+        # 1-day Old
+        dataset.PatientBirthDate = '20180131'
+
+        dcm.SetAnonRules({'PatientBirthDate': ''})
+        assert dcm.overrides['PatientBirthDate'] == '20180101'
+        assert dcm['PatientBirthDate'] == '20180101'
