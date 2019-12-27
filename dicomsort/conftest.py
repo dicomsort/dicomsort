@@ -17,8 +17,14 @@ def dicom_generator(tmpdir):
         ds.is_little_endian = True
         ds.is_implicit_VR = False
 
+        ds.PatientName = 'Jonathan^Suever'
+        ds.SeriesDescription = 'Dicom Sort Test Series'
+        ds.SeriesNumber = 1
+
+        ds.update(values)
+
         ds.save_as(filename)
 
-        return filename
+        return filename, ds
 
     return _dicom

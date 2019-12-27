@@ -80,7 +80,7 @@ class Dicom():
         """
         if 'PatientAge' in self.dicom:
             age = self.dicom.PatientAge
-        elif self.dicom.PatientBirthDate == '':
+        elif 'PatientBirthDate' not in self.dicom or self.dicom.PatientBirthDate == '':
             age = ''
         else:
             age = (int(self.dicom.StudyDate) -

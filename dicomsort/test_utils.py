@@ -65,7 +65,7 @@ class TestGrouper:
 
 class TestIsDicom:
     def test_dicomdir(self, dicom_generator):
-        dicomdir = dicom_generator('DICOMDIR')
+        dicomdir, _ = dicom_generator('DICOMDIR')
 
         assert utils.isdicom(dicomdir) is False
 
@@ -76,7 +76,7 @@ class TestIsDicom:
         assert utils.isdicom(str(fobj)) is False
 
     def test_valid_dicom(self, dicom_generator):
-        filename = dicom_generator()
+        filename, _ = dicom_generator()
 
         assert utils.isdicom(filename) is not False
 
