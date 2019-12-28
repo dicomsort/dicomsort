@@ -7,13 +7,14 @@ workflows:
 jobs:
   test-2.7: &test-template
     docker:
-      - image: circleci/python:2.7-jessie
+      - image: circleci/python:2.7-browsers
     working_directory: ~/repo
     steps:
       - checkout
       - run:
           name: Install Dependencies
           command: |
+            sudo apt install --quiet libgtk-3-dev
             sudo pip install --upgrade pytest pytest-mock pytest-cov
             sudo pip install -e .
       - run:
