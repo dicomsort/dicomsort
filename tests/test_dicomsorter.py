@@ -1,8 +1,11 @@
+import itertools
 import os
 import pydicom
 import pytest
+import time
 
-from dicomsort.dicomsorter import Dicom
+from dicomsort.dicomsorter import Dicom, DicomSorter, Sorter
+from dicomsort.errors import DicomFolderError
 
 
 class TestDicom:
@@ -512,3 +515,170 @@ class TestDicom:
 
         captured = capsys.readouterr()
         assert captured.out == str(destination) + '\n'
+
+
+class TestDicomSorter:
+    def test_constructor_defaults(self):
+        sorter = DicomSorter()
+
+        assert sorter.pathname == [os.getcwd(), ]
+
+        # Booleans
+        assert sorter.keep_filename is False
+        assert sorter.seriesFirst is False
+        assert sorter.keepOriginal is True
+
+        assert sorter.sorters == []
+        assert sorter.folders == []
+        assert sorter.anondict == dict()
+
+    def test_constructor_single_path(self):
+        path = '/path'
+        sorter = DicomSorter(path)
+
+        assert sorter.pathname == [path, ]
+
+    def test_constructor_multiple_paths(self):
+        paths = ['/path1', '/path2']
+        sorter = DicomSorter(paths)
+
+        assert sorter.pathname == paths
+
+    def test_get_available_fields_no_dicoms(self, tmpdir):
+        fobj = tmpdir.join('tmp')
+        fobj.write('invalid')
+
+        root = str(tmpdir)
+
+        sorter = DicomSorter(root)
+
+        with pytest.raises(DicomFolderError):
+            sorter.GetAvailableFields()
+
+    def test_get_available_fields(self, dicom_generator):
+        filename, dicom = dicom_generator()
+        expected = dicom.dir('')
+
+        root = os.path.dirname(filename)
+
+        sorter = DicomSorter(root)
+
+        assert sorter.GetAvailableFields() == expected
+
+    def test_is_sorting_no_sorters(self):
+        sorter = DicomSorter()
+
+        assert sorter.sorters == []
+        assert sorter.IsSorting() is False
+
+    def test_is_sorting_active_sorters(self, mocker):
+        sorter = DicomSorter()
+
+        patch = mocker.patch.object(Sorter, 'isAlive')
+        patch.return_value = True
+
+        # Generate some sorters
+        sorter.sorters.append(Sorter([], '', [], ''))
+        sorter.sorters.append(Sorter([], '', [], ''))
+
+        assert sorter.IsSorting() is True
+
+    def test_is_sorting_inactive_sorters(self, mocker):
+        sorter = DicomSorter()
+
+        patch = mocker.patch.object(Sorter, 'isAlive')
+        patch.return_value = False
+
+        # Generate some sorters
+        sorter.sorters.append(Sorter([], '', [], ''))
+        sorter.sorters.append(Sorter([], '', [], ''))
+
+        assert sorter.IsSorting() is False
+
+    def test_get_folder_format_no_folders(self):
+        sorter = DicomSorter()
+        sorter.folders = None
+
+        assert sorter.GetFolderFormat() is None
+
+    def test_get_folder_format(self):
+        sorter = DicomSorter()
+        original = ['1', '2', '3']
+        sorter.folders = original
+
+        copy = sorter.GetFolderFormat()
+
+        assert copy == original
+
+        # modify the original to ensure it is a different object
+        original.append('4')
+
+        assert copy != original
+
+    def test_set_anon_rules(self):
+        sorter = DicomSorter()
+
+        replacements = {
+            'Key1': 'Value1',
+            'Key2': 'Value2',
+        }
+
+        sorter.SetAnonRules(replacements)
+        assert sorter.anondict == replacements
+
+    def test_set_anon_rules_unicode(self):
+        sorter = DicomSorter()
+
+        replacements = {
+            'Key1': 'Value1',
+            'Key2': 'Value2',
+            'Unicode': u'Value3',
+        }
+
+        sorter.SetAnonRules(replacements)
+        assert sorter.anondict == replacements
+
+        # make sure all have been convered from unicode
+        for value in sorter.anondict.values():
+            assert isinstance(value, unicode) is False
+
+    def test_set_anon_rules_invalid(self):
+        sorter = DicomSorter()
+
+        with pytest.raises(Exception) as excinfo:
+            sorter.SetAnonRules('')
+
+        assert excinfo.value.args[0] == 'Anon rules must be a dictionary'
+
+    def test_sort(self, dicom_generator, mocker, tmpdir):
+        filename, _ = dicom_generator(
+            SeriesDescription='desc',
+            SeriesNumber=1,
+            InstanceNumber=1
+        )
+
+        sorter = DicomSorter()
+        sorter.pathname = [os.path.dirname(filename), ]
+        sorter.folders = [
+            '%(SeriesDescription)s'
+        ]
+
+        output = tmpdir.join('output')
+
+        sorter.Sort(str(output))
+
+        # Wait for sorting to complete
+        while sorter.IsSorting():
+            time.sleep(0.1)
+
+        assert len(sorter.sorters) == 1
+
+        series_folders = output.listdir()
+        assert len(series_folders) == 1
+
+        series_folder = series_folders[0]
+        assert os.path.basename(str(series_folder)) == 'desc_Series0001'
+
+        images = series_folder.listdir()
+        assert len(images) == 1
+        assert os.path.basename(str(images[0])) == 'Unknown (0001).dcm'
