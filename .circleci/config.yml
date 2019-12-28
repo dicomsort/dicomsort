@@ -22,10 +22,19 @@ jobs:
             sudo pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/debian-9/ wxpython
             sudo pip install --upgrade pytest pytest-mock pytest-cov --progress-bar off
             sudo pip install -e .
+      - run:
+          name: Setup Code Climate test-reporter
+          command: |
+          # download test reporter as a static binary
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
       - save_cache:
           paths:
             - ~/.cache/pip
           key: pip-packages-{{ .Branch }}
       - run:
           name: Run tests
-          command: make test
+          command: |
+            ./cc-test-reporter before-build
+            make test
+            ./cc-test-reporter after-build
