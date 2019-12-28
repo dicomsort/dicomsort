@@ -1,3 +1,4 @@
+import os
 import pydicom
 import pytest
 
@@ -321,10 +322,193 @@ class TestDicom:
             '%(SeriesDescription)s %(PatientName)s'
         ]
 
-        # Filename format which uses attributes that are not defined
+        # Filename format
         filename = '%(SeriesNumber)d file'
 
         dest = dcm.get_destination(root, directory, filename)
 
         expected = '/my/base/directory/UNKNOWN/desc_Series0001 name/1 file'
         assert dest == expected
+
+    def test_sort_inplace(self, dicom_generator, tmpdir):
+        filename, dicom = dicom_generator(
+            'image.dcm',
+            SeriesDescription='desc',
+            SeriesNumber=1,
+        )
+        dcm = Dicom(filename, dcm=dicom)
+
+        # Base Directory
+        root = str(tmpdir)
+
+        # Subdirectories
+        directory = None
+
+        # Filename format
+        file_format = '%(ImageType)s'
+
+        dcm.sort(
+            root, directory, file_format,
+            rootdir=[os.path.dirname(filename)],
+        )
+
+        destination = str(tmpdir.join('image.dcm'))
+
+        assert os.path.exists(destination)
+
+    def test_sort_keep_original(self, dicom_generator, tmpdir):
+        filename, dicom = dicom_generator(
+            SeriesDescription='desc',
+            SeriesNumber=1,
+        )
+        dcm = Dicom(filename, dcm=dicom)
+
+        # Base Directory
+        root = str(tmpdir)
+
+        # Subdirectories
+        directory = [
+            '%(SeriesDescription)s',
+            '%(SeriesDescription)s',
+        ]
+
+        # Filename format
+        file_format = '%(ImageType)s'
+
+        dcm.sort(root, directory, file_format, keepOriginal=True)
+
+        destination = tmpdir.join('desc_Series0001').join('desc_Series0001')
+        destination = destination.join('Unknown')
+
+        assert os.path.exists(filename)
+        assert os.path.exists(str(destination))
+
+    def test_sort_discard_original(self, dicom_generator, tmpdir):
+        filename, dicom = dicom_generator(
+            SeriesDescription='desc',
+            SeriesNumber=1,
+        )
+        dcm = Dicom(filename, dcm=dicom)
+
+        # Base Directory
+        root = str(tmpdir)
+
+        # Subdirectories
+        directory = [
+            '%(SeriesDescription)s',
+            '%(SeriesDescription)s',
+        ]
+
+        # Filename format
+        file_format = '%(ImageType)s'
+
+        dcm.sort(root, directory, file_format, keepOriginal=False)
+
+        destination = tmpdir.join('desc_Series0001').join('desc_Series0001')
+        destination = destination.join('Unknown')
+
+        assert os.path.exists(filename) is False
+        assert os.path.exists(str(destination))
+
+    def test_sort_anonymize(self, dicom_generator, tmpdir):
+        filename, dicom = dicom_generator(
+            PatientName='TO^BE^REMOVED',
+            SeriesDescription='desc',
+            SeriesNumber=1,
+        )
+        dcm = Dicom(filename, dcm=dicom)
+
+        # Overwrite the PatientName
+        dcm.SetAnonRules({'PatientName': 'ANON'})
+
+        # Base Directory
+        root = str(tmpdir)
+
+        # Subdirectories
+        directory = [
+            '%(PatientName)s',
+            '%(SeriesDescription)s',
+        ]
+
+        # Filename format
+        file_format = '%(ImageType)s'
+
+        dcm.sort(root, directory, file_format, keepOriginal=False)
+
+        destination = tmpdir.join('ANON').join('desc_Series0001')
+        destination = str(destination.join('Unknown'))
+
+        assert os.path.exists(destination)
+
+        # Ensure the DICOM was modified
+        newdcm = pydicom.read_file(destination)
+
+        assert newdcm.PatientName == 'ANON'
+
+    def test_sort_anonymize_invalid_field(self, dicom_generator, tmpdir):
+        filename, dicom = dicom_generator(
+            PatientName='TO^BE^REMOVED',
+            SeriesDescription='desc',
+            SeriesNumber=1,
+        )
+        dcm = Dicom(filename, dcm=dicom)
+
+        # Overwrite the PatientID (this field does not exist)
+        dcm.SetAnonRules({'PatientID': 'ANON'})
+
+        # Base Directory
+        root = str(tmpdir)
+
+        # Subdirectories
+        directory = [
+            '%(PatientID)s',
+            '%(SeriesDescription)s',
+        ]
+
+        # Filename format
+        file_format = '%(ImageType)s'
+
+        dcm.sort(root, directory, file_format, keepOriginal=False)
+
+        destination = tmpdir.join('ANON').join('desc_Series0001')
+        destination = str(destination.join('Unknown'))
+
+        assert os.path.exists(destination)
+
+        # Make sure the field was not added to the new DICOM
+        newdcm = pydicom.read_file(destination)
+
+        assert 'PatientID' not in newdcm
+
+    def test_sort_test(self, dicom_generator, tmpdir, capsys):
+        filename, dicom = dicom_generator(
+            SeriesDescription='desc',
+            SeriesNumber=1,
+        )
+        dcm = Dicom(filename, dcm=dicom)
+
+        # Base Directory
+        root = str(tmpdir)
+
+        # Subdirectories
+        directory = [
+            '%(SeriesDescription)s',
+            '%(SeriesDescription)s',
+        ]
+
+        # Filename format
+        file_format = '%(ImageType)s'
+
+        dcm.sort(root, directory, file_format, keepOriginal=False, test=True)
+
+        destination = tmpdir.join('desc_Series0001').join('desc_Series0001')
+        destination = destination.join('Unknown')
+
+        # The original is unmodified
+        assert os.path.exists(filename)
+
+        # The file was not actually copied
+        assert os.path.exists(str(destination)) is False
+
+        captured = capsys.readouterr()
+        assert captured.out == str(destination) + '\n'

@@ -211,11 +211,11 @@ class Dicom():
 
             self.dicom.save_as(destination)
 
-            if keepOriginal == False:
+            if keepOriginal is False:
                 os.remove(self.filename)
 
         else:
-            if keepOriginal == True:
+            if keepOriginal:
                 shutil.copy(self.filename, destination)
             else:
                 shutil.move(self.filename, destination)
