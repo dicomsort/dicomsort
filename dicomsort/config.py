@@ -33,7 +33,5 @@ default_configuration = {
     }
 }
 
-if os.name == 'nt':
-    configuration_file = os.path.join(expanduser('~'), 'dicomSort.ini')
-else:
-    configuration_file = os.path.join(os.getenv('HOME'), '.dicomSort.ini')
+filename = 'dicomSort.ini' if os.name == 'nt' else '.dicomSort.ini'
+configuration_file = os.path.join(expanduser('~'), filename)
