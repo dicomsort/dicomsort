@@ -76,12 +76,6 @@ def shortcut(name, executable, type, directory):
      )
 
 
-ENTRY_POINTS = {
-   'console_scripts': [
-       'dicomsort = dicomsort.gui:run',
-   ],
-}
-
 if __name__ == '__main__':
     setup(
         name=NAME,
@@ -105,5 +99,7 @@ if __name__ == '__main__':
             'wxpython',
         ],
         zip_safe=False,
-        entry_points=ENTRY_POINTS,
+        scripts=[
+            os.path.join('bin', 'dicomsort')
+        ],
     )

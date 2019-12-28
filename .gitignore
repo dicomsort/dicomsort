@@ -16,3 +16,7 @@ env*
 
 # File System Artifacts
 .DS_Store
+
+# Test Artifacts
+.coverage
+htmlcov
