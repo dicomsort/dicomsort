@@ -24,6 +24,28 @@ class TestDicom:
         func.assert_not_called()
         assert dcm.dicom == dataset
 
+    def test_get_item_override_function(self, dicom_generator):
+        filename, dicom = dicom_generator()
+        dcm = Dicom(filename, dcm=dicom)
+
+        dcm.SetAnonRules({'Field': lambda: 'Value'})
+
+        assert dcm['Field'] == 'Value'
+
+    def test_get_item_override_value(self, dicom_generator):
+        filename, dicom = dicom_generator()
+        dcm = Dicom(filename, dcm=dicom)
+
+        dcm.SetAnonRules({'Field': 'Value'})
+
+        assert dcm['Field'] == 'Value'
+
+    def test_get_item_dicom_attribute(self, dicom_generator):
+        filename, dicom = dicom_generator(PatientName='Suever')
+        dcm = Dicom(filename, dcm=dicom)
+
+        assert dcm['PatientName'] == 'Suever'
+
     def test_get_file_extension(self, dicom_generator):
         filename, _ = dicom_generator('image.ext')
 
@@ -45,6 +67,26 @@ class TestDicom:
         dcm = Dicom(filename, dcm=dataset)
 
         assert dcm._get_series_description() == 'My Series_Series0001'
+
+    def test_get_series_description_no_description(self, dicom_generator):
+        filename, dicom = dicom_generator(SeriesNumber=1)
+        del dicom.SeriesDescription
+
+        dcm = Dicom(filename, dcm=dicom)
+
+        assert dcm._get_series_description() == 'Series0001'
+
+    def test_get_series_description_series_first(self, dicom_generator):
+        filename, dataset = dicom_generator(
+            SeriesDescription='My Series',
+            SeriesNumber=1
+        )
+
+        dcm = Dicom(filename, dcm=dataset)
+        dcm.seriesFirst = True
+
+        assert dcm._get_series_description() == 'Series0001_My Series'
+
 
     def test_get_patient_age_with_field(self, dicom_generator):
         age = '10Y'
@@ -162,6 +204,20 @@ class TestDicom:
         assert dcm.anondict == adict
         assert dcm.overrides['Key'] == 'Value'
         assert dcm['Key'] == 'Value'
+
+    def test_anonymize_age(self, dicom_generator):
+        filename, dataset = dicom_generator(
+            PatientAge='030Y',
+            PatientBirthDate='19890201',
+            StudyDate='20190301'
+        )
+
+        dcm = Dicom(filename, dcm=dataset)
+
+        dcm.SetAnonRules({'PatientBirthDate': ''})
+
+        assert dcm['PatientAge'] == '030Y'
+        assert dcm['PatientBirthDate'] == '19890101'
 
     def test_anonymize_birthdate(self, dicom_generator):
         date = '20191101'
