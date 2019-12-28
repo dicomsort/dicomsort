@@ -248,3 +248,83 @@ class TestDicom:
         dcm.SetAnonRules({'PatientBirthDate': ''})
         assert dcm.overrides['PatientBirthDate'] == '20180101'
         assert dcm['PatientBirthDate'] == '20180101'
+
+    def test_get_destination(self, dicom_generator):
+        filename, dicom = dicom_generator(
+            PatientName='name',
+            SeriesDescription='desc',
+            SeriesNumber=1,
+        )
+
+        dcm = Dicom(filename, dcm=dicom)
+
+        # Base Directory
+        root = '/my/base/directory'
+
+        # Sub-directories
+        directory = [
+            '%(ImageType)s',
+            '%(SeriesDescription)s %(PatientName)s'
+        ]
+
+        # Filename format
+        filename = '%(SeriesNumber)d file'
+
+        dest = dcm.get_destination(root, directory, filename)
+
+        expected = '/my/base/directory/Unknown/desc_Series0001 name/1 file'
+        assert dest == expected
+
+    def test_get_destination_bad_filename_attr(self, dicom_generator):
+        filename, dicom = dicom_generator(
+            'image.dcm',
+            PatientName='name',
+            SeriesDescription='desc',
+            SeriesNumber=1,
+        )
+
+        dcm = Dicom(filename, dcm=dicom)
+
+        # Base Directory
+        root = '/my/base/directory'
+
+        # Sub-directories
+        directory = [
+            '%(ImageType)s',
+            '%(SeriesDescription)s %(PatientName)s'
+        ]
+
+        # Filename format which uses attributes that are not defined
+        filename = '%(Invalid)d file'
+
+        dest = dcm.get_destination(root, directory, filename)
+        expected = '/my/base/directory/Unknown/desc_Series0001 name/image.dcm'
+
+        assert dest == expected
+
+    def test_get_destination_bad_directory_attr(self, dicom_generator):
+        filename, dicom = dicom_generator(
+            'image.dcm',
+            PatientName='name',
+            SeriesDescription='desc',
+            SeriesNumber=1,
+        )
+
+        dcm = Dicom(filename, dcm=dicom)
+
+        # Base Directory
+        root = '/my/base/directory'
+
+        # Sub-directories
+        directory = [
+            '%(Invalid)s',  # Invalid attribute
+            '%(SeriesDescription)s %(PatientName)s'
+        ]
+
+        # Filename format which uses attributes that are not defined
+        filename = '%(SeriesNumber)d file'
+
+        dest = dcm.get_destination(root, directory, filename)
+
+        expected = '/my/base/directory/UNKNOWN/desc_Series0001 name/1 file'
+        assert dest == expected
