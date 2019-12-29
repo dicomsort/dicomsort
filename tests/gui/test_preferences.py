@@ -13,7 +13,7 @@ class TestMiscPanel:
 
     def teardown(self):
         self.frame.Destroy()
-        self.app.MainLoop()
+        self.app.Destroy()
 
     def test_default_state(self):
         config = ConfigObj()
@@ -123,7 +123,7 @@ class TestFilenamePanel:
 
     def teardown(self):
         self.frame.Destroy()
-        self.app.MainLoop()
+        self.app.Destroy()
 
     def test_default_state(self):
         config = ConfigObj()
@@ -250,7 +250,7 @@ class TestPreferenceDialog:
 
     def teardown(self):
         self.frame.Destroy()
-        self.app.MainLoop()
+        self.app.Destroy()
 
     def empty_config(self, filename):
         config = ConfigObj({
