@@ -12,8 +12,8 @@ class TestMiscPanel:
         self.frame.Show()
 
     def teardown(self):
-        self.frame.Destroy()
-        self.app.Destroy()
+        wx.CallAfter(self.frame.Destroy)
+        self.app.MainLoop()
 
     def test_default_state(self):
         config = ConfigObj()
@@ -122,8 +122,8 @@ class TestFilenamePanel:
         self.frame.Show()
 
     def teardown(self):
-        self.frame.Destroy()
-        self.app.Destroy()
+        wx.CallAfter(self.frame.Destroy)
+        self.app.MainLoop()
 
     def test_default_state(self):
         config = ConfigObj()
@@ -249,8 +249,8 @@ class TestPreferenceDialog:
         self.frame.Show()
 
     def teardown(self):
-        self.frame.Destroy()
-        self.app.Destroy()
+        wx.CallAfter(self.frame.Destroy)
+        self.app.MainLoop()
 
     def empty_config(self, filename):
         config = ConfigObj({
