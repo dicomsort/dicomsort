@@ -95,7 +95,7 @@ class HelpDlg(wx.Dialog):
         self.CenterOnParent(wx.BOTH)
         self.SetFocus()
 
-        self.Bind(wx.EVT_CLOSE, self.hbquit)
+        self.Bind(wx.EVT_CLOSE, self.close)
 
-    def hbquit(self, *evnt):
+    def close(self, *_):
         self.Destroy()
