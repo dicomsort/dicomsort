@@ -255,3 +255,10 @@ class TestPreferenceDialog:
         dlg = PreferenceDlg(app.frame, config=config)
 
         assert dlg.OnApply()
+
+    def test_on_cancel(self, app, tmpdir):
+        config = self.empty_config(str(tmpdir.join('config.ini')))
+
+        dlg = PreferenceDlg(app.frame, config=config)
+
+        assert dlg.OnCancel()
