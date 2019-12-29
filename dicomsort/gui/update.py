@@ -1,34 +1,41 @@
 import dicomsort
 import re
-import urllib2
 import wx
 
 from threading import Thread
+from urllib2 import urlopen
 
 from dicomsort.gui import events
 
 VERSION_TUPLE = tuple([int(x) for x in dicomsort.__version__.split('.')])
+VERSION_URL = "http://www.dicomsort.com/current"
 
 
-def AvailableUpdate():
-    # First try to see if we can connect
+def latest_version():
     try:
-        f = urllib2.urlopen("http://www.dicomsort.com/current")
-        current = f.read().rstrip()
+        f = urlopen(VERSION_URL)
+        version = f.read().rstrip()
+
+        if '404' in version:
+            return None
+
+        return version
     except IOError:
         return None
 
-    if re.search('404', current):
+
+def update_available():
+    # First try to see if we can connect
+    latest = latest_version()
+
+    if latest is None or latest == dicomsort.__version__:
         return None
 
-    if current == dicomsort.__version__:
-        return None
-    else:
-        # Break it up to see if it's a dev version
-        I = [int(part) for part in current.split('.')]
-        for ind in range(len(I)):
-            if I[ind] > VERSION_TUPLE[ind]:
-                return current
+    # Break it up to see if it's a dev version
+    I = [int(part) for part in latest.split('.')]
+    for ind in range(len(I)):
+        if I[ind] > VERSION_TUPLE[ind]:
+            return latest
         return None
 
 
@@ -46,7 +53,7 @@ class UpdateChecker(Thread):
         self.start()
 
     def run(self):
-        version = AvailableUpdate()
+        version = update_available()
 
         if version:
             print('Current Version is %s' % version)
