@@ -4,6 +4,7 @@ import configobj
 
 from dicomsort import config
 
+
 class PreferencePanel(wx.Panel):
 
     def __init__(self, parent, shortname, title, config):
@@ -37,14 +38,6 @@ class PreferencePanel(wx.Panel):
             config = self.config
 
         config[self.shortname] = self.GetState()
-
-    def UpdateFromConfig(self, config=None):
-        raise TypeError('Abstract Method!')
-
-        config[self.shortname] = self.GetState()
-
-
-
 
 
 class MiscPanel(PreferencePanel):
@@ -85,12 +78,13 @@ class MiscPanel(PreferencePanel):
         if tmp['KeepOriginal']:
             self.keepOriginal.SetValue(eval(tmp['KeepOriginal']))
 
-
     def create(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.keepSeries = wx.CheckBox(self, -1,
-                                      "Automatically include SeriesDescription")
+        self.keepSeries = wx.CheckBox(
+            self, -1,
+            'Automatically include SeriesDescription'
+        )
 
         # Vertical spacing
         vbox.Add((30, 40), 0, wx.ALL | 30)
@@ -106,7 +100,6 @@ class MiscPanel(PreferencePanel):
 
         vbox.Add((30, 20), 0, wx.ALL | 30)
         vbox.Add(self.keepOriginal, 0, wx.ALIGN_LEFT | wx.ALL | 15)
-
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
@@ -133,9 +126,11 @@ class FileNamePanel(PreferencePanel):
     def create(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        boxChoices = ['Image (0001)',
-                      'Keep Original Filename',
-                      'Custom Filename Format:']
+        boxChoices = [
+            'Image (0001)',
+            'Keep Original Filename',
+            'Custom Filename Format:'
+        ]
 
         self.radioBox = wx.RadioBox(self, -1,
                                     style=wx.VERTICAL | wx.BORDER_NONE,
@@ -170,7 +165,7 @@ class FileNamePanel(PreferencePanel):
     def OnChange(self, *evnt):
         index = self.radioBox.GetSelection()
 
-        #TODO: Make this more robust in the future
+        # TODO: Make this more robust in the future
         if index != 2:
             self.custom.Disable()
         else:
@@ -192,10 +187,10 @@ class FileNamePanel(PreferencePanel):
         self.OnChange()
 
     def GetState(self):
-        d = {'FilenameString': self.custom.GetValue(),
-             'Selection': self.radioBox.GetSelection()}
-
-        return d
+        return {
+            'FilenameString': self.custom.GetValue(),
+            'Selection': self.radioBox.GetSelection()
+        }
 
 
 class PreferenceDlg(wx.Dialog):
