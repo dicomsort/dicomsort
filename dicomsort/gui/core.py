@@ -4,14 +4,17 @@ import os
 import re
 import sys
 import traceback
-import urllib2
 import wx
+
+from urllib import urlencode
+from urllib2 import urlopen
 
 from dicomsort import config, errors
 from dicomsort.dicomsorter import DicomSorter
 from dicomsort.gui import errors, events, help, icons, preferences, widgets
 from dicomsort.gui.anonymizer import QuickRenameDlg
 from dicomsort.gui.update import UpdateChecker
+
 
 def ExceptHook(type, value, tb):
     dlg = CrashReporter(type, value, tb)
@@ -127,8 +130,8 @@ class CrashReporter(wx.Dialog):
             'comments': self.comments.GetValue().strip('\n')
         }
 
-        data = urllib2.urlencode(values)
-        urllib2.urlopen(url, data)
+        data = urlencode(values)
+        urlopen(url, data)
         self.OnCancel()
 
     def ValidateEmail(self):
