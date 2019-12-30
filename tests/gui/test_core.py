@@ -1,9 +1,8 @@
 import dicomsort
-import pytest
 import sys
 
 from dicomsort.gui import core
-from dicomsort.gui.core import errors, CrashReporter, MainFrame
+from dicomsort.gui.core import errors, CrashReporter
 
 
 class TestCrashReporter:
