@@ -1,4 +1,4 @@
-from dicomsort.gui.widgets import FieldSelector
+from dicomsort.gui.widgets import errors, FieldSelector, PathEditCtrl
 
 
 class TestFieldSelector:
@@ -210,3 +210,72 @@ class TestFieldSelector:
 
         assert selector.options.GetStrings() == ['PatientName', 'PatientID']
 
+class TestPathEditCtrl:
+    def test_constructor(self, app):
+        ctrl = PathEditCtrl(app.frame)
+
+        assert isinstance(ctrl, PathEditCtrl)
+
+    def test_set_paths_string(self, app, tmpdir):
+        path = str(tmpdir)
+
+        ctrl = PathEditCtrl(app.frame)
+        ctrl.SetPaths(path)
+
+        assert ctrl.path == [path, ]
+
+    def test_set_paths_list(self, app, tmpdir):
+        path1 = tmpdir.join('path1')
+        path2 = tmpdir.join('path2')
+
+        path1.mkdir()
+        path2.mkdir()
+
+        paths = [str(path1), str(path2)]
+
+        ctrl = PathEditCtrl(app.frame)
+        ctrl.SetPaths(paths)
+
+        assert ctrl.path == paths
+
+    def test_set_paths_bad_path(self, app, mocker, tmpdir):
+        mock = mocker.patch.object(errors, 'throw_error')
+
+        goodpath = str(tmpdir)
+
+        # Paths that do not exist
+        badpath1 = str(tmpdir.join('not-valid1'))
+        badpath2 = str(tmpdir.join('not-valid2'))
+
+        ctrl = PathEditCtrl(app.frame)
+        ctrl.SetPaths([goodpath, badpath1, badpath2])
+
+        mock.assert_called_once_with(
+            'The Following directories are invalid paths: %s, %s' % (badpath1, badpath2),
+            'Invalid Paths',
+            parent=app.frame
+        )
+
+    def test_validate_path_single(self, app, tmpdir):
+        path = str(tmpdir)
+
+        ctrl = PathEditCtrl(app.frame)
+        ctrl.edit.SetValue(path)
+        ctrl.ValidatePath()
+
+        assert ctrl.path == [path, ]
+
+    def test_validate_path_multiple(self, app, tmpdir):
+        path1 = tmpdir.join('path1')
+        path2 = tmpdir.join('path2')
+
+        path1.mkdir()
+        path2.mkdir()
+
+        paths = [str(path1), str(path2)]
+
+        ctrl = PathEditCtrl(app.frame)
+        ctrl.edit.SetValue(';'.join(paths))
+        ctrl.ValidatePath()
+
+        assert ctrl.path == paths
