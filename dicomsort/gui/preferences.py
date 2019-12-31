@@ -4,7 +4,7 @@ import wx.py
 import configobj
 
 from dicomsort import config
-from dicomsort.gui.anonymizer import AnonymizeList, AnonymizeListXP
+from dicomsort.gui.anonymizer import AnonymizeList
 
 
 class PreferencePanel(wx.Panel):
@@ -279,11 +279,6 @@ class AnonymousPanel(PreferencePanel):
         self.create()
 
     def GetState(self):
-        if platform.win32_ver()[0] == 'XP':
-            index = 1
-        else:
-            index = 0
-
         # Get all fields that are stored in config but not present in current
         defFields = self.config[self.shortname]['Fields']
 
@@ -294,7 +289,7 @@ class AnonymousPanel(PreferencePanel):
                 fields.append(unicode(defFields[i]))
 
         # Add to this list the newly checked ones
-        fields.extend(self.anonList.GetCheckedStrings(index))
+        fields.extend(self.anonList.GetCheckedStrings(0))
 
         dat = {'Fields': fields,
                'Replacements': self.anonList.GetReplacementDict()}
@@ -318,13 +313,8 @@ class AnonymousPanel(PreferencePanel):
         # The fields that we care about are "Fields" and "Replacements"
         fields = data['Fields']
         self.anonList.UnCheckAll()
-        if platform.win32_ver()[0] == 'XP':
-            self.anonList.CheckStrings(fields, col=1)
-            self.anonList.ClearColumn(2)
-            self.anonList.SetColumnSizes([20, 175, 155])
-        else:
-            self.anonList.CheckStrings(fields, col=0)
-            self.anonList.ClearColumn(1)
+        self.anonList.CheckStrings(fields, col=0)
+        self.anonList.ClearColumn(1)
 
         # Now put in substitutes
         self.anonList.SetReplacementDict(data['Replacements'])
@@ -335,10 +325,7 @@ class AnonymousPanel(PreferencePanel):
         title = wx.StaticText(self, -1, "Fields to Omit")
         vbox.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP | wx.BOTTOM, 10)
 
-        if platform.win32_ver()[0] == 'XP':
-            self.anonList = AnonymizeListXP(self)
-        else:
-            self.anonList = AnonymizeList(self)
+        self.anonList = AnonymizeList(self)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
