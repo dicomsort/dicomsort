@@ -1,4 +1,5 @@
 import pytest
+import wx
 
 from pydicom.dataset import Dataset, FileDataset
 
@@ -28,3 +29,22 @@ def dicom_generator(tmpdir):
         return filename, ds
 
     return _dicom
+
+
+class App:
+    def __init__(self, app, frame):
+        self.app = app
+        self.frame = frame
+
+
+@pytest.fixture(scope='function')
+def app():
+    app = wx.App()
+    frame = wx.Frame(None)
+    frame.Show()
+
+    yield App(app, frame)
+
+    frame.Destroy()
+    app.MainLoop()
+

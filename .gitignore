@@ -20,3 +20,4 @@ env*
 # Test Artifacts
 .coverage
 htmlcov
+coverage.*

@@ -1,8 +1,11 @@
+import platform
 import wx
 import wx.py
 import configobj
 
 from dicomsort import config
+from dicomsort.gui.anonymizer import AnonymizeList
+
 
 class PreferencePanel(wx.Panel):
 
@@ -37,14 +40,6 @@ class PreferencePanel(wx.Panel):
             config = self.config
 
         config[self.shortname] = self.GetState()
-
-    def UpdateFromConfig(self, config=None):
-        raise TypeError('Abstract Method!')
-
-        config[self.shortname] = self.GetState()
-
-
-
 
 
 class MiscPanel(PreferencePanel):
@@ -85,12 +80,13 @@ class MiscPanel(PreferencePanel):
         if tmp['KeepOriginal']:
             self.keepOriginal.SetValue(eval(tmp['KeepOriginal']))
 
-
     def create(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.keepSeries = wx.CheckBox(self, -1,
-                                      "Automatically include SeriesDescription")
+        self.keepSeries = wx.CheckBox(
+            self, -1,
+            'Automatically include SeriesDescription'
+        )
 
         # Vertical spacing
         vbox.Add((30, 40), 0, wx.ALL | 30)
@@ -106,7 +102,6 @@ class MiscPanel(PreferencePanel):
 
         vbox.Add((30, 20), 0, wx.ALL | 30)
         vbox.Add(self.keepOriginal, 0, wx.ALIGN_LEFT | wx.ALL | 15)
-
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
@@ -133,9 +128,11 @@ class FileNamePanel(PreferencePanel):
     def create(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        boxChoices = ['Image (0001)',
-                      'Keep Original Filename',
-                      'Custom Filename Format:']
+        boxChoices = [
+            'Image (0001)',
+            'Keep Original Filename',
+            'Custom Filename Format:'
+        ]
 
         self.radioBox = wx.RadioBox(self, -1,
                                     style=wx.VERTICAL | wx.BORDER_NONE,
@@ -170,7 +167,7 @@ class FileNamePanel(PreferencePanel):
     def OnChange(self, *evnt):
         index = self.radioBox.GetSelection()
 
-        #TODO: Make this more robust in the future
+        # TODO: Make this more robust in the future
         if index != 2:
             self.custom.Disable()
         else:
@@ -192,10 +189,10 @@ class FileNamePanel(PreferencePanel):
         self.OnChange()
 
     def GetState(self):
-        d = {'FilenameString': self.custom.GetValue(),
-             'Selection': self.radioBox.GetSelection()}
-
-        return d
+        return {
+            'FilenameString': self.custom.GetValue(),
+            'Selection': self.radioBox.GetSelection()
+        }
 
 
 class PreferenceDlg(wx.Dialog):
@@ -273,4 +270,75 @@ class PreferenceDlg(wx.Dialog):
         wx.Dialog.ShowModal(self, *args)
         return self.config
 
-from dicomsort.gui.anonymizer import AnonymousPanel
+class AnonymousPanel(PreferencePanel):
+
+    def __init__(self, parent, config):
+        super(AnonymousPanel, self).__init__(parent, 'Anonymization',
+                                             'Anonymizing Fields', config)
+
+        self.create()
+
+    def GetState(self):
+        # Get all fields that are stored in config but not present in current
+        defFields = self.config[self.shortname]['Fields']
+
+        fields = list()
+        # Keep only the empty ones
+        for i, val in enumerate(self.anonList.FindStrings(defFields)):
+            if val is None:
+                fields.append(unicode(defFields[i]))
+
+        # Add to this list the newly checked ones
+        fields.extend(self.anonList.GetCheckedStrings(0))
+
+        dat = {'Fields': fields,
+               'Replacements': self.anonList.GetReplacementDict()}
+
+        return dat
+
+    def RevertState(self, *evnt):
+        # Update self.config
+        super(AnonymousPanel, self).RevertState()
+        savedConfig = configobj.ConfigObj(self.config.filename)
+        savedConfig.interpolation = False
+        self.UpdateFromConfig(savedConfig)
+
+    def SetDicomFields(self, values):
+        self.anonList.SetStringItems(values)
+        self.UpdateFromConfig(self.config)
+
+    def UpdateFromConfig(self, config):
+        data = config[self.shortname]
+
+        # The fields that we care about are "Fields" and "Replacements"
+        fields = data['Fields']
+        self.anonList.UnCheckAll()
+        self.anonList.CheckStrings(fields, col=0)
+        self.anonList.ClearColumn(1)
+
+        # Now put in substitutes
+        self.anonList.SetReplacementDict(data['Replacements'])
+
+    def create(self):
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        title = wx.StaticText(self, -1, "Fields to Omit")
+        vbox.Add(title, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP | wx.BOTTOM, 10)
+
+        self.anonList = AnonymizeList(self)
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
+        self.revert = wx.Button(self, -1, "Revert to Defaults", size=(120, -1))
+        self.revert.Bind(wx.EVT_BUTTON, self.RevertState)
+        self.store.Bind(wx.EVT_BUTTON, self.SaveState)
+
+        opts = wx.ALIGN_RIGHT | wx.TOP | wx.LEFT
+
+        hbox.Add(self.store, 0, opts, 10)
+        hbox.Add(self.revert, 0, opts, 10)
+
+        vbox.Add(self.anonList, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
+        vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 15)
+        self.SetSizer(vbox)
