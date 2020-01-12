@@ -41,9 +41,9 @@ class DicomSort(wx.App):
 
 
 class CrashReporter(wx.Dialog):
-    def __init__(self, type=None, value=None, tb=None, fullstack=None):
+    def __init__(self, parent=None, type=None, value=None, tb=None, fullstack=None):
         super(
-            CrashReporter, self).__init__(None, -1, 'DicomSort Crash Reporter',
+            CrashReporter, self).__init__(parent, -1, 'DicomSort Crash Reporter',
                                           size=(400, 400))
         self.type = type
         self.value = value
