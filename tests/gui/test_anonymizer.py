@@ -1,8 +1,8 @@
 from dicomsort.gui.anonymizer import AnonymizeList, QuickRenameDlg
-from tests.shared import DialogTestCase
+from tests.shared import WxTestCase
 
 
-class TestQuickRenameDlg(DialogTestCase):
+class TestQuickRenameDlg(WxTestCase):
     def test_no_patient_name_anonlist(self):
         a = AnonymizeList(self.frame)
         dlg = QuickRenameDlg(self.frame, anonList=a)
@@ -43,7 +43,7 @@ class TestQuickRenameDlg(DialogTestCase):
         assert a.GetReplacementDict()['PatientName'] == name
 
 
-class TestAnonymizeList(DialogTestCase):
+class TestAnonymizeList(WxTestCase):
     def test_constructor(self):
         a = AnonymizeList(self.frame)
 

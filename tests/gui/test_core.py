@@ -4,10 +4,10 @@ from six.moves.urllib.parse import parse_qs
 
 from dicomsort.gui import core
 from dicomsort.gui.core import errors, CrashReporter, sys
-from tests.shared import DialogTestCase
+from tests.shared import WxTestCase
 
 
-class TestCrashReporter(DialogTestCase):
+class TestCrashReporter(WxTestCase):
     def test_constructor(self):
         reporter = CrashReporter()
         reporter.Destroy()

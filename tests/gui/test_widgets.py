@@ -1,11 +1,11 @@
 import dicomsort
 import wx
 
-from tests.shared import DialogTestCase
+from tests.shared import WxTestCase
 from dicomsort.gui.widgets import errors, FieldSelector, PathEditCtrl, MultiDirDlg, AboutDlg, UpdateDlg, SeriesRemoveWarningDlg, CustomDataTable
 
 
-class TestFieldSelector(DialogTestCase):
+class TestFieldSelector(WxTestCase):
     def test_constructor(self):
         choices = ['one', 'two', 'three']
         selector = FieldSelector(self.frame, choices=choices)
@@ -214,7 +214,7 @@ class TestFieldSelector(DialogTestCase):
 
         assert selector.options.GetStrings() == ['PatientName', 'PatientID']
 
-class TestPathEditCtrl(DialogTestCase):
+class TestPathEditCtrl(WxTestCase):
     def test_constructor(self):
         ctrl = PathEditCtrl(self.frame)
 
@@ -285,14 +285,14 @@ class TestPathEditCtrl(DialogTestCase):
         assert ctrl.path == paths
 
 
-class TestMultiDirDlg(DialogTestCase):
+class TestMultiDirDlg(WxTestCase):
     def test_constructor(self):
         dlg = MultiDirDlg(self.frame)
         assert isinstance(dlg, MultiDirDlg)
 
         dlg.Destroy()
 
-class TestUpdateDlg(DialogTestCase):
+class TestUpdateDlg(WxTestCase):
     def test_on_close(self):
         dlg = UpdateDlg(self.frame, '1.2.3')
         dlg.OnClose()
@@ -308,7 +308,7 @@ class TestUpdateDlg(DialogTestCase):
         mock.assert_called_once_with(url)
 
 
-class TestAboutDialog(DialogTestCase):
+class TestAboutDialog(WxTestCase):
     def test_constructor(self):
         dlg = AboutDlg(self.frame)
 
@@ -318,7 +318,7 @@ class TestAboutDialog(DialogTestCase):
         assert dlg.info.GetWebSiteURL() == 'https://dicomsort.com'
 
 
-class TestSeriesRemoveWarningDlg(DialogTestCase):
+class TestSeriesRemoveWarningDlg(WxTestCase):
     def test_on_change(self):
         dlg = SeriesRemoveWarningDlg(self.frame)
         dlg.OnChange()
@@ -338,7 +338,7 @@ class TestSeriesRemoveWarningDlg(DialogTestCase):
         assert dlg.choice == 2
 
 
-class TestCustomDataTable(DialogTestCase):
+class TestCustomDataTable(WxTestCase):
     def test_no_data(self):
         dt = CustomDataTable(None)
 

@@ -3,10 +3,10 @@ import wx
 
 from configobj import ConfigObj
 from dicomsort.gui.preferences import MiscPanel, FileNamePanel, PreferenceDlg
-from tests.shared import DialogTestCase
+from tests.shared import WxTestCase
 
 
-class TestMiscPanel(DialogTestCase):
+class TestMiscPanel(WxTestCase):
     def test_default_state(self):
         config = ConfigObj()
         panel = MiscPanel(self.frame, config)
@@ -107,7 +107,7 @@ class TestMiscPanel(DialogTestCase):
         assert list(io.open(orig_filename)) == list(io.open(new_filename))
 
 
-class TestFilenamePanel(DialogTestCase):
+class TestFilenamePanel(WxTestCase):
     def test_default_state(self):
         config = ConfigObj()
         panel = FileNamePanel(self.frame, config)
@@ -225,7 +225,7 @@ class TestFilenamePanel(DialogTestCase):
         assert list(io.open(orig_filename)) == list(io.open(new_filename))
 
 
-class TestPreferenceDialog(DialogTestCase):
+class TestPreferenceDialog(WxTestCase):
     def empty_config(self, filename):
         config = ConfigObj({
             'Miscpanel': {},

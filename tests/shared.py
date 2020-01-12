@@ -1,7 +1,7 @@
 import wx
 
 
-class DialogTestCase:
+class WxTestCase:
     def setup(self):
         self.app = wx.App()
         self.frame = wx.Frame(None)

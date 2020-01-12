@@ -5,7 +5,7 @@ import wx
 from six.moves import StringIO
 
 from dicomsort.gui import events, update
-from tests.shared import DialogTestCase
+from tests.shared import WxTestCase
 
 
 class TestLatestVersion:
@@ -56,7 +56,7 @@ class TestUpdateAvailable:
         assert update.update_available() is None
 
 
-class TestUpdateChecker(DialogTestCase):
+class TestUpdateChecker(WxTestCase):
     def test_no_update(self, mocker):
         mocker.patch.object(update, 'update_available', return_value=None)
 
