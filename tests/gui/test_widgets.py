@@ -1,4 +1,8 @@
-from dicomsort.gui.widgets import errors, FieldSelector, PathEditCtrl
+import dicomsort
+import wx
+
+from tests.shared import DialogTestCase
+from dicomsort.gui.widgets import errors, FieldSelector, PathEditCtrl, MultiDirDlg, AboutDlg, UpdateDlg, SeriesRemoveWarningDlg, CustomDataTable
 
 
 class TestFieldSelector:
@@ -279,3 +283,157 @@ class TestPathEditCtrl:
         ctrl.ValidatePath()
 
         assert ctrl.path == paths
+
+
+class TestMultiDirDlg(DialogTestCase):
+    def test_constructor(self):
+        dlg = MultiDirDlg(self.frame)
+        assert isinstance(dlg, MultiDirDlg)
+
+
+class TestUpdateDlg(DialogTestCase):
+    def test_on_close(self):
+        dlg = UpdateDlg(self.frame, '1.2.3')
+        dlg.OnClose()
+
+    def test_on_update(self, mocker):
+        dlg = UpdateDlg(self.frame, '1.2.3')
+        url = 'https://dicomsort.com'
+
+        mock = mocker.patch.object(dlg.link, 'GotoURL')
+
+        dlg.OnUpdate()
+
+        mock.assert_called_once_with(url)
+
+
+class TestAboutDialog(DialogTestCase):
+    def test_constructor(self):
+        dlg = AboutDlg()
+
+        # Just a few sanity checks
+        assert dlg.GetVersion() == dicomsort.__version__
+        assert dlg.GetName() == 'DICOM Sorting'
+        assert dlg.GetWebSiteURL() == 'https://dicomsort.com'
+
+
+class TestSeriesRemoveWarningDlg(DialogTestCase):
+    def test_on_change(self):
+        dlg = SeriesRemoveWarningDlg(self.frame)
+        dlg.OnChange()
+
+        assert dlg.choice == 1
+
+    def test_on_cancel(self):
+        dlg = SeriesRemoveWarningDlg(self.frame)
+        dlg.OnCancel()
+
+        assert dlg.choice == 0
+
+    def test_on_accept(self):
+        dlg = SeriesRemoveWarningDlg(self.frame)
+        dlg.OnAccept()
+
+        assert dlg.choice == 2
+
+
+class TestCustomDataTable():
+    def test_no_data(self):
+        dt = CustomDataTable(None)
+
+        assert dt.data == [['', '', ''], ]
+
+    def test_get_number_rows(self):
+        count = 4
+        data = [['', '', ''], ] * count
+        dt = CustomDataTable(data)
+
+        assert dt.GetNumberRows() == count
+
+    def test_get_number_cols(self):
+        dt = CustomDataTable(None)
+
+        assert dt.GetNumberCols() == 3
+
+    def test_is_empty_cell(self):
+        data = [['', '', ''], ['not', 'empty', 'row']]
+        dt = CustomDataTable(data)
+
+        assert dt.IsEmptyCell(0, 0) is True
+        assert dt.IsEmptyCell(0, 1) is True
+        assert dt.IsEmptyCell(0, 2) is True
+
+        assert dt.IsEmptyCell(1, 0) is False
+        assert dt.IsEmptyCell(1, 1) is False
+        assert dt.IsEmptyCell(1, 2) is False
+
+        # Address beyond the range of the data
+        assert dt.IsEmptyCell(2, 0) is True
+        assert dt.IsEmptyCell(0, 3) is True
+
+    def test_get_value(self):
+        data = [['', '', ''], ['not', 'empty', 'row']]
+        dt = CustomDataTable(data)
+
+        assert dt.GetValue(0, 0) == ''
+        assert dt.GetValue(0, 1) == ''
+        assert dt.GetValue(0, 2) == ''
+
+        assert dt.GetValue(1, 0) == 'not'
+        assert dt.GetValue(1, 1) == 'empty'
+        assert dt.GetValue(1, 2) == 'row'
+
+        # Address beyond the range of the data
+        assert dt.GetValue(2, 0) == ''
+        assert dt.GetValue(0, 3) == ''
+
+    def test_set_value(self):
+        data = [['', '', ''], ['not', 'empty', 'row']]
+        dt = CustomDataTable(data)
+        value = 'value'
+
+        # Set an in-range value
+        dt.SetValue(1, 0, value)
+
+        assert dt.GetValue(1, 0) == value
+
+        # Set an out-of-range value
+        dt.SetValue(2, 0, value)
+
+    def test_get_col_label_value(self):
+        dt = CustomDataTable(None)
+
+        assert dt.GetColLabelValue(0) == ''
+        assert dt.GetColLabelValue(1) == 'DICOM Property'
+        assert dt.GetColLabelValue(2) == 'Replacement Value'
+
+    def test_get_type_name(self):
+        dt = CustomDataTable(None)
+
+        assert dt.GetTypeName(10, 0) == wx.grid.GRID_VALUE_BOOL
+        assert dt.GetTypeName(10, 1) == wx.grid.GRID_VALUE_STRING
+        assert dt.GetTypeName(10, 2) == wx.grid.GRID_VALUE_STRING
+
+    def test_can_get_value_as(self):
+        dt = CustomDataTable(None)
+
+        assert dt.CanGetValueAs(10, 0, wx.grid.GRID_VALUE_BOOL) is True
+        assert dt.CanGetValueAs(10, 0, wx.grid.GRID_VALUE_STRING) is False
+
+        assert dt.CanGetValueAs(10, 1, wx.grid.GRID_VALUE_BOOL) is False
+        assert dt.CanGetValueAs(10, 1, wx.grid.GRID_VALUE_STRING) is True
+
+        assert dt.CanGetValueAs(10, 2, wx.grid.GRID_VALUE_BOOL) is False
+        assert dt.CanGetValueAs(10, 2, wx.grid.GRID_VALUE_STRING) is True
+
+    def test_can_set_value_as(self):
+        dt = CustomDataTable(None)
+
+        assert dt.CanSetValueAs(10, 0, wx.grid.GRID_VALUE_BOOL) is True
+        assert dt.CanSetValueAs(10, 0, wx.grid.GRID_VALUE_STRING) is False
+
+        assert dt.CanSetValueAs(10, 1, wx.grid.GRID_VALUE_BOOL) is False
+        assert dt.CanSetValueAs(10, 1, wx.grid.GRID_VALUE_STRING) is True
+
+        assert dt.CanSetValueAs(10, 2, wx.grid.GRID_VALUE_BOOL) is False
+        assert dt.CanSetValueAs(10, 2, wx.grid.GRID_VALUE_STRING) is True

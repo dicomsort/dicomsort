@@ -22,5 +22,3 @@ class DialogTestCase:
         timer = wx.PyTimer(_cleanup)
         timer.Start(100)
         self.app.MainLoop()
-        del self.app
-

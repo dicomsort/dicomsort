@@ -21,8 +21,9 @@ class QuickRenameDlg(wx.Dialog):
         else:
             initial = ''
 
-        vbox.Add(wx.StaticText(
-            self, -1, 'Patient Name'), 0, wx.TOP | wx.ALIGN_CENTER, 15)
+        txt = wx.StaticText(self, -1, 'PatientName')
+        vbox.Add(txt, 0, wx.TOP | wx.ALIGN_CENTER, 15)
+
         self.patientName = wx.TextCtrl(self, -1, initial, size=(200, 20),
                                        style=wx.TE_PROCESS_ENTER)
 
