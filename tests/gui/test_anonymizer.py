@@ -3,6 +3,7 @@ from tests.shared import DialogTestCase
 
 
 class TestQuickRenameDlg(DialogTestCase):
+    '''
     def test_no_patient_name_anonlist(self):
         a = AnonymizeList(self.frame)
         dlg = QuickRenameDlg(self.frame, anonList=a)
@@ -41,7 +42,7 @@ class TestQuickRenameDlg(DialogTestCase):
 
         assert a.GetReplacementDict()['PatientID'] == '%(PatientName)s'
         assert a.GetReplacementDict()['PatientName'] == name
-
+    '''
 
 
 class TestAnonymizeList:
