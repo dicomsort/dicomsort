@@ -41,14 +41,19 @@ class DicomSort(wx.App):
 
 
 class CrashReporter(wx.Dialog):
+
+    TITLE = 'DICOM Sort Crash Reporter'
+
     def __init__(self, parent, **kwargs):
-        super(CrashReporter, self).__init__(parent, -1, 'DicomSort Crash Reporter', size=(400, 400))
+        super(CrashReporter, self).__init__(parent, -1, self.TITLE, size=(400, 400))
 
         self.type = kwargs.pop('type', None)
         self.value = kwargs.pop('value', None)
 
+        tb = kwargs.pop('traceback', None)
+
         self.traceback = '\n'.join(
-            traceback.format_exception(type, self.value, kwargs.pop('traceback', None))
+            traceback.format_exception(type, self.value, tb)
         )
 
         self.Create()
