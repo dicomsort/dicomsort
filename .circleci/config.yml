@@ -4,6 +4,7 @@ workflows:
   test:
     jobs:
       - test-2.7
+      - test-3.7
 jobs:
   test-2.7: &test-template
     docker:
@@ -38,3 +39,7 @@ jobs:
             ./cc-test-reporter before-build
             make test
             ./cc-test-reporter after-build --coverage-input-type coverage.py --exit-code=$?
+  test-3.7:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.7-browsers
