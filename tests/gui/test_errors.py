@@ -6,6 +6,6 @@ class TestThrowError(DialogTestCase):
     def test_defaults(self, mocker):
         mock = mocker.patch.object(wx.MessageDialog, 'ShowModal')
         message = 'msg'
-        throw_error(message)
+        throw_error(message, parent=self.frame)
 
         mock.assert_called_once()
