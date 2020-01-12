@@ -1,8 +1,9 @@
 import dicomsort
-import sys
+
+from six.moves.urllib.parse import parse_qs
 
 from dicomsort.gui import core
-from dicomsort.gui.core import errors, CrashReporter
+from dicomsort.gui.core import errors, CrashReporter, sys
 
 
 class TestCrashReporter:
@@ -32,8 +33,19 @@ class TestCrashReporter:
     def test_report(self, app, mocker):
         mock = mocker.patch.object(core, 'urlopen')
 
+        sys.platform = 'platform'
+
         self.reporter = CrashReporter()
         self.reporter.Report()
 
-        params = "version={}&OS={}&email=None&comments=--------------DO+NOT+EDIT+BELOW+------------%0ANone".format(dicomsort.__version__, sys.platform)
-        mock.assert_called_with('http://www.suever.net/software/dicomSort/bug_report.php', params)
+        mock.assert_called()
+
+        call_args = mock.call_args[0]
+
+        assert call_args[0] == 'http://www.suever.net/software/dicomSort/bug_report.php'
+
+        query_params = parse_qs(call_args[1])
+
+        assert query_params['OS'][0] == 'platform'
+        assert query_params['version'][0] == dicomsort.__version__
+        assert query_params['email'][0] == 'None'
