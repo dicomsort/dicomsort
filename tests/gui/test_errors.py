@@ -8,4 +8,4 @@ class TestThrowError(WxTestCase):
         message = 'msg'
         throw_error(message, parent=self.frame)
 
-        mock.assert_called_once()
+        mock.assert_called_once_with()
