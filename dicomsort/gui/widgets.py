@@ -1,7 +1,7 @@
 import dicomsort
 import os
 import re
-import sys
+import six
 import wx
 
 import wx.lib.agw.hyperlink as hyperlink
@@ -236,7 +236,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
             if isinstance(item, str):
                 item = [item, ]
 
-            row = self.InsertItem(sys.maxint, item[0])
+            row = self.InsertItem(self.GetItemCount() + 1, item[0])
 
             for col in range(1, len(item)):
                 self.SetStringItem(row, col, item[col])
@@ -254,7 +254,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
         return [self.GetStringItem(r, col) for r in self._GetCheckedIndexes()]
 
     def FindStrings(self, strings, col=0):
-        strings = [unicode(string) for string in strings]
+        strings = [six.ensure_text(string) for string in strings]
 
         fields = [item.Text for item in self.GetItemList(col)]
 
@@ -262,7 +262,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
 
         for string in strings:
             try:
-                inds.append(fields.index(unicode(string)))
+                inds.append(fields.index(six.ensure_text(string)))
             except ValueError:
                 inds.append(None)
 

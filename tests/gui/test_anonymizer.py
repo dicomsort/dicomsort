@@ -107,7 +107,7 @@ class TestAnonymizeList:
             'Field3': '',
         }
 
-        keys = fields.keys()
+        keys = list(fields.keys())
         keys.sort()
 
         a.SetStringItems(keys)

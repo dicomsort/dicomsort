@@ -91,7 +91,7 @@ class AnonymizeList(widgets.CheckListCtrl):
         return anonDict
 
     def SetReplacementDict(self, dictionary):
-        keys = dictionary.keys()
+        keys = list(dictionary.keys())
         inds = self.FindStrings(keys, 0)
 
         for i, row in enumerate(inds):
