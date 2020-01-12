@@ -290,6 +290,7 @@ class TestMultiDirDlg(DialogTestCase):
         dlg = MultiDirDlg(self.frame)
         assert isinstance(dlg, MultiDirDlg)
 
+        dlg.Destroy()
 
 class TestUpdateDlg(DialogTestCase):
     def test_on_close(self):
