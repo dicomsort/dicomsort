@@ -309,12 +309,12 @@ class TestUpdateDlg(DialogTestCase):
 
 class TestAboutDialog(DialogTestCase):
     def test_constructor(self):
-        dlg = AboutDlg()
+        dlg = AboutDlg(self.frame)
 
         # Just a few sanity checks
-        assert dlg.GetVersion() == dicomsort.__version__
-        assert dlg.GetName() == 'DICOM Sorting'
-        assert dlg.GetWebSiteURL() == 'https://dicomsort.com'
+        assert dlg.info.GetVersion() == dicomsort.__version__
+        assert dlg.info.GetName() == 'DICOM Sorting'
+        assert dlg.info.GetWebSiteURL() == 'https://dicomsort.com'
 
 
 class TestSeriesRemoveWarningDlg(DialogTestCase):
