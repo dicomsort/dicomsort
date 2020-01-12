@@ -38,7 +38,7 @@ class TestCrashReporter:
         self.reporter = CrashReporter()
         self.reporter.Report()
 
-        mock.assert_called()
+        mock.assert_called_once()
 
         call_args = mock.call_args[0]
 
