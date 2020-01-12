@@ -3,8 +3,8 @@ import itertools
 import os
 import pydicom
 import shutil
-import sys
 
+from six import ensure_text
 from threading import Thread
 
 from dicomsort import errors, utils
@@ -17,7 +17,7 @@ class Dicom():
         Takes a dicom filename in and returns instance that can be used to sort
         """
         # Be sure to do encoding because Windows sucks
-        self.filename = filename.encode('UTF-8')
+        self.filename = ensure_text(filename)
 
         # Load the DICOM object
         if dcm:
@@ -106,7 +106,7 @@ class Dicom():
         except AttributeError:
             return 'Unknown'
 
-        for typeString, match in types.iteritems():
+        for typeString, match in types.items():
             if match.issubset(imType):
                 if typeString == '3DRecon':
                     self.dicom.InstanceNumber = self.dicom.SeriesNumber
