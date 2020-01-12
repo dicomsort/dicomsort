@@ -1,11 +1,16 @@
-import itertools
 import os
 import pydicom
 import pytest
 import time
 
+from Queue import Queue
+
 from dicomsort.dicomsorter import Dicom, DicomSorter, Sorter
 from dicomsort.errors import DicomFolderError
+
+
+def default_sorter():
+    return Sorter(Queue(), '', [], '')
 
 
 class TestDicom:
@@ -578,8 +583,8 @@ class TestDicomSorter:
         patch.return_value = True
 
         # Generate some sorters
-        sorter.sorters.append(Sorter([], '', [], ''))
-        sorter.sorters.append(Sorter([], '', [], ''))
+        sorter.sorters.append(default_sorter())
+        sorter.sorters.append(default_sorter())
 
         assert sorter.IsSorting() is True
 
@@ -590,8 +595,8 @@ class TestDicomSorter:
         patch.return_value = False
 
         # Generate some sorters
-        sorter.sorters.append(Sorter([], '', [], ''))
-        sorter.sorters.append(Sorter([], '', [], ''))
+        sorter.sorters.append(default_sorter())
+        sorter.sorters.append(default_sorter())
 
         assert sorter.IsSorting() is False
 

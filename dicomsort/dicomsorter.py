@@ -2,8 +2,8 @@ import collections
 import itertools
 import os
 import pydicom
+import Queue
 import shutil
-import sys
 
 from threading import Thread
 
@@ -11,7 +11,10 @@ from dicomsort import errors, utils
 from dicomsort.gui import events
 
 
-class Dicom():
+THREAD_COUNT = 2
+
+
+class Dicom:
     def __init__(self, filename, dcm=None):
         """
         Takes a dicom filename in and returns instance that can be used to sort
@@ -222,14 +225,14 @@ class Dicom():
 
 
 class Sorter(Thread):
-    def __init__(self, files, outDir, dirFormat, fileFormat,
+    def __init__(self, queue, outDir, dirFormat, fileFormat,
                  anon=dict(), keep_filename=False, iterator=None,
                  test=False, listener=None, total=None, root=None,
                  seriesFirst=False, keepOriginal=True):
 
         self.dirFormat = dirFormat
         self.fileFormat = fileFormat
-        self.fileList = files
+        self.queue = queue
         self.anondict = anon
         self.keep_filename = keep_filename
         self.seriesFirst = seriesFirst
@@ -238,14 +241,7 @@ class Sorter(Thread):
         self.test = test
         self.iter = iterator
         self.root = root
-
-        if not isinstance(self.fileList, tuple):
-            self.fileList = (self.fileList,)
-
-        if total is None:
-            self.total = len(self.fileList)
-        else:
-            self.total = total
+        self.total = total or self.queue.qsize()
 
         self.isgui = False
 
@@ -256,37 +252,50 @@ class Sorter(Thread):
         Thread.__init__(self)
         self.start()
 
+    def sort_image(self, filename):
+        dcm = utils.isdicom(filename)
+
+        if dcm:
+            dcm = Dicom(filename, dcm)
+            dcm.SetAnonRules(self.anondict)
+            dcm.seriesFirst = self.seriesFirst
+
+            # Use the original filename for 3d recons
+            if self.keep_filename:
+                output_filename = os.path.basename(filename)
+            else:
+                output_filename = self.fileFormat
+
+            dcm.sort(
+                self.outDir,
+                self.dirFormat,
+                output_filename,
+                test=self.test,
+                rootdir=self.root,
+                keepOriginal=self.keepOriginal
+            )
+
+    def increment_counter(self):
+        if self.iter is None:
+            return
+
+        count = self.iter.next()
+
+        if self.isgui is False:
+            return
+
+        event = events.CounterEvent(Count=count, total=self.total)
+        events.post_event(self.listener, event)
+
     def run(self):
-        files = self.fileList
-
-        for file in files:
-            if not file:
-                continue
-
-            dcm = utils.isdicom(file)
-            if dcm:
-                dcm = Dicom(file, dcm)
-                dcm.SetAnonRules(self.anondict)
-                dcm.seriesFirst = self.seriesFirst
-
-                # Use the original filename for 3d recons
-                if self.keep_filename:
-                    filename = os.path.basename(file)
-                else:
-                    filename = self.fileFormat
-
-                dcm.sort(self.outDir,
-                         self.dirFormat,
-                         filename,
-                         test=self.test,
-                         rootdir=self.root,
-                         keepOriginal=self.keepOriginal)
-
-            if self.iter:
-                count = self.iter.next()
-                if self.isgui:
-                    event = events.CounterEvent(Count=count, total=self.total)
-                    events.post_event(self.listener, event)
+        while True:
+            try:
+                filename = self.queue.get_nowait()
+                self.sort_image(filename)
+                self.increment_counter()
+            # TODO: Rescue any other errors and quarantine the files
+            except Queue.Empty:
+                return
 
 
 class DicomSorter():
@@ -302,6 +311,8 @@ class DicomSorter():
 
         self.folders = []
         self.filename = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
+
+        self.queue = Queue.Queue()
 
         self.sorters = list()
 
@@ -342,37 +353,23 @@ class DicomSorter():
 
     def Sort(self, outputDir, test=False, listener=None):
         # This should be moved to a worker thread
-
-        dirFormat = self.GetFolderFormat()
-
-        fileList = list()
-
         for path in self.pathname:
-            for root, dir, files in os.walk(path):
-                for file in files:
-                    fileList.append(os.path.join(root, file))
+            for root, _, files in os.walk(path):
+                for filename in files:
+                    self.queue.put(os.path.join(root, filename))
 
-        # Make sure that we don't have duplicates
-        fileList = list(set(fileList))
-
-        numberOfThreads = 2
-        numberOfFiles = len(fileList)
-        numberPerThread = int(round(float(numberOfFiles) / float(numberOfThreads)))
-
-        fileGroups = utils.grouper(fileList, numberPerThread)
-
-        dirFormat = self.GetFolderFormat()
+        number_of_files = self.queue.qsize()
+        dir_format = self.GetFolderFormat()
 
         self.sorters = list()
 
         iterator = itertools.count(1)
 
-        for group in fileGroups:
-
-            sorter = Sorter(group, outputDir, dirFormat, self.filename,
+        for _ in range(min(THREAD_COUNT, number_of_files)):
+            sorter = Sorter(self.queue, outputDir, dir_format, self.filename,
                             self.anondict, self.keep_filename,
                             iterator=iterator, test=test, listener=listener,
-                            total=numberOfFiles, root=self.pathname,
+                            total=number_of_files, root=self.pathname,
                             seriesFirst=self.seriesFirst,
                             keepOriginal=self.keepOriginal)
 
