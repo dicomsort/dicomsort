@@ -7,6 +7,9 @@ clean:
 build: clean
 	python setup.py sdist
 
+lint:
+	flake8 dicomsort/*
+
 release:
 	twine upload dist/*
 
