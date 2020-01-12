@@ -1,4 +1,5 @@
 import dicomsort
+import re
 import wx
 
 from threading import Thread
@@ -6,8 +7,24 @@ from six.moves.urllib.request import urlopen
 
 from dicomsort.gui import events
 
-VERSION_TUPLE = tuple([int(x) for x in dicomsort.__version__.split('.')])
 VERSION_URL = "http://www.dicomsort.com/current"
+
+
+def version_tuple():
+    parts = list()
+
+    for component in dicomsort.__version__.split('.'):
+        number_match = re.match('^\\d+', component)
+
+        if number_match is None:
+            continue
+
+        parts.append(int(number_match.group()))
+
+    return tuple(parts)
+
+
+VERSION_TUPLE = version_tuple()
 
 
 def latest_version():
