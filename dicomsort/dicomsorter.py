@@ -255,25 +255,27 @@ class Sorter(Thread):
     def sort_image(self, filename):
         dcm = utils.isdicom(filename)
 
-        if dcm:
-            dcm = Dicom(filename, dcm)
-            dcm.SetAnonRules(self.anondict)
-            dcm.seriesFirst = self.seriesFirst
+        if not dcm:
+            return
 
-            # Use the original filename for 3d recons
-            if self.keep_filename:
-                output_filename = os.path.basename(filename)
-            else:
-                output_filename = self.fileFormat
+        dcm = Dicom(filename, dcm)
+        dcm.SetAnonRules(self.anondict)
+        dcm.seriesFirst = self.seriesFirst
 
-            dcm.sort(
-                self.outDir,
-                self.dirFormat,
-                output_filename,
-                test=self.test,
-                rootdir=self.root,
-                keepOriginal=self.keepOriginal
-            )
+        # Use the original filename for 3d recons
+        if self.keep_filename:
+            output_filename = os.path.basename(filename)
+        else:
+            output_filename = self.fileFormat
+
+        dcm.sort(
+            self.outDir,
+            self.dirFormat,
+            output_filename,
+            test=self.test,
+            rootdir=self.root,
+            keepOriginal=self.keepOriginal
+        )
 
     def increment_counter(self):
         if self.iter is None:
