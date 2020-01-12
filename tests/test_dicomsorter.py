@@ -626,22 +626,6 @@ class TestDicomSorter:
         sorter.SetAnonRules(replacements)
         assert sorter.anondict == replacements
 
-    def test_set_anon_rules_unicode(self):
-        sorter = DicomSorter()
-
-        replacements = {
-            'Key1': 'Value1',
-            'Key2': 'Value2',
-            'Unicode': u'Value3',
-        }
-
-        sorter.SetAnonRules(replacements)
-        assert sorter.anondict == replacements
-
-        # make sure all have been convered from unicode
-        for value in sorter.anondict.values():
-            assert isinstance(value, unicode) is False
-
     def test_set_anon_rules_invalid(self):
         sorter = DicomSorter()
 

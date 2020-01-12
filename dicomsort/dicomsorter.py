@@ -324,10 +324,6 @@ class DicomSorter():
         if not isinstance(anondict, dict):
             raise Exception('Anon rules must be a dictionary')
 
-        # Make sure to convert unicode to raw strings (pydicom bug)
-        for key, value in anondict.items():
-            anondict[key] = value.encode()
-
         self.anondict = anondict
 
     def GetFolderFormat(self):
