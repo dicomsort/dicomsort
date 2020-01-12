@@ -47,14 +47,14 @@ class UpdateDlg(wx.Dialog):
         vbox.Add(head, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 15)
 
         txt = wx.StaticText(
-            self, -1, label=message % (dicomsort__version__, version),
+            self, -1, label=message % (dicomsort.__version__, version),
             style=wx.ALIGN_CENTER)
         vbox.Add(txt, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
 
         self.link = hyperlink.HyperLinkCtrl(self, -1)
-        self.link.SetURL(URL='http://www.dicomsort.com')
+        self.link.SetURL(URL='https://dicomsort.com')
         self.link.SetLabel(label='Click here to obtain the update')
-        self.link.SetToolTipString('http://www.dicomsort.com')
+        self.link.SetToolTipString('https://dicomsort.com')
         self.link.AutoBrowse(False)
 
         self.Bind(hyperlink.EVT_HYPERLINK_LEFT, self.OnUpdate, self.link)
@@ -95,7 +95,7 @@ class AboutDlg(AboutDialogInfo):
         self.SetVersion(dicomsort.__version__)
 
         self.SetCopyright('(C) 2011 - 2020 Jonathan Suever')
-        self.SetWebSite('http://www.dicomsort.com')
+        self.SetWebSite('https://dicomsort.com')
 
         self.GenerateDescription()
 
@@ -117,9 +117,12 @@ class CustomDataTable(wx.grid.PyGridTableBase):
 
         self.colLabels = ['', 'DICOM Property', 'Replacement Value']
 
-        self.dataTypes = [wx.grid.GRID_VALUE_BOOL,
-                          wx.grid.GRID_VALUE_STRING,
-                          wx.grid.GRID_VALUE_STRING]
+        self.dataTypes = [
+            wx.grid.GRID_VALUE_BOOL,
+            wx.grid.GRID_VALUE_STRING,
+            wx.grid.GRID_VALUE_STRING
+        ]
+
         if data is None:
             data = [['', '', ''], ]
 
@@ -166,7 +169,10 @@ class CustomDataTable(wx.grid.PyGridTableBase):
                                                1                                       # how many
                                                )
 
-                self.GetView().ProcessTableMessage(msg)
+                view = self.GetView()
+
+                if view:
+                    view.ProcessTableMessage(msg)
         innerSetValue(row, col, value)
 
     #--------------------------------------------------
@@ -393,8 +399,6 @@ class SeriesRemoveWarningDlg(wx.Dialog):
 
         self.SetSizer(vbox)
 
-        self.ShowModal()
-
         self.Destroy()
 
     def OnChange(self, *evnt):
@@ -592,6 +596,7 @@ class FieldSelector(wx.Panel):
 
         if index == self.selected.GetCount() - 1 and self.has_default():
             warn = SeriesRemoveWarningDlg(None)
+            warn.ShowModal()
 
             if warn.choice == 0:
                 return

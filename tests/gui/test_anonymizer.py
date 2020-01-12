@@ -1,4 +1,47 @@
-from dicomsort.gui.anonymizer import AnonymizeList
+from dicomsort.gui.anonymizer import AnonymizeList, QuickRenameDlg
+from tests.shared import DialogTestCase
+
+
+class TestQuickRenameDlg(DialogTestCase):
+    def test_no_patient_name_anonlist(self):
+        a = AnonymizeList(self.frame)
+        dlg = QuickRenameDlg(self.frame, anonList=a)
+
+        expected = {
+            'PatientName': '',
+            'PatientID': '%(PatientName)s',
+        }
+
+        assert dlg.GetValues() == expected
+
+    def test_patient_name_anonlist(self):
+        name = 'Patient0'
+        a = AnonymizeList(self.frame)
+        a.SetStringItems(['PatientName'])
+        a.SetReplacementDict({'PatientName': name})
+
+        dlg = QuickRenameDlg(self.frame, anonList=a)
+
+        expected = {
+            'PatientName': name,
+            'PatientID': '%(PatientName)s',
+        }
+
+        assert dlg.GetValues() == expected
+
+    def test_on_accept(self):
+        name = 'Patient0'
+        a = AnonymizeList(self.frame)
+        a.SetStringItems(['PatientName', 'PatientID'])
+        a.SetReplacementDict({'PatientName': name, 'PatientID': 'ignored'})
+
+        dlg = QuickRenameDlg(self.frame, anonList=a)
+
+        dlg.OnAccept()
+
+        assert a.GetReplacementDict()['PatientID'] == '%(PatientName)s'
+        assert a.GetReplacementDict()['PatientName'] == name
+
 
 
 class TestAnonymizeList:

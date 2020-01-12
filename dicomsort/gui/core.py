@@ -19,6 +19,7 @@ from dicomsort.gui.update import UpdateChecker
 def ExceptHook(type, value, tb):
     dlg = CrashReporter(type, value, tb)
     dlg.ShowModal()
+    dlg.Destroy()
 
 
 class DicomSort(wx.App):
