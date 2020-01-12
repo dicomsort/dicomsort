@@ -9,8 +9,9 @@ import wx
 from urllib import urlencode
 from urllib2 import urlopen
 
-from dicomsort import config, errors
+from dicomsort import config
 from dicomsort.dicomsorter import DicomSorter
+from dicomsort.errors import DicomFolderError
 from dicomsort.gui import errors, events, help, icons, preferences, widgets
 from dicomsort.gui.anonymizer import QuickRenameDlg
 from dicomsort.gui.update import UpdateChecker
@@ -155,7 +156,7 @@ class MainFrame(wx.Frame):
         self._InitializeMenus()
 
         # Use os.getcwd() for now
-        self.dicomSorter = DicomSorter()
+        self.dicom_sorter = DicomSorter()
 
         # Store the selected output directory to speed it up
         self.outputDirectory = None
@@ -214,57 +215,55 @@ class MainFrame(wx.Frame):
 
     def Sort(self, evnt):
 
-        if self.dicomSorter.IsSorting():
+        if self.dicom_sorter.is_sorting():
             return
 
         self.anonymize = evnt.anon
 
         miscTab = self.prefDlg.pages['Miscpanel']
-        self.dicomSorter.seriesFirst = miscTab.seriesFirst.IsChecked()
-        self.dicomSorter.keepOriginal = miscTab.keepOriginal.IsChecked()
+        self.dicom_sorter.series_first = miscTab.seriesFirst.IsChecked()
+        self.dicom_sorter.keep_original = miscTab.keepOriginal.IsChecked()
 
         if self.anonymize:
-            anonTab = self.prefDlg.pages['Anonymization']
-            anonDict = anonTab.anonList.GetAnonDict()
-            self.dicomSorter.SetAnonRules(anonDict)
+            anon_tab = self.prefDlg.pages['Anonymization']
+            rules = anon_tab.anonList.GetAnonDict()
+            self.dicom_sorter.set_anonymization_rules(rules)
         else:
-            self.dicomSorter.SetAnonRules(dict())
+            self.dicom_sorter.set_anonymization_rules(dict())
 
-        dFormat = evnt.fields
+        directory_format = evnt.fields
 
-        filenameMethod = int(self.config['FilenameFormat']['Selection'])
+        filename_method = int(self.config['FilenameFormat']['Selection'])
+        filename_format = ''
 
-        if filenameMethod == 0:
+        if filename_method == 0:
             # Image (0001)
-            fFormat = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
-        elif filenameMethod == 1:
+            filename_format = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
+        elif filename_method == 1:
             # Use the original filename
-            fFormat = ''
-            self.dicomSorter.keep_filename = True
-            # Alternately we could pass None to dicomSorter
-        elif filenameMethod == 2:
+            filename_format = ''
+            self.dicom_sorter.keep_filename = True
+            # Alternately we could pass None to dicom_sorter
+        elif filename_method == 2:
             # Use custom format
-            fFormat = self.config['FilenameFormat']['FilenameString']
+            filename_format = self.config['FilenameFormat']['FilenameString']
 
-        self.dicomSorter.filename = fFormat
-        self.dicomSorter.folders = dFormat
+        self.dicom_sorter.filename = filename_format
+        self.dicom_sorter.folders = directory_format
 
         self.outputDirectory = self.SelectOutputDir()
 
         if not self.outputDirectory:
             return
 
-        # Use this for testing
-        # self.dicomSorter.Sort(outputDir,test=True,listener=self)
-
         # Use for the real deal
-        self.dicomSorter.Sort(self.outputDirectory, listener=self)
+        self.dicom_sorter.sort(self.outputDirectory, listener=self)
 
         self.Bind(events.EVT_COUNTER, self.OnCount)
 
-    def OnCount(self, evnt):
-        statusText = '%s / %s' % (evnt.Count, evnt.total)
-        self.SetStatusText(statusText)
+    def OnCount(self, event):
+        status = '%s / %s' % (event.Count, event.total)
+        self.SetStatusText(status)
 
     def SelectOutputDir(self):
         if not self.outputDirectory:
@@ -285,16 +284,16 @@ class MainFrame(wx.Frame):
 
         return outputDir
 
-    def OnPreferences(self, *evnt):
+    def OnPreferences(self, *_event):
         self.config = self.prefDlg.ShowModal()
 
-    def OnQuit(self, *evnt):
+    def OnQuit(self, *_event):
         sys.exit()
 
-    def OnAbout(self, *evnt):
+    def OnAbout(self, *_event):
         widgets.AboutDlg()
 
-    def OnHelp(self, *evnt):
+    def OnHelp(self, *_event):
         help.HelpDlg(self)
 
     def _MenuGenerator(self, parent, name, arguments):
@@ -312,7 +311,7 @@ class MainFrame(wx.Frame):
 
         parent.Append(menu, name)
 
-    def LoadDebug(self, *evnt):
+    def LoadDebug(self, *_event):
         size = self.Size
         pos = self.Position
 
@@ -323,7 +322,7 @@ class MainFrame(wx.Frame):
         self.crust = wx.py.crust.Crust(self.debug)
         self.debug.Show()
 
-    def QuickRename(self, *evnt):
+    def QuickRename(self, *_event):
         self.anonList = self.prefDlg.pages['Anonymization'].anonList
         dlg = QuickRenameDlg(None, -1, 'Anonymize', size=(250, 160),
                              anonList=self.anonList)
@@ -353,13 +352,13 @@ class MainFrame(wx.Frame):
 
         self.SetMenuBar(menubar)
 
-    def FillList(self, evnt):
-        self.dicomSorter.pathname = evnt.path
+    def FillList(self, event):
+        self.dicom_sorter.pathname = event.path
         try:
-            fields = self.dicomSorter.GetAvailableFields()
-        except errors.DicomFolderError:
-            errMsg = ''.join([';'.join(evnt.path), ' contains no DICOMs'])
-            errors.throw_error(errMsg, 'No DICOMs Present', parent=self)
+            fields = self.dicom_sorter.available_fields()
+        except DicomFolderError:
+            message = ''.join([';'.join(event.path), ' contains no DICOMs'])
+            errors.throw_error(message, 'No DICOMs Present', parent=self)
             return
 
         self.selector.SetOptions(fields)

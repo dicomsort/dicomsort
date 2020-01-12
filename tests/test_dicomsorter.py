@@ -1,11 +1,16 @@
-import itertools
 import os
 import pydicom
 import pytest
 import time
 
+from Queue import Queue
+
 from dicomsort.dicomsorter import Dicom, DicomSorter, Sorter
 from dicomsort.errors import DicomFolderError
+
+
+def default_sorter():
+    return Sorter(Queue(), '', [], '')
 
 
 class TestDicom:
@@ -32,7 +37,7 @@ class TestDicom:
         filename, dicom = dicom_generator()
         dcm = Dicom(filename, dcm=dicom)
 
-        dcm.SetAnonRules({'Field': lambda: 'Value'})
+        dcm.set_anonymization_rules({'Field': lambda: 'Value'})
 
         assert dcm['Field'] == 'Value'
 
@@ -40,7 +45,7 @@ class TestDicom:
         filename, dicom = dicom_generator()
         dcm = Dicom(filename, dcm=dicom)
 
-        dcm.SetAnonRules({'Field': 'Value'})
+        dcm.set_anonymization_rules({'Field': 'Value'})
 
         assert dcm['Field'] == 'Value'
 
@@ -54,13 +59,13 @@ class TestDicom:
         filename, _ = dicom_generator('image.ext')
 
         dcm = Dicom(filename)
-        assert dcm._get_file_extension() == '.ext'
+        assert dcm._file_extension() == '.ext'
 
     def test_get_file_extension_empty(self, dicom_generator):
         filename, _ = dicom_generator('image')
 
         dcm = Dicom(filename)
-        assert dcm._get_file_extension() == ''
+        assert dcm._file_extension() == ''
 
     def test_get_series_description(self, dicom_generator):
         filename, dataset = dicom_generator(
@@ -70,7 +75,7 @@ class TestDicom:
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_series_description() == 'My Series_Series0001'
+        assert dcm._series_description() == 'My Series_Series0001'
 
     def test_get_series_description_no_description(self, dicom_generator):
         filename, dicom = dicom_generator(SeriesNumber=1)
@@ -78,7 +83,7 @@ class TestDicom:
 
         dcm = Dicom(filename, dcm=dicom)
 
-        assert dcm._get_series_description() == 'Series0001'
+        assert dcm._series_description() == 'Series0001'
 
     def test_get_series_description_series_first(self, dicom_generator):
         filename, dataset = dicom_generator(
@@ -87,9 +92,9 @@ class TestDicom:
         )
 
         dcm = Dicom(filename, dcm=dataset)
-        dcm.seriesFirst = True
+        dcm.series_first = True
 
-        assert dcm._get_series_description() == 'Series0001_My Series'
+        assert dcm._series_description() == 'Series0001_My Series'
 
 
     def test_get_patient_age_with_field(self, dicom_generator):
@@ -98,21 +103,21 @@ class TestDicom:
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_patient_age() == age
+        assert dcm._patient_age() == age
 
     def test_get_patient_age_without_birth_date(self, dicom_generator):
         filename, dataset = dicom_generator()
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_patient_age() == ''
+        assert dcm._patient_age() == ''
 
     def test_get_patient_age_with_empty_birth_date(self, dicom_generator):
         filename, dataset = dicom_generator(PatientBirthDate='')
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_patient_age() == ''
+        assert dcm._patient_age() == ''
 
     def test_get_patient_age_with_birth_date(self, dicom_generator):
         filename, dataset = dicom_generator(
@@ -122,49 +127,49 @@ class TestDicom:
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_patient_age() == '001Y'
+        assert dcm._patient_age() == '001Y'
 
     def test_get_image_type_no_type(self, dicom_generator):
         filename, dataset = dicom_generator()
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_image_type() == 'Unknown'
+        assert dcm._image_type() == 'Unknown'
 
     def test_get_image_type_magnitude(self, dicom_generator):
         filename, dataset = dicom_generator(ImageType=['FFE', 'M', 'JUNK'])
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_image_type() == 'Mag'
+        assert dcm._image_type() == 'Mag'
 
     def test_get_image_type_generic(self, dicom_generator):
         filename, dataset = dicom_generator(ImageType=['A', 'B'])
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_image_type() == 'Image'
+        assert dcm._image_type() == 'Image'
 
     def test_get_image_type_phase(self, dicom_generator):
         filename, dataset = dicom_generator(ImageType=['P', 'BLAH'])
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_image_type() == 'Phase'
+        assert dcm._image_type() == 'Phase'
 
     def test_get_image_type_phoenix(self, dicom_generator):
         filename, dataset = dicom_generator(ImageType=['CSA REPORT', ''])
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_image_type() == 'Phoenix'
+        assert dcm._image_type() == 'Phoenix'
 
     def test_get_image_type_3drecon(self, dicom_generator):
         filename, dataset = dicom_generator(ImageType=['CSA 3D EDITOR', ''])
 
         dcm = Dicom(filename, dcm=dataset)
 
-        assert dcm._get_image_type() == '3DRecon'
+        assert dcm._image_type() == '3DRecon'
         assert dataset.InstanceNumber == dataset.SeriesNumber
 
     def test_create_default_overrides(self, dicom_generator):
@@ -184,7 +189,7 @@ class TestDicom:
         assert dcm.is_anonymous() is False
 
         # Set anonimization rules
-        dcm.SetAnonRules({'PatientName': 'ANON'})
+        dcm.set_anonymization_rules({'PatientName': 'ANON'})
 
         assert dcm.is_anonymous() is True
 
@@ -193,7 +198,7 @@ class TestDicom:
         dcm = Dicom(filename, dcm=dataset)
 
         with pytest.raises(Exception) as excinfo:
-            dcm.SetAnonRules('')
+            dcm.set_anonymization_rules('')
 
         assert excinfo.value.args[0] == 'Anon rules must be a dictionary'
 
@@ -203,9 +208,9 @@ class TestDicom:
 
         adict = {'Key': 'Value'}
 
-        dcm.SetAnonRules(adict)
+        dcm.set_anonymization_rules(adict)
 
-        assert dcm.anondict == adict
+        assert dcm.anonymization_lookup == adict
         assert dcm.overrides['Key'] == 'Value'
         assert dcm['Key'] == 'Value'
 
@@ -218,7 +223,7 @@ class TestDicom:
 
         dcm = Dicom(filename, dcm=dataset)
 
-        dcm.SetAnonRules({'PatientBirthDate': ''})
+        dcm.set_anonymization_rules({'PatientBirthDate': ''})
 
         assert dcm['PatientAge'] == '030Y'
         assert dcm['PatientBirthDate'] == '19890101'
@@ -228,7 +233,7 @@ class TestDicom:
         filename, dataset = dicom_generator(PatientBirthDate='20200101')
         dcm = Dicom(filename, dcm=dataset)
 
-        dcm.SetAnonRules({'PatientBirthDate': date})
+        dcm.set_anonymization_rules({'PatientBirthDate': date})
 
         assert dcm.overrides['PatientBirthDate'] == date
         assert dcm['PatientBirthDate'] == date
@@ -240,7 +245,7 @@ class TestDicom:
         )
         dcm = Dicom(filename, dcm=dataset)
 
-        dcm.SetAnonRules({'PatientBirthDate': ''})
+        dcm.set_anonymization_rules({'PatientBirthDate': ''})
 
         # Maintains the patient age but uses January 01
         assert dcm.overrides['PatientBirthDate'] == '20180101'
@@ -249,7 +254,7 @@ class TestDicom:
         # 1-day Old
         dataset.PatientBirthDate = '20180131'
 
-        dcm.SetAnonRules({'PatientBirthDate': ''})
+        dcm.set_anonymization_rules({'PatientBirthDate': ''})
         assert dcm.overrides['PatientBirthDate'] == '20180101'
         assert dcm['PatientBirthDate'] == '20180101'
 
@@ -378,7 +383,7 @@ class TestDicom:
         # Filename format
         file_format = '%(ImageType)s'
 
-        dcm.sort(root, directory, file_format, keepOriginal=True)
+        dcm.sort(root, directory, file_format, keep_original=True)
 
         destination = tmpdir.join('desc_Series0001').join('desc_Series0001')
         destination = destination.join('Unknown')
@@ -405,7 +410,7 @@ class TestDicom:
         # Filename format
         file_format = '%(ImageType)s'
 
-        dcm.sort(root, directory, file_format, keepOriginal=False)
+        dcm.sort(root, directory, file_format, keep_original=False)
 
         destination = tmpdir.join('desc_Series0001').join('desc_Series0001')
         destination = destination.join('Unknown')
@@ -422,7 +427,7 @@ class TestDicom:
         dcm = Dicom(filename, dcm=dicom)
 
         # Overwrite the PatientName
-        dcm.SetAnonRules({'PatientName': 'ANON'})
+        dcm.set_anonymization_rules({'PatientName': 'ANON'})
 
         # Base Directory
         root = str(tmpdir)
@@ -436,7 +441,7 @@ class TestDicom:
         # Filename format
         file_format = '%(ImageType)s'
 
-        dcm.sort(root, directory, file_format, keepOriginal=False)
+        dcm.sort(root, directory, file_format, keep_original=False)
 
         destination = tmpdir.join('ANON').join('desc_Series0001')
         destination = str(destination.join('Unknown'))
@@ -457,7 +462,7 @@ class TestDicom:
         dcm = Dicom(filename, dcm=dicom)
 
         # Overwrite the PatientID (this field does not exist)
-        dcm.SetAnonRules({'PatientID': 'ANON'})
+        dcm.set_anonymization_rules({'PatientID': 'ANON'})
 
         # Base Directory
         root = str(tmpdir)
@@ -471,7 +476,7 @@ class TestDicom:
         # Filename format
         file_format = '%(ImageType)s'
 
-        dcm.sort(root, directory, file_format, keepOriginal=False)
+        dcm.sort(root, directory, file_format, keep_original=False)
 
         destination = tmpdir.join('ANON').join('desc_Series0001')
         destination = str(destination.join('Unknown'))
@@ -502,7 +507,7 @@ class TestDicom:
         # Filename format
         file_format = '%(ImageType)s'
 
-        dcm.sort(root, directory, file_format, keepOriginal=False, test=True)
+        dcm.sort(root, directory, file_format, keep_original=False, test=True)
 
         destination = tmpdir.join('desc_Series0001').join('desc_Series0001')
         destination = destination.join('Unknown')
@@ -525,12 +530,12 @@ class TestDicomSorter:
 
         # Booleans
         assert sorter.keep_filename is False
-        assert sorter.seriesFirst is False
-        assert sorter.keepOriginal is True
+        assert sorter.series_first is False
+        assert sorter.keep_original is True
 
         assert sorter.sorters == []
         assert sorter.folders == []
-        assert sorter.anondict == dict()
+        assert sorter.anonymization_lookup == dict()
 
     def test_constructor_single_path(self):
         path = '/path'
@@ -553,7 +558,7 @@ class TestDicomSorter:
         sorter = DicomSorter(root)
 
         with pytest.raises(DicomFolderError):
-            sorter.GetAvailableFields()
+            sorter.available_fields()
 
     def test_get_available_fields(self, dicom_generator):
         filename, dicom = dicom_generator()
@@ -563,13 +568,13 @@ class TestDicomSorter:
 
         sorter = DicomSorter(root)
 
-        assert sorter.GetAvailableFields() == expected
+        assert sorter.available_fields() == expected
 
     def test_is_sorting_no_sorters(self):
         sorter = DicomSorter()
 
         assert sorter.sorters == []
-        assert sorter.IsSorting() is False
+        assert sorter.is_sorting() is False
 
     def test_is_sorting_active_sorters(self, mocker):
         sorter = DicomSorter()
@@ -578,10 +583,10 @@ class TestDicomSorter:
         patch.return_value = True
 
         # Generate some sorters
-        sorter.sorters.append(Sorter([], '', [], ''))
-        sorter.sorters.append(Sorter([], '', [], ''))
+        sorter.sorters.append(default_sorter())
+        sorter.sorters.append(default_sorter())
 
-        assert sorter.IsSorting() is True
+        assert sorter.is_sorting() is True
 
     def test_is_sorting_inactive_sorters(self, mocker):
         sorter = DicomSorter()
@@ -590,23 +595,23 @@ class TestDicomSorter:
         patch.return_value = False
 
         # Generate some sorters
-        sorter.sorters.append(Sorter([], '', [], ''))
-        sorter.sorters.append(Sorter([], '', [], ''))
+        sorter.sorters.append(default_sorter())
+        sorter.sorters.append(default_sorter())
 
-        assert sorter.IsSorting() is False
+        assert sorter.is_sorting() is False
 
     def test_get_folder_format_no_folders(self):
         sorter = DicomSorter()
         sorter.folders = None
 
-        assert sorter.GetFolderFormat() is None
+        assert sorter.folder_format() is None
 
     def test_get_folder_format(self):
         sorter = DicomSorter()
         original = ['1', '2', '3']
         sorter.folders = original
 
-        copy = sorter.GetFolderFormat()
+        copy = sorter.folder_format()
 
         assert copy == original
 
@@ -623,8 +628,8 @@ class TestDicomSorter:
             'Key2': 'Value2',
         }
 
-        sorter.SetAnonRules(replacements)
-        assert sorter.anondict == replacements
+        sorter.set_anonymization_rules(replacements)
+        assert sorter.anonymization_lookup == replacements
 
     def test_set_anon_rules_unicode(self):
         sorter = DicomSorter()
@@ -635,20 +640,20 @@ class TestDicomSorter:
             'Unicode': u'Value3',
         }
 
-        sorter.SetAnonRules(replacements)
-        assert sorter.anondict == replacements
+        sorter.set_anonymization_rules(replacements)
+        assert sorter.anonymization_lookup == replacements
 
-        # make sure all have been convered from unicode
-        for value in sorter.anondict.values():
+        # make sure all have been converted from unicode
+        for value in sorter.anonymization_lookup.values():
             assert isinstance(value, unicode) is False
 
     def test_set_anon_rules_invalid(self):
         sorter = DicomSorter()
 
-        with pytest.raises(Exception) as excinfo:
-            sorter.SetAnonRules('')
+        with pytest.raises(Exception) as exc_info:
+            sorter.set_anonymization_rules('')
 
-        assert excinfo.value.args[0] == 'Anon rules must be a dictionary'
+        assert exc_info.value.args[0] == 'Anon rules must be a dictionary'
 
     def test_sort(self, dicom_generator, mocker, tmpdir):
         filename, _ = dicom_generator(
@@ -665,10 +670,10 @@ class TestDicomSorter:
 
         output = tmpdir.join('output')
 
-        sorter.Sort(str(output))
+        sorter.sort(str(output))
 
         # Wait for sorting to complete
-        while sorter.IsSorting():
+        while sorter.is_sorting():
             time.sleep(0.1)
 
         assert len(sorter.sorters) == 1
