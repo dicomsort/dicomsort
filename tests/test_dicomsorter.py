@@ -3,7 +3,7 @@ import pydicom
 import pytest
 import time
 
-from Queue import Queue
+from six.moves.queue import Queue
 
 from dicomsort.dicomsorter import Dicom, DicomSorter, Sorter
 from dicomsort.errors import DicomFolderError
