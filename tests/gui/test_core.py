@@ -9,12 +9,12 @@ from tests.shared import WxTestCase
 
 class TestCrashReporter(WxTestCase):
     def test_constructor(self):
-        reporter = CrashReporter()
+        reporter = CrashReporter(self.frame)
         reporter.Destroy()
 
     def test_valid_email(self):
         email = 'email@gmail.com'
-        reporter = CrashReporter(parent=self.frame)
+        reporter = CrashReporter(self.frame)
         reporter.emailAddress.SetValue(email)
 
         assert reporter.ValidateEmail() == email
@@ -24,7 +24,7 @@ class TestCrashReporter(WxTestCase):
     def test_invalid_email(self, mocker):
 
         mock = mocker.patch.object(errors, 'throw_error')
-        reporter = CrashReporter(parent=self.frame)
+        reporter = CrashReporter(self.frame)
         reporter.emailAddress.SetValue('invalid')
 
         reporter.ValidateEmail()
@@ -38,7 +38,7 @@ class TestCrashReporter(WxTestCase):
 
         sys.platform = 'platform'
 
-        reporter = CrashReporter(parent=self.frame)
+        reporter = CrashReporter(self.frame)
         reporter.Report()
 
         call_args = mock.call_args[0]

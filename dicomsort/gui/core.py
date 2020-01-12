@@ -18,7 +18,7 @@ from dicomsort.gui.update import UpdateChecker
 
 
 def ExceptHook(type, value, tb):
-    dlg = CrashReporter(type, value, tb)
+    dlg = CrashReporter(None, type=type, value=value, traceback=tb)
     dlg.ShowModal()
     dlg.Destroy()
 
@@ -41,19 +41,15 @@ class DicomSort(wx.App):
 
 
 class CrashReporter(wx.Dialog):
-    def __init__(self, parent=None, type=None, value=None, tb=None, fullstack=None):
-        super(
-            CrashReporter, self).__init__(parent, -1, 'DicomSort Crash Reporter',
-                                          size=(400, 400))
-        self.type = type
-        self.value = value
-        self.tb = tb
+    def __init__(self, parent, **kwargs):
+        super(CrashReporter, self).__init__(parent, -1, 'DicomSort Crash Reporter', size=(400, 400))
 
-        if fullstack:
-            self.traceback = fullstack
-        else:
-            self.traceback = '\n'.join(
-                traceback.format_exception(type, value, tb))
+        self.type = kwargs.pop('type', None)
+        self.value = kwargs.pop('value', None)
+
+        self.traceback = '\n'.join(
+            traceback.format_exception(type, self.value, kwargs.pop('traceback', None))
+        )
 
         self.Create()
         self.SetIcon(icons.main.GetIcon())
