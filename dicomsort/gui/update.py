@@ -1,9 +1,8 @@
 import dicomsort
-import re
 import wx
 
 from threading import Thread
-from urllib2 import urlopen
+from six.moves.urllib.request import urlopen
 
 from dicomsort.gui import events
 

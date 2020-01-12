@@ -1,9 +1,8 @@
 import dicomsort
 import mock
-import urllib2
 import wx
 
-from StringIO import StringIO
+from six.moves import StringIO
 
 from dicomsort.gui import events, update
 

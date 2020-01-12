@@ -6,8 +6,8 @@ import sys
 import traceback
 import wx
 
-from urllib import urlencode
-from urllib2 import urlopen
+from six.moves.urllib.parse import urlencode
+from six.moves.urllib.request import urlopen
 
 from dicomsort import config, errors
 from dicomsort.dicomsorter import DicomSorter
