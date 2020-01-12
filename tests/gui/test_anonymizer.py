@@ -1,8 +1,8 @@
 from dicomsort.gui.anonymizer import AnonymizeList, QuickRenameDlg
-from tests.shared import DialogTestCase
+from tests.shared import WxTestCase
 
 
-class TestQuickRenameDlg(DialogTestCase):
+class TestQuickRenameDlg(WxTestCase):
     def test_no_patient_name_anonlist(self):
         a = AnonymizeList(self.frame)
         dlg = QuickRenameDlg(self.frame, anonList=a)
@@ -43,15 +43,14 @@ class TestQuickRenameDlg(DialogTestCase):
         assert a.GetReplacementDict()['PatientName'] == name
 
 
-
-class TestAnonymizeList:
-    def test_constructor(self, app):
-        a = AnonymizeList(app.frame)
+class TestAnonymizeList(WxTestCase):
+    def test_constructor(self):
+        a = AnonymizeList(self.frame)
 
         assert isinstance(a, AnonymizeList)
 
-    def test_set_replacement_dict_valid_fields(self, app):
-        a = AnonymizeList(app.frame)
+    def test_set_replacement_dict_valid_fields(self):
+        a = AnonymizeList(self.frame)
         d = {
             'Field': 'Value'
         }
@@ -64,8 +63,8 @@ class TestAnonymizeList:
         # Ensure that the specified value was added to the second column
         assert a.GetStringItem(0, 1) == 'Value'
 
-    def test_set_replacement_dict_invalid_field(self, app):
-        a = AnonymizeList(app.frame)
+    def test_set_replacement_dict_invalid_field(self):
+        a = AnonymizeList(self.frame)
 
         d = {
             'Invalid': 'value'
@@ -79,8 +78,8 @@ class TestAnonymizeList:
         assert a.GetStringItem(0, 1) == ''
         assert a.ItemCount == 1
 
-    def test_get_replacement_dict(self, app):
-        a = AnonymizeList(app.frame)
+    def test_get_replacement_dict(self):
+        a = AnonymizeList(self.frame)
 
         fields = {
             'Field1': 'Replacement1',
@@ -98,8 +97,8 @@ class TestAnonymizeList:
         d = a.GetReplacementDict()
         assert d == expected
 
-    def test_get_anon_dict(self, app):
-        a = AnonymizeList(app.frame)
+    def test_get_anon_dict(self):
+        a = AnonymizeList(self.frame)
 
         fields = {
             'Field1': 'Replacement1',
@@ -107,7 +106,7 @@ class TestAnonymizeList:
             'Field3': '',
         }
 
-        keys = fields.keys()
+        keys = list(fields.keys())
         keys.sort()
 
         a.SetStringItems(keys)
@@ -123,8 +122,8 @@ class TestAnonymizeList:
 
         assert a.GetAnonDict() == expected
 
-    def test_get_dicom_field(self, app):
-        a = AnonymizeList(app.frame)
+    def test_get_dicom_field(self):
+        a = AnonymizeList(self.frame)
 
         # Add a field
         a.SetStringItems(['PatientName', 'PatientID'])

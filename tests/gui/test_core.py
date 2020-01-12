@@ -1,39 +1,54 @@
 import dicomsort
-import sys
+
+from six.moves.urllib.parse import parse_qs
 
 from dicomsort.gui import core
-from dicomsort.gui.core import errors, CrashReporter
+from dicomsort.gui.core import errors, CrashReporter, sys
+from tests.shared import WxTestCase
 
 
-class TestCrashReporter:
-    def teardown(self):
-        self.reporter.Destroy()
+class TestCrashReporter(WxTestCase):
+    def test_constructor(self):
+        reporter = CrashReporter(self.frame)
+        reporter.Destroy()
 
-    def test_constructor(self, app):
-        self.reporter = CrashReporter()
-
-    def test_valid_email(self, app):
+    def test_valid_email(self):
         email = 'email@gmail.com'
-        self.reporter = CrashReporter()
-        self.reporter.emailAddress.SetValue(email)
+        reporter = CrashReporter(self.frame)
+        reporter.emailAddress.SetValue(email)
 
-        assert self.reporter.ValidateEmail() == email
+        assert reporter.ValidateEmail() == email
 
-    def test_invalid_email(self, app, mocker):
+        reporter.Destroy()
+
+    def test_invalid_email(self, mocker):
 
         mock = mocker.patch.object(errors, 'throw_error')
-        self.reporter = CrashReporter()
-        self.reporter.emailAddress.SetValue('invalid')
+        reporter = CrashReporter(self.frame)
+        reporter.emailAddress.SetValue('invalid')
 
-        self.reporter.ValidateEmail()
+        reporter.ValidateEmail()
 
-        mock.assert_called_with('Please enter a valid email address', parent=self.reporter)
+        mock.assert_called_with('Please enter a valid email address', parent=reporter)
 
-    def test_report(self, app, mocker):
+        reporter.Destroy()
+
+    def test_report(self, mocker):
         mock = mocker.patch.object(core, 'urlopen')
 
-        self.reporter = CrashReporter()
-        self.reporter.Report()
+        sys.platform = 'platform'
 
-        params = "version={}&OS={}&email=None&comments=--------------DO+NOT+EDIT+BELOW+------------%0ANone".format(dicomsort.__version__, sys.platform)
-        mock.assert_called_with('http://www.suever.net/software/dicomSort/bug_report.php', params)
+        reporter = CrashReporter(self.frame)
+        reporter.Report()
+
+        call_args = mock.call_args[0]
+
+        assert call_args[0] == 'http://www.suever.net/software/dicomSort/bug_report.php'
+
+        query_params = parse_qs(call_args[1])
+
+        assert query_params['OS'][0] == 'platform'
+        assert query_params['version'][0] == dicomsort.__version__
+        assert query_params['email'][0] == 'None'
+
+        reporter.Destroy()

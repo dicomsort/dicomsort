@@ -1,10 +1,8 @@
 from dicomsort.gui.help import HtmlWindow, HelpDlg
+from tests.shared import WxTestCase
 
 
-class TestHelpDialog():
-    def teardown(self):
-        self.dlg.close()
-
-    def test_constructor(self, app):
-        self.dlg = HelpDlg()
+class TestHelpDialog(WxTestCase):
+    def test_constructor(self):
+        self.dlg = HelpDlg(self.frame)
         assert isinstance(self.dlg.hwin, HtmlWindow)

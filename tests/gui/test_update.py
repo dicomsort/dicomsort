@@ -1,11 +1,11 @@
 import dicomsort
 import mock
-import urllib2
 import wx
 
-from StringIO import StringIO
+from six.moves import StringIO
 
 from dicomsort.gui import events, update
+from tests.shared import WxTestCase
 
 
 class TestLatestVersion:
@@ -56,20 +56,20 @@ class TestUpdateAvailable:
         assert update.update_available() is None
 
 
-class TestUpdateChecker:
-    def test_no_update(self, app, mocker):
+class TestUpdateChecker(WxTestCase):
+    def test_no_update(self, mocker):
         mocker.patch.object(update, 'update_available', return_value=None)
 
         post_event_func = mocker.patch.object(wx, 'PostEvent')
 
-        checker = update.UpdateChecker(app.frame, lambda x: x)
+        checker = update.UpdateChecker(self.frame, lambda x: x)
 
         # Wait for this thread to complete
         checker.join()
 
         post_event_func.assert_not_called()
 
-    def test_update(self, app, mocker):
+    def test_update(self, mocker):
         version = '1.2.3'
         mocker.patch.object(update, 'update_available', return_value=version)
 
@@ -78,7 +78,7 @@ class TestUpdateChecker:
         def listener(*args):
             pass
 
-        checker = update.UpdateChecker(app.frame, listener)
+        checker = update.UpdateChecker(self.frame, listener)
 
         # Wait for this thread to complete
         checker.join()

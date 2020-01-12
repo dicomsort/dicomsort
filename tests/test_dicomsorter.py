@@ -3,7 +3,7 @@ import pydicom
 import pytest
 import time
 
-from Queue import Queue
+from six.moves.queue import Queue
 
 from dicomsort.dicomsorter import Dicom, DicomSorter, Sorter
 from dicomsort.errors import DicomFolderError
@@ -630,22 +630,6 @@ class TestDicomSorter:
 
         sorter.set_anonymization_rules(replacements)
         assert sorter.anonymization_lookup == replacements
-
-    def test_set_anon_rules_unicode(self):
-        sorter = DicomSorter()
-
-        replacements = {
-            'Key1': 'Value1',
-            'Key2': 'Value2',
-            'Unicode': u'Value3',
-        }
-
-        sorter.set_anonymization_rules(replacements)
-        assert sorter.anonymization_lookup == replacements
-
-        # make sure all have been converted from unicode
-        for value in sorter.anonymization_lookup.values():
-            assert isinstance(value, unicode) is False
 
     def test_set_anon_rules_invalid(self):
         sorter = DicomSorter()

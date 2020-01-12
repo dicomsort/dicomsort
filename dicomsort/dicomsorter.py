@@ -2,9 +2,10 @@ import collections
 import itertools
 import os
 import pydicom
-import Queue
 import shutil
 
+from six import ensure_text
+from six.moves import queue
 from threading import Thread
 
 from dicomsort import errors, utils
@@ -20,7 +21,7 @@ class Dicom:
         Takes a dicom filename in and returns instance that can be used to sort
         """
         # Be sure to do encoding because Windows sucks
-        self.filename = filename.encode('UTF-8')
+        self.filename = ensure_text(filename)
 
         # Load the DICOM object
         if dcm:
@@ -101,7 +102,7 @@ class Dicom:
         except AttributeError:
             return 'Unknown'
 
-        for typeString, match in types.iteritems():
+        for typeString, match in types.items():
             if match.issubset(image_type):
                 if typeString == '3DRecon':
                     self.dicom.InstanceNumber = self.dicom.SeriesNumber
@@ -272,7 +273,7 @@ class Sorter(Thread):
         if self.iter is None:
             return
 
-        count = self.iter.next()
+        count = next(self.iter)
 
         if self.is_gui is False:
             return
@@ -287,7 +288,7 @@ class Sorter(Thread):
                 self.sort_image(filename)
                 self.increment_counter()
             # TODO: Rescue any other errors and quarantine the files
-            except Queue.Empty:
+            except queue.Empty:
                 return
 
 
@@ -305,7 +306,7 @@ class DicomSorter():
         self.folders = []
         self.filename = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
 
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
 
         self.sorters = list()
 
@@ -327,10 +328,6 @@ class DicomSorter():
         # Appends the rules to the overrides so that we can alter them
         if not isinstance(anonymization_lookup, dict):
             raise Exception('Anon rules must be a dictionary')
-
-        # Make sure to convert unicode to raw strings (pydicom bug)
-        for key, value in anonymization_lookup.items():
-            anonymization_lookup[key] = value.encode()
 
         self.anonymization_lookup = anonymization_lookup
 

@@ -1,8 +1,8 @@
 # DICOM Sort
 
 [![CircleCI](https://circleci.com/gh/suever/dicomsort.svg?style=svg)](https://circleci.com/gh/suever/dicomsort)
-[![Maintainability](https://api.codeclimate.com/v1/badges/0113af254aa8a5e7afa4/maintainability)](https://codeclimate.com/github/suever/dicomSort/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/0113af254aa8a5e7afa4/test_coverage)](https://codeclimate.com/github/suever/dicomSort/test_coverage)
+[![Maintainability](https://api.codeclimate.com/v1/badges/9814e4a5f1881ec25922/maintainability)](https://codeclimate.com/github/suever/dicomsort/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/9814e4a5f1881ec25922/test_coverage)](https://codeclimate.com/github/suever/dicomsort/test_coverage)
 
 DICOM Sort is a utility that takes a series of DICOM images stored within an
 arbitrary directory structure and sorts them into a directory tree based upon

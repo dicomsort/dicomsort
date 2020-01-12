@@ -8,27 +8,27 @@ from dicomsort import utils
 
 class TestRecurvsiveReplaceTokens(unittest.TestCase):
     def test_no_tokens(self):
-        formatString = 'no_token_string'
-        output = utils.recursive_replace_tokens(formatString, {})
+        format_string = 'no_token_string'
+        output = utils.recursive_replace_tokens(format_string, {})
 
-        assert output == formatString
+        assert output == format_string
 
     def test_non_nested_tokens(self):
-        formatString = 'prefix_%(Key)s_suffix'
+        format_string = 'prefix_%(Key)s_suffix'
         values = {'Key': 'value'}
-        output = utils.recursive_replace_tokens(formatString, values)
+        output = utils.recursive_replace_tokens(format_string, values)
 
         assert output == 'prefix_value_suffix'
 
     def test_nested_tokens(self):
-        formatString = 'prefix_%(Key1)s_suffix'
+        format_string = 'prefix_%(Key1)s_suffix'
         values = {'Key1': '%(Key2)s', 'Key2': 'value'}
-        output = utils.recursive_replace_tokens(formatString, values)
+        output = utils.recursive_replace_tokens(format_string, values)
 
         assert output == 'prefix_value_suffix'
 
     def test_max_nested_tokens(self):
-        formatString = 'prefix_%(Key1)s_suffix'
+        format_string = 'prefix_%(Key1)s_suffix'
         # Make the values recurse
         values = {
             'Key1': '%(Key2)s',
@@ -40,27 +40,9 @@ class TestRecurvsiveReplaceTokens(unittest.TestCase):
         }
 
         # Will only perform replacements 5 times
-        output = utils.recursive_replace_tokens(formatString, values)
+        output = utils.recursive_replace_tokens(format_string, values)
 
         assert output == 'prefix_%(Key6)s_suffix'
-
-
-class TestGrouper:
-    def test_empty(self):
-        output = utils.grouper([], 1)
-        assert list(output) == []
-
-    def test_equal_sizes(self):
-        iterable = [1, 2, 3, 4, 5, 6]
-        output = utils.grouper(iterable, 2)
-
-        assert list(output) == [(1, 2), (3, 4), (5, 6)]
-
-    def test_unequal_sizes(self):
-        iterable = [1, 2, 3, 4, 5]
-        output = utils.grouper(iterable, 2)
-
-        assert list(output) == [(1, 2), (3, 4), (5, None)]
 
 
 class TestIsDicom:
@@ -70,10 +52,10 @@ class TestIsDicom:
         assert utils.isdicom(dicomdir) is False
 
     def test_invalid_dicom(self, tmpdir):
-        fobj = tmpdir.join('invalid')
-        fobj.write('invalid')
+        fid = tmpdir.join('invalid')
+        fid.write('invalid')
 
-        assert utils.isdicom(str(fobj)) is False
+        assert utils.isdicom(str(fid)) is False
 
     def test_valid_dicom(self, dicom_generator):
         filename, _ = dicom_generator()
@@ -108,13 +90,13 @@ class TestMkdir:
         utils.mkdir(str(tmpdir))
 
     def test_new_directory(self, tmpdir):
-        newdir = str(tmpdir.join('newdir'))
-        utils.mkdir(newdir)
+        new_dir = str(tmpdir.join('new_dir'))
+        utils.mkdir(new_dir)
 
-        assert os.path.exists(newdir)
+        assert os.path.exists(new_dir)
 
     def test_new_nested_directory(self, tmpdir):
-        newdir = str(tmpdir.join('newdir').join('nesteddir'))
-        utils.mkdir(newdir)
+        new_dir = str(tmpdir.join('new_dir').join('nested_dir'))
+        utils.mkdir(new_dir)
 
-        assert os.path.exists(newdir)
+        assert os.path.exists(new_dir)

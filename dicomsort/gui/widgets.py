@@ -1,7 +1,7 @@
 import dicomsort
 import os
 import re
-import sys
+import six
 import wx
 
 import wx.lib.agw.hyperlink as hyperlink
@@ -54,7 +54,7 @@ class UpdateDlg(wx.Dialog):
         self.link = hyperlink.HyperLinkCtrl(self, -1)
         self.link.SetURL(URL='https://dicomsort.com')
         self.link.SetLabel(label='Click here to obtain the update')
-        self.link.SetToolTipString('https://dicomsort.com')
+        self.link.SetToolTip('https://dicomsort.com')
         self.link.AutoBrowse(False)
 
         self.Bind(hyperlink.EVT_HYPERLINK_LEFT, self.OnUpdate, self.link)
@@ -85,21 +85,21 @@ class FileDropTarget(wx.FileDropTarget):
         self.callback(x, y, filenames)
 
 
-class AboutDlg(AboutDialogInfo):
+class AboutDlg:
 
-    def __init__(self, *args):
-        super(AboutDlg, self).__init__(*args)
-        self.SetIcon(icons.about.GetIcon())
+    def __init__(self, parent=None):
+        self.info = AboutDialogInfo()
+        self.info.SetIcon(icons.about.GetIcon())
 
-        self.SetName('DICOM Sorting')
-        self.SetVersion(dicomsort.__version__)
+        self.info.SetName('DICOM Sorting')
+        self.info.SetVersion(dicomsort.__version__)
 
-        self.SetCopyright('(C) 2011 - 2020 Jonathan Suever')
-        self.SetWebSite('https://dicomsort.com')
+        self.info.SetCopyright('(C) 2011 - 2020 Jonathan Suever')
+        self.info.SetWebSite('https://dicomsort.com')
 
         self.GenerateDescription()
 
-        AboutBox(self)
+        AboutBox(self.info, parent=parent)
 
     def GenerateDescription(self):
         description = ("      Program designed to sort DICOM images       \n" +
@@ -108,7 +108,7 @@ class AboutDlg(AboutDialogInfo):
                        "       additional functionality such as the       \n" +
                        "anonymization of DICOM images for patient privacy.")
 
-        self.SetDescription(description)
+        self.info.SetDescription(description)
 
 
 class CustomDataTable(wx.grid.PyGridTableBase):
@@ -236,7 +236,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
             if isinstance(item, str):
                 item = [item, ]
 
-            row = self.InsertItem(sys.maxint, item[0])
+            row = self.InsertItem(self.GetItemCount() + 1, item[0])
 
             for col in range(1, len(item)):
                 self.SetStringItem(row, col, item[col])
@@ -254,7 +254,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
         return [self.GetStringItem(r, col) for r in self._GetCheckedIndexes()]
 
     def FindStrings(self, strings, col=0):
-        strings = [unicode(string) for string in strings]
+        strings = [six.ensure_text(string) for string in strings]
 
         fields = [item.Text for item in self.GetItemList(col)]
 
@@ -262,7 +262,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
 
         for string in strings:
             try:
-                inds.append(fields.index(unicode(string)))
+                inds.append(fields.index(six.ensure_text(string)))
             except ValueError:
                 inds.append(None)
 

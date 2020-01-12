@@ -1,7 +1,7 @@
 import wx
 
 
-class DialogTestCase:
+class WxTestCase:
     def setup(self):
         self.app = wx.App()
         self.frame = wx.Frame(None)
@@ -13,7 +13,6 @@ class DialogTestCase:
                 if win:
                     if isinstance(win, wx.Dialog) and win.IsModal():
                         win.EndModal(0)
-                        wx.CallAfter(win.Destroy)
                     else:
                         win.Close(force=True)
 

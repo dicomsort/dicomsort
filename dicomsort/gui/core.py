@@ -6,8 +6,8 @@ import sys
 import traceback
 import wx
 
-from urllib import urlencode
-from urllib2 import urlopen
+from six.moves.urllib.parse import urlencode
+from six.moves.urllib.request import urlopen
 
 from dicomsort import config
 from dicomsort.dicomsorter import DicomSorter
@@ -18,7 +18,7 @@ from dicomsort.gui.update import UpdateChecker
 
 
 def ExceptHook(type, value, tb):
-    dlg = CrashReporter(type, value, tb)
+    dlg = CrashReporter(None, type=type, value=value, traceback=tb)
     dlg.ShowModal()
     dlg.Destroy()
 
@@ -41,19 +41,22 @@ class DicomSort(wx.App):
 
 
 class CrashReporter(wx.Dialog):
-    def __init__(self, type=None, value=None, tb=None, fullstack=None):
-        super(
-            CrashReporter, self).__init__(None, -1, 'DicomSort Crash Reporter',
-                                          size=(400, 400))
-        self.type = type
-        self.value = value
-        self.tb = tb
 
-        if fullstack:
-            self.traceback = fullstack
-        else:
-            self.traceback = '\n'.join(
-                traceback.format_exception(type, value, tb))
+    TITLE = 'DICOM Sort Crash Reporter'
+
+    def __init__(self, parent, **kwargs):
+        super(CrashReporter, self).__init__(
+            parent, -1, self.TITLE, size=(400, 400)
+        )
+
+        self.type = kwargs.pop('type', None)
+        self.value = kwargs.pop('value', None)
+
+        tb = kwargs.pop('traceback', None)
+
+        self.traceback = '\n'.join(
+            traceback.format_exception(type, self.value, tb)
+        )
 
         self.Create()
         self.SetIcon(icons.main.GetIcon())

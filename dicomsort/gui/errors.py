@@ -9,5 +9,3 @@ def throw_error(message, title='Error', parent=None):
     dlg.CenterOnParent()
     dlg.ShowModal()
     dlg.Destroy()
-
-

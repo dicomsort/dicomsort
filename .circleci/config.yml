@@ -4,10 +4,11 @@ workflows:
   test:
     jobs:
       - test-2.7
+      - test-3.5
 jobs:
   test-2.7: &test-template
     docker:
-      - image: circleci/python:2.7-browsers
+      - image: circleci/python:2.7-stretch-browsers
     working_directory: ~/repo
     steps:
       - checkout
@@ -19,8 +20,8 @@ jobs:
           name: Install Dependencies
           command: |
             sudo apt install --quiet libgtk-3-dev libnotify-dev libsdl1.2-dev
-            sudo pip install -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/debian-9/ wxpython
-            sudo pip install --upgrade pytest pytest-mock pytest-cov --progress-bar off
+            sudo pip install --progress-bar off -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/debian-9/ wxpython==4.0.7
+            sudo pip install --progress-bar off -r requirements.txt
             sudo pip install -e .
       - run:
           name: Setup Code Climate test-reporter
@@ -38,3 +39,7 @@ jobs:
             ./cc-test-reporter before-build
             make test
             ./cc-test-reporter after-build --coverage-input-type coverage.py --exit-code=$?
+  test-3.5:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.5-stretch-browsers

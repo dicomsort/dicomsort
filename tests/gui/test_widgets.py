@@ -1,39 +1,39 @@
 import dicomsort
 import wx
 
-from tests.shared import DialogTestCase
+from tests.shared import WxTestCase
 from dicomsort.gui.widgets import errors, FieldSelector, PathEditCtrl, MultiDirDlg, AboutDlg, UpdateDlg, SeriesRemoveWarningDlg, CustomDataTable
 
 
-class TestFieldSelector:
-    def test_constructor(self, app):
+class TestFieldSelector(WxTestCase):
+    def test_constructor(self):
         choices = ['one', 'two', 'three']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
 
         assert isinstance(selector, FieldSelector)
 
-    def test_disable_all(self, app):
-        selector = FieldSelector(app.frame)
+    def test_disable_all(self):
+        selector = FieldSelector(self.frame)
         selector.DisableAll()
 
         for widget in selector.WidgetList():
             assert widget.IsEnabled() is False
 
-    def test_enable_all(self, app):
-        selector = FieldSelector(app.frame)
+    def test_enable_all(self):
+        selector = FieldSelector(self.frame)
         selector.EnableAll()
 
         for widget in selector.WidgetList():
             assert widget.IsEnabled() is True
 
-    def test_has_default_none_selected(self, app):
+    def test_has_default_none_selected(self):
         choices = ['PatientName', 'PatientID', 'SeriesDescription']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
 
         assert selector.has_default() is False
 
-    def test_has_default_series_description_selected(self, app):
-        selector = FieldSelector(app.frame)
+    def test_has_default_series_description_selected(self):
+        selector = FieldSelector(self.frame)
 
         # Add "SeriesDescription" to the top of the Selected list
         selector.selected.Insert('SeriesDescription', 0)
@@ -43,9 +43,9 @@ class TestFieldSelector:
 
         assert selector.has_default() is True
 
-    def test_select_item(self, app):
+    def test_select_item(self):
         choices = ['PatientName', 'PatientID', 'SeriesDescription']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
 
         # Make sure we start with an empty list
         assert selector.selected.GetCount() == 0
@@ -72,9 +72,9 @@ class TestFieldSelector:
 
         assert items == ['PatientName', 'PatientID']
 
-    def test_select_item_with_default(self, app):
+    def test_select_item_with_default(self):
         choices = ['PatientName', 'PatientID', 'SeriesDescription']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
 
         # Make sure we start with an empty list
         assert selector.selected.GetCount() == 0
@@ -105,9 +105,9 @@ class TestFieldSelector:
         # SeriesDescription should remain at the bottom
         assert selector.selected.GetStrings() == ['PatientName', 'PatientID', 'SeriesDescription']
 
-    def test_set_options(self, app):
+    def test_set_options(self):
         original_choices = ['one', 'two', 'three']
-        selector = FieldSelector(app.frame, choices=original_choices)
+        selector = FieldSelector(self.frame, choices=original_choices)
 
         assert selector.options.GetStrings() == original_choices
         assert selector.choices == original_choices
@@ -118,9 +118,9 @@ class TestFieldSelector:
         assert selector.options.GetStrings() == new_choices
         assert selector.choices == new_choices
 
-    def test_promote_selection(self, app):
+    def test_promote_selection(self):
         choices = ['one', 'two', 'three']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
 
         selector.selected.SetItems(choices)
 
@@ -140,9 +140,9 @@ class TestFieldSelector:
 
         assert selector.selected.GetStrings() == ['three', 'one', 'two']
 
-    def test_demote_selection(self, app):
+    def test_demote_selection(self):
         choices = ['one', 'two', 'three']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
 
         selector.selected.SetItems(choices)
 
@@ -162,9 +162,9 @@ class TestFieldSelector:
 
         assert selector.selected.GetStrings() == ['two', 'three', 'one']
 
-    def test_promote_selection_with_default(self, app):
+    def test_promote_selection_with_default(self):
         choices = ['one', 'two', 'SeriesDescription']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
 
         selector.selected.SetItems(choices)
 
@@ -175,9 +175,9 @@ class TestFieldSelector:
         # The ordering remained unchanged
         assert selector.selected.GetStrings() == choices
 
-    def test_deselect_item(self, app):
+    def test_deselect_item(self):
         choices = ['PatientName', 'PatientID', 'SeriesDescription']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
 
         selector.selected.SetItems(choices)
 
@@ -187,26 +187,26 @@ class TestFieldSelector:
 
         assert selector.selected.GetStrings() == ['PatientName', 'SeriesDescription']
 
-    def test_deselect_item_no_selection(self, app):
+    def test_deselect_item_no_selection(self):
         choices = ['PatientName', 'PatientID', 'SeriesDescription']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
         selector.selected.SetItems(choices)
 
         selector.DeselectItem()
 
         assert selector.selected.GetStrings() == choices
 
-    def test_get_format_fields(self, app):
+    def test_get_format_fields(self):
         choices = ['PatientName', 'PatientID', 'SeriesDescription']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
         selector.selected.SetItems(choices)
 
         expected = ['%(PatientName)s', '%(PatientID)s', '%(SeriesDescription)s']
         assert selector.GetFormatFields() == expected
 
-    def test_filter(self, app):
+    def test_filter(self):
         choices = ['PatientName', 'PatientID', 'SeriesDescription']
-        selector = FieldSelector(app.frame, choices=choices)
+        selector = FieldSelector(self.frame, choices=choices)
 
         assert selector.options.GetStrings() == choices
 
@@ -214,21 +214,21 @@ class TestFieldSelector:
 
         assert selector.options.GetStrings() == ['PatientName', 'PatientID']
 
-class TestPathEditCtrl:
-    def test_constructor(self, app):
-        ctrl = PathEditCtrl(app.frame)
+class TestPathEditCtrl(WxTestCase):
+    def test_constructor(self):
+        ctrl = PathEditCtrl(self.frame)
 
         assert isinstance(ctrl, PathEditCtrl)
 
-    def test_set_paths_string(self, app, tmpdir):
+    def test_set_paths_string(self, tmpdir):
         path = str(tmpdir)
 
-        ctrl = PathEditCtrl(app.frame)
+        ctrl = PathEditCtrl(self.frame)
         ctrl.SetPaths(path)
 
         assert ctrl.path == [path, ]
 
-    def test_set_paths_list(self, app, tmpdir):
+    def test_set_paths_list(self, tmpdir):
         path1 = tmpdir.join('path1')
         path2 = tmpdir.join('path2')
 
@@ -237,12 +237,12 @@ class TestPathEditCtrl:
 
         paths = [str(path1), str(path2)]
 
-        ctrl = PathEditCtrl(app.frame)
+        ctrl = PathEditCtrl(self.frame)
         ctrl.SetPaths(paths)
 
         assert ctrl.path == paths
 
-    def test_set_paths_bad_path(self, app, mocker, tmpdir):
+    def test_set_paths_bad_path(self, mocker, tmpdir):
         mock = mocker.patch.object(errors, 'throw_error')
 
         goodpath = str(tmpdir)
@@ -251,25 +251,25 @@ class TestPathEditCtrl:
         badpath1 = str(tmpdir.join('not-valid1'))
         badpath2 = str(tmpdir.join('not-valid2'))
 
-        ctrl = PathEditCtrl(app.frame)
+        ctrl = PathEditCtrl(self.frame)
         ctrl.SetPaths([goodpath, badpath1, badpath2])
 
         mock.assert_called_once_with(
             'The Following directories are invalid paths: %s, %s' % (badpath1, badpath2),
             'Invalid Paths',
-            parent=app.frame
+            parent=self.frame
         )
 
-    def test_validate_path_single(self, app, tmpdir):
+    def test_validate_path_single(self, tmpdir):
         path = str(tmpdir)
 
-        ctrl = PathEditCtrl(app.frame)
+        ctrl = PathEditCtrl(self.frame)
         ctrl.edit.SetValue(path)
         ctrl.ValidatePath()
 
         assert ctrl.path == [path, ]
 
-    def test_validate_path_multiple(self, app, tmpdir):
+    def test_validate_path_multiple(self, tmpdir):
         path1 = tmpdir.join('path1')
         path2 = tmpdir.join('path2')
 
@@ -278,20 +278,21 @@ class TestPathEditCtrl:
 
         paths = [str(path1), str(path2)]
 
-        ctrl = PathEditCtrl(app.frame)
+        ctrl = PathEditCtrl(self.frame)
         ctrl.edit.SetValue(';'.join(paths))
         ctrl.ValidatePath()
 
         assert ctrl.path == paths
 
 
-class TestMultiDirDlg(DialogTestCase):
+class TestMultiDirDlg(WxTestCase):
     def test_constructor(self):
         dlg = MultiDirDlg(self.frame)
         assert isinstance(dlg, MultiDirDlg)
 
+        dlg.Destroy()
 
-class TestUpdateDlg(DialogTestCase):
+class TestUpdateDlg(WxTestCase):
     def test_on_close(self):
         dlg = UpdateDlg(self.frame, '1.2.3')
         dlg.OnClose()
@@ -307,17 +308,17 @@ class TestUpdateDlg(DialogTestCase):
         mock.assert_called_once_with(url)
 
 
-class TestAboutDialog(DialogTestCase):
+class TestAboutDialog(WxTestCase):
     def test_constructor(self):
-        dlg = AboutDlg()
+        dlg = AboutDlg(self.frame)
 
         # Just a few sanity checks
-        assert dlg.GetVersion() == dicomsort.__version__
-        assert dlg.GetName() == 'DICOM Sorting'
-        assert dlg.GetWebSiteURL() == 'https://dicomsort.com'
+        assert dlg.info.GetVersion() == dicomsort.__version__
+        assert dlg.info.GetName() == 'DICOM Sorting'
+        assert dlg.info.GetWebSiteURL() == 'https://dicomsort.com'
 
 
-class TestSeriesRemoveWarningDlg(DialogTestCase):
+class TestSeriesRemoveWarningDlg(WxTestCase):
     def test_on_change(self):
         dlg = SeriesRemoveWarningDlg(self.frame)
         dlg.OnChange()
@@ -337,7 +338,7 @@ class TestSeriesRemoveWarningDlg(DialogTestCase):
         assert dlg.choice == 2
 
 
-class TestCustomDataTable():
+class TestCustomDataTable(WxTestCase):
     def test_no_data(self):
         dt = CustomDataTable(None)
 
