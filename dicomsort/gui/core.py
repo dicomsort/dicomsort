@@ -45,7 +45,9 @@ class CrashReporter(wx.Dialog):
     TITLE = 'DICOM Sort Crash Reporter'
 
     def __init__(self, parent, **kwargs):
-        super(CrashReporter, self).__init__(parent, -1, self.TITLE, size=(400, 400))
+        super(CrashReporter, self).__init__(
+            parent, -1, self.TITLE, size=(400, 400)
+        )
 
         self.type = kwargs.pop('type', None)
         self.value = kwargs.pop('value', None)
