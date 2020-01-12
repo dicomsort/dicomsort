@@ -3,12 +3,13 @@ import wx
 
 from configobj import ConfigObj
 from dicomsort.gui.preferences import MiscPanel, FileNamePanel, PreferenceDlg
+from tests.shared import DialogTestCase
 
 
-class TestMiscPanel:
-    def test_default_state(self, app):
+class TestMiscPanel(DialogTestCase):
+    def test_default_state(self):
         config = ConfigObj()
-        panel = MiscPanel(app.frame, config)
+        panel = MiscPanel(self.frame, config)
 
         state = panel.GetState()
 
@@ -16,9 +17,9 @@ class TestMiscPanel:
         assert state['KeepOriginal'] == 'False'
         assert state['KeepSeries'] == 'False'
 
-    def test_update_from_config(self, app):
+    def test_update_from_config(self):
         config = ConfigObj()
-        panel = MiscPanel(app.frame, config)
+        panel = MiscPanel(self.frame, config)
 
         new_config = ConfigObj({
             'Miscpanel': {
@@ -34,9 +35,9 @@ class TestMiscPanel:
         assert panel.seriesFirst.IsChecked() is True
         assert panel.keepOriginal.IsChecked() is False
 
-    def test_update_from_config_empty(self, app):
+    def test_update_from_config_empty(self):
         config = ConfigObj()
-        panel = MiscPanel(app.frame, config)
+        panel = MiscPanel(self.frame, config)
 
         new_config = ConfigObj({'Miscpanel': {}})
 
@@ -46,7 +47,7 @@ class TestMiscPanel:
         assert panel.seriesFirst.IsChecked() is False
         assert panel.keepOriginal.IsChecked() is True
 
-    def test_revert_state(self, app, tmpdir):
+    def test_revert_state(self, tmpdir):
         # Given a configuration filename
         filename = str(tmpdir.join('config.ini'))
 
@@ -66,7 +67,7 @@ class TestMiscPanel:
         empty_config.filename = filename
 
         # And a MiscPanel object using this configuration object
-        panel = MiscPanel(app.frame, config)
+        panel = MiscPanel(self.frame, config)
 
         # When the state is reverted to the values in the .ini file
         panel.RevertState()
@@ -76,7 +77,7 @@ class TestMiscPanel:
         assert panel.seriesFirst.IsChecked() is True
         assert panel.keepOriginal.IsChecked() is False
 
-    def test_save_state(self, app, tmpdir):
+    def test_save_state(self, tmpdir):
         # Given a configuration filename
         orig_filename = str(tmpdir.join('config.orig'))
         new_filename = str(tmpdir.join('config.orig'))
@@ -97,7 +98,7 @@ class TestMiscPanel:
         empty_config.filename = new_filename
 
         # And a MiscPanel object using this configuration object
-        panel = MiscPanel(app.frame, config)
+        panel = MiscPanel(self.frame, config)
 
         # When the state is reverted to the values in the .ini file
         panel.SaveState()
@@ -106,19 +107,19 @@ class TestMiscPanel:
         assert list(io.open(orig_filename)) == list(io.open(new_filename))
 
 
-class TestFilenamePanel:
-    def test_default_state(self, app):
+class TestFilenamePanel(DialogTestCase):
+    def test_default_state(self):
         config = ConfigObj()
-        panel = FileNamePanel(app.frame, config)
+        panel = FileNamePanel(self.frame, config)
 
         state = panel.GetState()
 
         assert state['FilenameString'] == ''
         assert state['Selection'] == 0
 
-    def test_update_from_config(self, app):
+    def test_update_from_config(self):
         config = ConfigObj()
-        panel = FileNamePanel(app.frame, config)
+        panel = FileNamePanel(self.frame, config)
 
         new_config = ConfigObj({
             'FilenameFormat': {
@@ -133,9 +134,9 @@ class TestFilenamePanel:
         assert panel.custom.IsEnabled() is False
         assert panel.custom.GetValue() == 'MyString'
 
-    def test_update_from_config_no_selection(self, app):
+    def test_update_from_config_no_selection(self):
         config = ConfigObj()
-        panel = FileNamePanel(app.frame, config)
+        panel = FileNamePanel(self.frame, config)
 
         new_config = ConfigObj({
             'FilenameFormat': {
@@ -149,9 +150,9 @@ class TestFilenamePanel:
         assert panel.custom.IsEnabled() is False
         assert panel.custom.GetValue() == 'MyString'
 
-    def test_update_from_config_custom(self, app):
+    def test_update_from_config_custom(self):
         config = ConfigObj()
-        panel = FileNamePanel(app.frame, config)
+        panel = FileNamePanel(self.frame, config)
 
         new_config = ConfigObj({
             'FilenameFormat': {
@@ -166,7 +167,7 @@ class TestFilenamePanel:
         assert panel.custom.IsEnabled() is True
         assert panel.custom.GetValue() == 'MyString'
 
-    def test_revert_state(self, app, tmpdir):
+    def test_revert_state(self, tmpdir):
         # Given a configuration filename
         filename = str(tmpdir.join('config.ini'))
 
@@ -185,7 +186,7 @@ class TestFilenamePanel:
         empty_config.filename = filename
 
         # And a MiscPanel object using this configuration object
-        panel = FileNamePanel(app.frame, config)
+        panel = FileNamePanel(self.frame, config)
 
         # When the state is reverted to the values in the .ini file
         panel.RevertState()
@@ -195,7 +196,7 @@ class TestFilenamePanel:
         assert panel.custom.IsEnabled() is True
         assert panel.custom.GetValue() == 'MyString'
 
-    def test_save_state(self, app, tmpdir):
+    def test_save_state(self, tmpdir):
         # Given a configuration filename
         orig_filename = str(tmpdir.join('config.orig'))
         new_filename = str(tmpdir.join('config.orig'))
@@ -215,7 +216,7 @@ class TestFilenamePanel:
         empty_config.filename = new_filename
 
         # And a MiscPanel object using this configuration object
-        panel = FileNamePanel(app.frame, config)
+        panel = FileNamePanel(self.frame, config)
 
         # When the state is reverted to the values in the .ini file
         panel.SaveState()
@@ -224,7 +225,7 @@ class TestFilenamePanel:
         assert list(io.open(orig_filename)) == list(io.open(new_filename))
 
 
-class TestPreferenceDialog:
+class TestPreferenceDialog(DialogTestCase):
     def empty_config(self, filename):
         config = ConfigObj({
             'Miscpanel': {},
@@ -242,23 +243,23 @@ class TestPreferenceDialog:
 
         return config
 
-    def test_constructor(self, app, tmpdir):
+    def test_constructor(self, tmpdir):
         config = self.empty_config(str(tmpdir.join('config.ini')))
 
-        dlg = PreferenceDlg(app.frame, config=config)
+        dlg = PreferenceDlg(self.frame, config=config)
 
         assert isinstance(dlg, PreferenceDlg)
 
-    def test_on_apply(self, app, tmpdir):
+    def test_on_apply(self, tmpdir):
         config = self.empty_config(str(tmpdir.join('config.ini')))
 
-        dlg = PreferenceDlg(app.frame, config=config)
+        dlg = PreferenceDlg(self.frame, config=config)
 
         assert dlg.OnApply()
 
-    def test_on_cancel(self, app, tmpdir):
+    def test_on_cancel(self, tmpdir):
         config = self.empty_config(str(tmpdir.join('config.ini')))
 
-        dlg = PreferenceDlg(app.frame, config=config)
+        dlg = PreferenceDlg(self.frame, config=config)
 
         assert dlg.OnCancel()
