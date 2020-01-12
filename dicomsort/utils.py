@@ -28,10 +28,6 @@ def recursive_replace_tokens(formatString, repobj):
     return formatString
 
 
-def grouper(iterable, n):
-    return map(None, * [iter(iterable), ] * n)
-
-
 def clean_directory_name(path):
     return re.sub(INVALID_FILENAME_CHARS, '_', path)
 

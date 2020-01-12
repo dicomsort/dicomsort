@@ -45,24 +45,6 @@ class TestRecurvsiveReplaceTokens(unittest.TestCase):
         assert output == 'prefix_%(Key6)s_suffix'
 
 
-class TestGrouper:
-    def test_empty(self):
-        output = utils.grouper([], 1)
-        assert list(output) == []
-
-    def test_equal_sizes(self):
-        iterable = [1, 2, 3, 4, 5, 6]
-        output = utils.grouper(iterable, 2)
-
-        assert list(output) == [(1, 2), (3, 4), (5, 6)]
-
-    def test_unequal_sizes(self):
-        iterable = [1, 2, 3, 4, 5]
-        output = utils.grouper(iterable, 2)
-
-        assert list(output) == [(1, 2), (3, 4), (5, None)]
-
-
 class TestIsDicom:
     def test_dicomdir(self, dicom_generator):
         dicomdir, _ = dicom_generator('DICOMDIR')
