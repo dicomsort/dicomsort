@@ -38,8 +38,6 @@ class TestCrashReporter:
         self.reporter = CrashReporter()
         self.reporter.Report()
 
-        mock.assert_called_once()
-
         call_args = mock.call_args[0]
 
         assert call_args[0] == 'http://www.suever.net/software/dicomSort/bug_report.php'
