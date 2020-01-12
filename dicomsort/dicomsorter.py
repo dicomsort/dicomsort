@@ -273,7 +273,7 @@ class Sorter(Thread):
         if self.iter is None:
             return
 
-        count = self.iter.next()
+        count = next(self.iter)
 
         if self.is_gui is False:
             return
