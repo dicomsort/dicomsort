@@ -2,10 +2,10 @@ import collections
 import itertools
 import os
 import pydicom
-import Queue
 import shutil
 
 from six import ensure_text
+from six.moves import queue
 from threading import Thread
 
 from dicomsort import errors, utils
@@ -288,7 +288,7 @@ class Sorter(Thread):
                 self.sort_image(filename)
                 self.increment_counter()
             # TODO: Rescue any other errors and quarantine the files
-            except Queue.Empty:
+            except queue.Empty:
                 return
 
 
@@ -306,7 +306,7 @@ class DicomSorter():
         self.folders = []
         self.filename = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
 
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
 
         self.sorters = list()
 
@@ -329,15 +329,7 @@ class DicomSorter():
         if not isinstance(anonymization_lookup, dict):
             raise Exception('Anon rules must be a dictionary')
 
-<<<<<<< HEAD
-        self.anondict = anondict
-=======
-        # Make sure to convert unicode to raw strings (pydicom bug)
-        for key, value in anonymization_lookup.items():
-            anonymization_lookup[key] = value.encode()
-
         self.anonymization_lookup = anonymization_lookup
->>>>>>> c3c8593fc2806e7eb4c6645c4703f8ad0e760f0a
 
     def folder_format(self):
         # Check to see if we are using the origin directory structure
