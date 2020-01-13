@@ -1,26 +1,21 @@
 import configobj
-import dicomsort
 import os
-import re
 import sys
-import traceback
 import wx
-
-from six.moves.urllib.parse import urlencode
-from six.moves.urllib.request import urlopen
 
 from dicomsort import config
 from dicomsort.dicomsorter import DicomSorter
 from dicomsort.errors import DicomFolderError
 from dicomsort.gui import errors, events, help, icons, preferences, widgets
 from dicomsort.gui.anonymizer import QuickRenameDlg
+from dicomsort.gui.dialogs import CrashReporter
 from dicomsort.gui.update import UpdateChecker
 
 DEFAULT_FILENAME = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
 
 
-def ExceptHook(type, value, tb):
-    dlg = CrashReporter(None, type=type, value=value, traceback=tb)
+def except_hook(exc_type, value, tb):
+    dlg = CrashReporter(None, type=exc_type, value=value, traceback=tb)
     dlg.ShowModal()
     dlg.Destroy()
 
@@ -32,7 +27,7 @@ class DicomSort(wx.App):
         self.SetTopWindow(self.frame)
         self.frame.Show()
 
-        sys.excepthook = ExceptHook
+        sys.excepthook = except_hook
 
         # Check for updates
         UpdateChecker(self.frame, listener=self.frame)
@@ -40,118 +35,6 @@ class DicomSort(wx.App):
 
     def MainLoop(self, *args):
         wx.App.MainLoop(self, *args)
-
-
-class CrashReporter(wx.Dialog):
-
-    TITLE = 'DICOM Sort Crash Reporter'
-
-    def __init__(self, parent, **kwargs):
-        super(CrashReporter, self).__init__(
-            parent, -1, self.TITLE, size=(400, 400)
-        )
-
-        self.type = kwargs.pop('type', None)
-        self.value = kwargs.pop('value', None)
-
-        tb = kwargs.pop('traceback', None)
-
-        self.traceback = '\n'.join(
-            traceback.format_exception(type, self.value, tb)
-        )
-
-        self.Create()
-        self.SetIcon(icons.main.GetIcon())
-
-    def Create(self):
-        vbox = wx.BoxSizer(wx.VERTICAL)
-
-        heading = wx.StaticText(self, -1, "Epic Fail")
-        heading.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
-
-        vbox.Add(heading, 0, wx.LEFT | wx.TOP, 15)
-
-        text = ''.join(['Dicom Sorting had a problem and crashed.\n',
-                        'In order to help diagnose the problem, you can send a'
-                        ' crash report.'])
-
-        static = wx.StaticText(self, -1, text)
-        vbox.Add(static, 0, wx.ALL, 15)
-
-        vbox.Add(wx.StaticText(self, -1, 'Comments:'), 0, wx.LEFT, 15)
-
-        self.comments = wx.TextCtrl(self, style=wx.TE_MULTILINE)
-
-        defComments = '\n\n\n--------------DO NOT EDIT BELOW ------------\n'
-
-        self.comments.SetValue(defComments + self.traceback)
-        vbox.Add(self.comments, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 15)
-
-        label = 'Email me when a fix is available'
-        self.email = wx.CheckBox(self, -1, label=label)
-        vbox.Add(self.email, 0, wx.LEFT | wx.RIGHT | wx.TOP, 15)
-
-        self.email.Bind(wx.EVT_CHECKBOX, self.OnEmail)
-
-        self.emailAddress = wx.TextCtrl(
-            self, -1, 'Enter your email address here',
-            size=(200, -1))
-        self.emailAddress.Enable(False)
-
-        vbox.Add(self.emailAddress, 0, wx.LEFT | wx.RIGHT, 35)
-
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        self.sender = wx.Button(self, -1, "Send Report")
-        self.cancel = wx.Button(self, -1, "Cancel")
-
-        self.sender.Bind(wx.EVT_BUTTON, self.Report)
-        self.cancel.Bind(wx.EVT_BUTTON, self.OnCancel)
-
-        hbox.Add(self.cancel, 0, wx.RIGHT, 10)
-        hbox.Add(self.sender, 0, wx.RIGHT, 15)
-
-        vbox.Add(hbox, 0, wx.TOP | wx.BOTTOM | wx.ALIGN_RIGHT, 10)
-
-        self.SetSizer(vbox)
-
-    def OnCancel(self, *evnt):
-        self.Destroy()
-
-    def OnEmail(self, *evnt):
-        if self.email.IsChecked():
-            self.emailAddress.Enable()
-        else:
-            self.emailAddress.Enable(False)
-
-    def Report(self, *evnt):
-        if self.email.IsChecked():
-            email = self.ValidateEmail()
-        else:
-            email = None
-
-        url = 'http://www.suever.net/software/dicomSort/bug_report.php'
-        values = {
-            'OS': sys.platform,
-            'version': dicomsort.__version__,
-            'email': email,
-            'comments': self.comments.GetValue().strip('\n')
-        }
-
-        data = urlencode(values)
-        urlopen(url, data)
-        self.OnCancel()
-
-    def ValidateEmail(self):
-        email = self.emailAddress.GetValue()
-
-        regex = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}'
-
-        if not re.search(regex, email, re.UNICODE | re.IGNORECASE):
-            errors.throw_error(
-                'Please enter a valid email address', parent=self
-            )
-
-        return email
 
 
 class MainFrame(wx.Frame):
@@ -183,8 +66,9 @@ class MainFrame(wx.Frame):
             self.config.write()
 
         self.prefDlg = preferences.PreferenceDlg(
-            None, -1, "DicomSort Preferences",
-            config=self.config, size=(400, 400))
+            self, -1, "DicomSort Preferences",
+            config=self.config, size=(400, 400)
+        )
 
         self.Bind(wx.EVT_CLOSE, self.OnQuit)
 
@@ -296,7 +180,7 @@ class MainFrame(wx.Frame):
         self.config = self.prefDlg.ShowModal()
 
     def OnQuit(self, *_event):
-        sys.exit()
+        sys.exit(0)
 
     def OnAbout(self, *_event):
         widgets.AboutDlg()
