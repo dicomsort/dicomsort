@@ -180,7 +180,7 @@ class MainFrame(wx.Frame):
         self.config = self.prefDlg.ShowModal()
 
     def OnQuit(self, *_event):
-        sys.exit()
+        sys.exit(0)
 
     def OnAbout(self, *_event):
         widgets.AboutDlg()
