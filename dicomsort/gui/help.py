@@ -1,5 +1,3 @@
-import wx.html
-
 helpHTML = """
 <span style="fontsize:9px;"> <center><h3>DICOM Sorting Help</h3></center> <br>
 <strong><u>Introduction</u></strong><br> This utility will sort images based
@@ -47,37 +45,3 @@ folders that contain more images than just DICOM images (create an
 exception).</li> <li>Implement a preview of the values of selected DICOM
 properties</li> </ul>
 """
-
-
-class HtmlWindow(wx.html.HtmlWindow):
-    def __init__(self, parent, id, size):
-        wx.html.HtmlWindow.__init__(self, parent, id, size=size)
-        if "gtk2" in wx.PlatformInfo:
-            self.SetStandardFonts()
-
-
-class HelpDlg(wx.Dialog):
-
-    def __init__(self, parent=None, **kwargs):
-
-        super(HelpDlg, self).__init__(
-            parent, -1, "DICOM Sorting Help",
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.TAB_TRAVERSAL
-        )
-
-        self.hwin = HtmlWindow(self, -1, size=(400, 200))
-
-        self.hwin.SetPage(helpHTML)
-        irep = self.hwin.GetInternalRepresentation()
-
-        self.hwin.SetSize((irep.GetWidth(), int(irep.GetHeight() / 4)))
-        self.Show()
-
-        self.SetClientSize(self.hwin.GetSize())
-        self.CenterOnParent(wx.BOTH)
-        self.SetFocus()
-
-        self.Bind(wx.EVT_CLOSE, self.close)
-
-    def close(self, *_):
-        self.Destroy()

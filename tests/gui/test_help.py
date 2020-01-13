@@ -1,4 +1,5 @@
-from dicomsort.gui.help import HtmlWindow, HelpDlg
+from dicomsort.gui.dialogs import HelpDlg
+from dicomsort.gui.overrides import HtmlWindow
 from tests.shared import WxTestCase
 
 

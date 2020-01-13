@@ -4,7 +4,8 @@ import sys
 
 from six.moves.urllib.parse import parse_qs, unquote, urlparse
 
-from dicomsort.gui.dialogs import CrashReporter, webbrowser
+from dicomsort.gui.anonymizer import AnonymizeList
+from dicomsort.gui.dialogs import CrashReporter, webbrowser, AboutDlg, SeriesRemoveWarningDlg, UpdateDlg, QuickRenameDlg
 from tests.shared import WxTestCase
 
 
@@ -56,3 +57,90 @@ class TestCrashReporter(WxTestCase):
 
         assert 'body' in query_params
         assert query_params['body'][0] == reporter.body()
+
+
+class TestUpdateDlg(WxTestCase):
+    def test_on_close(self):
+        dlg = UpdateDlg(self.frame, '1.2.3')
+        dlg.OnClose()
+
+    def test_on_update(self, mocker):
+        dlg = UpdateDlg(self.frame, '1.2.3')
+        url = 'https://dicomsort.com'
+
+        mock = mocker.patch.object(dlg.link, 'GotoURL')
+
+        dlg.OnUpdate()
+
+        mock.assert_called_once_with(url)
+
+
+class TestAboutDialog(WxTestCase):
+    def test_constructor(self):
+        dlg = AboutDlg(self.frame)
+
+        # Just a few sanity checks
+        assert dlg.info.GetVersion() == dicomsort.__version__
+        assert dlg.info.GetName() == 'DICOM Sorting'
+        assert dlg.info.GetWebSiteURL() == 'https://dicomsort.com'
+
+
+class TestSeriesRemoveWarningDlg(WxTestCase):
+    def test_on_change(self):
+        dlg = SeriesRemoveWarningDlg(self.frame)
+        dlg.OnChange()
+
+        assert dlg.choice == 1
+
+    def test_on_cancel(self):
+        dlg = SeriesRemoveWarningDlg(self.frame)
+        dlg.OnCancel()
+
+        assert dlg.choice == 0
+
+    def test_on_accept(self):
+        dlg = SeriesRemoveWarningDlg(self.frame)
+        dlg.OnAccept()
+
+        assert dlg.choice == 2
+
+
+class TestQuickRenameDlg(WxTestCase):
+    def test_no_patient_name_anonlist(self):
+        a = AnonymizeList(self.frame)
+        dlg = QuickRenameDlg(self.frame, anonList=a)
+
+        expected = {
+            'PatientName': '',
+            'PatientID': '%(PatientName)s',
+        }
+
+        assert dlg.GetValues() == expected
+
+    def test_patient_name_anonlist(self):
+        name = 'Patient0'
+        a = AnonymizeList(self.frame)
+        a.SetStringItems(['PatientName'])
+        a.SetReplacementDict({'PatientName': name})
+
+        dlg = QuickRenameDlg(self.frame, anonList=a)
+
+        expected = {
+            'PatientName': name,
+            'PatientID': '%(PatientName)s',
+        }
+
+        assert dlg.GetValues() == expected
+
+    def test_on_accept(self):
+        name = 'Patient0'
+        a = AnonymizeList(self.frame)
+        a.SetStringItems(['PatientName', 'PatientID'])
+        a.SetReplacementDict({'PatientName': name, 'PatientID': 'ignored'})
+
+        dlg = QuickRenameDlg(self.frame, anonList=a)
+
+        dlg.OnAccept()
+
+        assert a.GetReplacementDict()['PatientID'] == '%(PatientName)s'
+        assert a.GetReplacementDict()['PatientName'] == name
