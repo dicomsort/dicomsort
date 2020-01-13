@@ -10,10 +10,10 @@ from dicomsort.gui import events
 VERSION_URL = "http://www.dicomsort.com/current"
 
 
-def version_tuple():
+def version_tuple(version):
     parts = list()
 
-    for component in dicomsort.__version__.split('.'):
+    for component in version.split('.'):
         number_match = re.match('^\\d+', component)
 
         if number_match is None:
@@ -24,7 +24,7 @@ def version_tuple():
     return tuple(parts)
 
 
-VERSION_TUPLE = version_tuple()
+VERSION_TUPLE = version_tuple(dicomsort.__version__)
 
 
 def latest_version():
@@ -48,9 +48,9 @@ def update_available():
         return None
 
     # Break it up to see if it's a dev version
-    I = [int(part) for part in latest.split('.')]
-    for ind in range(len(I)):
-        if I[ind] > VERSION_TUPLE[ind]:
+    latest_version_tuple = version_tuple(latest)
+    for ind in range(len(latest_version_tuple)):
+        if latest_version_tuple[ind] > VERSION_TUPLE[ind]:
             return latest
         return None
 

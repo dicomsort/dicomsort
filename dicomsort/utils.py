@@ -7,7 +7,10 @@ from pydicom.errors import InvalidDicomError
 
 INVALID_FILENAME_CHARS = re.compile('[\\\\/\\:\\*\\?\\"\\<\\>\\|]+')
 
-DIRECTORY_EXISTS_EXCEPTION = WindowsError if sys.platform == 'win32' else OSError
+if sys.platform == 'win32':
+    DIRECTORY_EXISTS_EXCEPTION = WindowsError
+else:
+    DIRECTORY_EXISTS_EXCEPTION = OSError
 
 
 def mkdir(directory):

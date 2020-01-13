@@ -16,6 +16,8 @@ from dicomsort.gui import errors, events, help, icons, preferences, widgets
 from dicomsort.gui.anonymizer import QuickRenameDlg
 from dicomsort.gui.update import UpdateChecker
 
+DEFAULT_FILENAME = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
+
 
 def ExceptHook(type, value, tb):
     dlg = CrashReporter(None, type=type, value=value, traceback=tb)
@@ -70,8 +72,8 @@ class CrashReporter(wx.Dialog):
         vbox.Add(heading, 0, wx.LEFT | wx.TOP, 15)
 
         text = ''.join(['Dicom Sorting had a problem and crashed.\n',
-                        'In order to help diagnose the problem, you can send a '
-                        'crash report.'])
+                        'In order to help diagnose the problem, you can send a'
+                        ' crash report.'])
 
         static = wx.StaticText(self, -1, text)
         vbox.Add(static, 0, wx.ALL, 15)
@@ -142,10 +144,12 @@ class CrashReporter(wx.Dialog):
     def ValidateEmail(self):
         email = self.emailAddress.GetValue()
 
-        regex = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}'
+        regex = '[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,4}'
 
         if not re.search(regex, email, re.UNICODE | re.IGNORECASE):
-            errors.throw_error('Please enter a valid email address', parent=self)
+            errors.throw_error(
+                'Please enter a valid email address', parent=self
+            )
 
         return email
 
@@ -173,7 +177,8 @@ class MainFrame(wx.Frame):
         if len(self.config.keys()) == 0:
             self.config.update(config.default_configuration)
             self.config.write()
-        elif 'Version' not in self.config or self.config['Version'] != config.configuration_version:
+        elif 'Version' not in self.config or \
+                self.config['Version'] != config.configuration_version:
             self.config.update(config.default_configuration)
             self.config.write()
 
@@ -205,8 +210,8 @@ class MainFrame(wx.Frame):
         self.pathEditor = widgets.PathEditCtrl(self, -1)
         vbox.Add(self.pathEditor, 0, wx.EXPAND)
 
-        self.selector = widgets.FieldSelector(self, titles=['DICOM Properties',
-                                                            'Properties to Use'])
+        titles = ['DICOM Properties', 'Properties to Use']
+        self.selector = widgets.FieldSelector(self, titles=titles)
 
         self.selector.Bind(events.EVT_SORT, self.Sort)
 
@@ -241,7 +246,7 @@ class MainFrame(wx.Frame):
 
         if filename_method == 0:
             # Image (0001)
-            filename_format = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
+            filename_format = DEFAULT_FILENAME
         elif filename_method == 1:
             # Use the original filename
             filename_format = ''

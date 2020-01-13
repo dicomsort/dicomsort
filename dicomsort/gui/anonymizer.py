@@ -1,6 +1,4 @@
-import configobj
 import wx
-import platform
 
 from dicomsort.gui import widgets
 
@@ -107,5 +105,3 @@ class AnonymizeList(widgets.CheckListCtrl):
 
     def GetDicomField(self, row):
         return self.GetItem(row, 0).Text
-
-
