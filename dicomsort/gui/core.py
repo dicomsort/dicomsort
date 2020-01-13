@@ -106,7 +106,6 @@ class MainFrame(wx.Frame):
         self.pathEditor.Bind(events.EVT_PATH, self.FillList)
 
     def Sort(self, evnt):
-
         if self.dicom_sorter.is_sorting():
             return
 
@@ -210,16 +209,18 @@ class MainFrame(wx.Frame):
         pos = (pos[0] + size[0], pos[1])
 
         self.debug = wx.Frame(
-            None, -1, 'DicomSort DEBUGGER', size=(700, 500), pos=pos)
+            self, -1, 'DicomSort DEBUGGER', size=(700, 500), pos=pos
+        )
+
         self.crust = wx.py.crust.Crust(self.debug)
         self.debug.Show()
 
     def QuickRename(self, *_event):
         self.anonList = self.prefDlg.pages['Anonymization'].anonList
-        dlg = QuickRenameDlg(None, -1, 'Anonymize', size=(250, 160),
-                             anonList=self.anonList)
+        dlg = QuickRenameDlg(
+            self, -1, 'Anonymize', size=(250, 160), anonList=self.anonList
+        )
         dlg.ShowModal()
-        dlg.Destroy()
 
     def _InitializeMenus(self):
         menubar = wx.MenuBar()
