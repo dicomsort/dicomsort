@@ -66,8 +66,9 @@ class MainFrame(wx.Frame):
             self.config.write()
 
         self.prefDlg = preferences.PreferenceDlg(
-            None, -1, "DicomSort Preferences",
-            config=self.config, size=(400, 400))
+            self, -1, "DicomSort Preferences",
+            config=self.config, size=(400, 400)
+        )
 
         self.Bind(wx.EVT_CLOSE, self.OnQuit)
 
