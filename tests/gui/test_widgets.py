@@ -2,7 +2,7 @@ import dicomsort
 import wx
 
 from tests.shared import WxTestCase
-from dicomsort.gui.widgets import errors, FieldSelector, PathEditCtrl, MultiDirDlg, AboutDlg, UpdateDlg, SeriesRemoveWarningDlg, CustomDataTable
+from dicomsort.gui.widgets import errors, FieldSelector, PathEditCtrl, CustomDataTable
 
 
 class TestFieldSelector(WxTestCase):
@@ -283,59 +283,6 @@ class TestPathEditCtrl(WxTestCase):
         ctrl.ValidatePath()
 
         assert ctrl.path == paths
-
-
-class TestMultiDirDlg(WxTestCase):
-    def test_constructor(self):
-        dlg = MultiDirDlg(self.frame)
-        assert isinstance(dlg, MultiDirDlg)
-
-        dlg.Destroy()
-
-class TestUpdateDlg(WxTestCase):
-    def test_on_close(self):
-        dlg = UpdateDlg(self.frame, '1.2.3')
-        dlg.OnClose()
-
-    def test_on_update(self, mocker):
-        dlg = UpdateDlg(self.frame, '1.2.3')
-        url = 'https://dicomsort.com'
-
-        mock = mocker.patch.object(dlg.link, 'GotoURL')
-
-        dlg.OnUpdate()
-
-        mock.assert_called_once_with(url)
-
-
-class TestAboutDialog(WxTestCase):
-    def test_constructor(self):
-        dlg = AboutDlg(self.frame)
-
-        # Just a few sanity checks
-        assert dlg.info.GetVersion() == dicomsort.__version__
-        assert dlg.info.GetName() == 'DICOM Sorting'
-        assert dlg.info.GetWebSiteURL() == 'https://dicomsort.com'
-
-
-class TestSeriesRemoveWarningDlg(WxTestCase):
-    def test_on_change(self):
-        dlg = SeriesRemoveWarningDlg(self.frame)
-        dlg.OnChange()
-
-        assert dlg.choice == 1
-
-    def test_on_cancel(self):
-        dlg = SeriesRemoveWarningDlg(self.frame)
-        dlg.OnCancel()
-
-        assert dlg.choice == 0
-
-    def test_on_accept(self):
-        dlg = SeriesRemoveWarningDlg(self.frame)
-        dlg.OnAccept()
-
-        assert dlg.choice == 2
 
 
 class TestCustomDataTable(WxTestCase):

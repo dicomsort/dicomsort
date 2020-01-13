@@ -6,9 +6,10 @@ import wx
 from dicomsort import config
 from dicomsort.dicomsorter import DicomSorter
 from dicomsort.errors import DicomFolderError
-from dicomsort.gui import errors, events, help, icons, preferences, widgets
-from dicomsort.gui.anonymizer import QuickRenameDlg
-from dicomsort.gui.dialogs import CrashReporter
+from dicomsort.gui import errors, events, icons, preferences, widgets
+from dicomsort.gui.dialogs import (
+    AboutDlg, CrashReporter, HelpDlg, QuickRenameDlg, UpdateDlg
+)
 from dicomsort.gui.update import UpdateChecker
 
 DEFAULT_FILENAME = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
@@ -76,7 +77,7 @@ class MainFrame(wx.Frame):
         self.SetStatusText("Ready...")
 
     def OnNewVersion(self, evnt):
-        dlg = widgets.UpdateDlg(self, evnt.version)
+        dlg = UpdateDlg(self, evnt.version)
         dlg.Show()
 
     def Create(self):
@@ -182,10 +183,10 @@ class MainFrame(wx.Frame):
         sys.exit(0)
 
     def OnAbout(self, *_event):
-        widgets.AboutDlg()
+        AboutDlg()
 
     def OnHelp(self, *_event):
-        help.HelpDlg(self)
+        HelpDlg(self)
 
     def _MenuGenerator(self, parent, name, arguments):
         menu = wx.Menu()
