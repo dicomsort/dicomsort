@@ -10,8 +10,8 @@ build: clean
 lint:
 	flake8 dicomsort/*
 
-release:
-	twine upload dist/*
+release: build
+	twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
 
 release-test: build
 	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
