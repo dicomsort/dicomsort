@@ -31,7 +31,7 @@ class CrashReporter(wx.Dialog):
         return '\n'.join(lines)
 
     def body(self):
-        version = dicomsort.__version__
+        ver = dicomsort.__version__
 
         template = \
             '#### Describe the Issue:\n' + \
@@ -41,7 +41,7 @@ class CrashReporter(wx.Dialog):
             '#### Steps to Reproduce:\n' + \
             'How to reproduce the issue.\n\n' + \
             '## Environment\n' + \
-            '#### DICOM Sort Version:\n{}\n\n'.format(version) + \
+            '#### DICOM Sort Version:\n{}\n\n'.format(ver) + \
             '#### Operating System:\n{}\n\n'.format(' '.join(os.uname())) + \
             '#### Traceback:\n' + \
             '```\n' + \
