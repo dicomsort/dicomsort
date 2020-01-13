@@ -270,6 +270,7 @@ class PreferenceDlg(wx.Dialog):
         wx.Dialog.ShowModal(self, *args)
         return self.config
 
+
 class AnonymousPanel(PreferencePanel):
 
     def __init__(self, parent, config):

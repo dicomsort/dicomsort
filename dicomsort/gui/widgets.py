@@ -15,7 +15,7 @@ from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
 
 from dicomsort.gui import errors, events, icons
 
-#TODO: Create searcheable ListCtrl item
+# TODO: Create searcheable ListCtrl item
 
 
 class MultiDirDlg(MultiDirDialog):
@@ -35,8 +35,10 @@ class MultiDirDlg(MultiDirDialog):
 class UpdateDlg(wx.Dialog):
     def __init__(self, parent, version):
         super(UpdateDlg, self).__init__(parent, size=(300, 170), style=wx.OK)
-        message = ''.join(["A new version of DICOM Sorting is available.\n",
-                           "You are running Version %s and the newest is %s.\n"])
+        message = ''.join([
+            "A new version of DICOM Sorting is available.\n",
+            "You are running Version %s and the newest is %s.\n"
+        ])
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -128,7 +130,7 @@ class CustomDataTable(wx.grid.PyGridTableBase):
 
         self.data = data
 
-   #--------------------------------------------------
+    # --------------------------------------------------
     # required methods for the wxPyGridTableBase interface
 
     def GetNumberRows(self):
@@ -163,11 +165,11 @@ class CustomDataTable(wx.grid.PyGridTableBase):
                 innerSetValue(row, col, value)
 
                 # tell the grid we've added a row
-                msg = wx.grid.GridTableMessage(self,            # The table
-                                               wx.grid.GRIDTABLE_NOTIFY_ROWS_APPENDED,
-                                               # what we did to it
-                                               1                                       # how many
-                                               )
+                msg = wx.grid.GridTableMessage(
+                    self,
+                    wx.grid.GRIDTABLE_NOTIFY_ROWS_APPENDED,
+                    1
+                )
 
                 view = self.GetView()
 
@@ -175,7 +177,7 @@ class CustomDataTable(wx.grid.PyGridTableBase):
                     view.ProcessTableMessage(msg)
         innerSetValue(row, col, value)
 
-    #--------------------------------------------------
+    # --------------------------------------------------
     # Some optional methods
 
     # Called when the grid needs to display labels
@@ -276,7 +278,9 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
 
     def GetStringItem(self, row, column=None):
         if column is None:
-            return [self.GetStringItem(row, c) for c in range(self.ColumnCount)]
+            return [
+                self.GetStringItem(row, c) for c in range(self.ColumnCount)
+            ]
         else:
             return self.GetItem(row, column).Text
 
@@ -328,9 +332,6 @@ class PathEditCtrl(wx.Panel):
         if not isinstance(paths, list):
             paths = [paths, ]
 
-        # Convert to absolute paths
-        #paths = [os.path.abspath(path) for path in paths]
-
         # Determine if there are any invalid paths
         badPaths = [path for path in paths if not os.path.isdir(path)]
 
@@ -371,7 +372,9 @@ class PathEditCtrl(wx.Panel):
 class SeriesRemoveWarningDlg(wx.Dialog):
 
     def __init__(self, parent, id=-1, size=(300, 200), config=None):
-        wx.Dialog.__init__(self, parent, id, 'Remove Series Description?', size=size)
+        wx.Dialog.__init__(
+            self, parent, id, 'Remove Series Description?', size=size
+        )
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -382,8 +385,13 @@ class SeriesRemoveWarningDlg(wx.Dialog):
 
         txt = wx.StaticText(self, -1, inputText, style=wx.ALIGN_CENTER)
 
-        change = wx.Button(self, -1, 'Yes. Use original Filenames', size=(-1, 20))
-        accept = wx.Button(self, -1, 'Yes. Use Custom Filenames', size=(-1, 20))
+        change = wx.Button(
+            self, -1, 'Yes. Use original Filenames', size=(-1, 20)
+        )
+
+        accept = wx.Button(
+            self, -1, 'Yes. Use Custom Filenames', size=(-1, 20)
+        )
         cancel = wx.Button(self, -1, 'Cancel', size=(-1, 20))
 
         change.Bind(wx.EVT_BUTTON, self.OnChange)
@@ -416,11 +424,12 @@ class SeriesRemoveWarningDlg(wx.Dialog):
 
 class FieldSelector(wx.Panel):
 
-    def __init__(self, parent, id=-1, size=(250, 300), choices=[], titles=['', '']):
+    def __init__(self, parent, id=-1, size=(250, 300), choices=None,
+                 titles=None):
         wx.Panel.__init__(self, parent, id=id, size=size)
 
-        self.choices = choices
-        self.titles = titles
+        self.choices = choices or []
+        self.titles = titles or ['', '']
 
         self.create()
 
@@ -439,8 +448,9 @@ class FieldSelector(wx.Panel):
         return
 
     def _sort_callback(self, *evnt):
-        event = events.SortEvent(anon=self.anonQ.IsChecked(),
-                              fields=self.GetFormatFields())
+        event = events.SortEvent(
+            anon=self.anonQ.IsChecked(), fields=self.GetFormatFields()
+        )
         wx.PostEvent(self, event)
 
     def GetSelectedItems(self):
@@ -604,7 +614,8 @@ class FieldSelector(wx.Panel):
                 # change to original filenames
                 cfg = self.GetParent().config
                 cfg['FilenameFormat']['Selection'] = 1
-                self.GetParent().prefDlg.pages['FilenameFormat'].UpdateFromConfig(cfg)
+                page = self.GetParent().prefDlg.pages['FilenameFormat']
+                page.UpdateFromConfig(cfg)
 
         self.selected.Delete(index)
 

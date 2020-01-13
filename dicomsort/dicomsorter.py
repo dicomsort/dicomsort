@@ -76,7 +76,8 @@ class Dicom:
         """
         if 'PatientAge' in self.dicom:
             age = self.dicom.PatientAge
-        elif 'PatientBirthDate' not in self.dicom or self.dicom.PatientBirthDate == '':
+        elif 'PatientBirthDate' not in self.dicom or \
+                self.dicom.PatientBirthDate == '':
             age = ''
         else:
             age = (int(self.dicom.StudyDate) -
@@ -113,8 +114,9 @@ class Dicom:
 
     def get_destination(self, root, directory_format, filename_format):
 
-        # First we need to clean up the elements of directory_format to make sure that
-        # we don't have any bad characters (including /) in the folder names
+        # First we need to clean up the elements of directory_format to make
+        # sure that we don't have any bad characters (including /) in the
+        # folder names
         directory = root
         for item in directory_format:
             try:
@@ -146,8 +148,14 @@ class Dicom:
             raise Exception('Anon rules must be a dictionary')
 
         if 'PatientBirthDate' in self.anonymization_lookup:
-            if self.anonymization_lookup['PatientBirthDate'] != '' or self.dicom.PatientBirthDate == '':
-                self.overrides = dict(self.default_overrides, **anonymization_lookup)
+            if self.anonymization_lookup['PatientBirthDate'] != '' or \
+                    self.dicom.PatientBirthDate == '':
+
+                self.overrides = dict(
+                    self.default_overrides,
+                    **anonymization_lookup
+                )
+
                 return
 
             # First we need to figure out how old they are
@@ -175,14 +183,17 @@ class Dicom:
     def is_anonymous(self):
         return self.default_overrides != self.overrides
 
-    def sort(self, root, directory_fields, filename_string, test=False, rootdir=None, keep_original=True):
+    def sort(self, root, directory_fields, filename_string, test=False,
+             rootdir=None, keep_original=True):
 
         # If we want to sort in place
         if directory_fields is None:
             destination = os.path.relpath(self.filename, rootdir[0])
             destination = os.path.join(root, destination)
         else:
-            destination = self.get_destination(root, directory_fields, filename_string)
+            destination = self.get_destination(
+                root, directory_fields, filename_string
+            )
 
         if test:
             print(destination)
@@ -196,7 +207,8 @@ class Dicom:
 
         if self.is_anonymous():
             # Actually write the anonymous data
-            # write everything in anonymization_lookup -> Parse it so we can have dynamic fields
+            # write everything in anonymization_lookup -> Parse it so we can
+            # have dynamic fields
             for key in self.anonymization_lookup.keys():
                 replacement_value = self.anonymization_lookup[key] % self
                 try:
@@ -217,10 +229,10 @@ class Dicom:
 
 
 class Sorter(Thread):
-    def __init__(self, queue, output_directory, directory_format, filename_format,
-                 lookup=None, keep_filename=False, iterator=None,
-                 test=False, listener=None, total=None, root=None,
-                 series_first=False, keep_original=True):
+    def __init__(self, queue, output_directory, directory_format,
+                 filename_format, lookup=None, keep_filename=False,
+                 iterator=None, test=False, listener=None, total=None,
+                 root=None, series_first=False, keep_original=True):
 
         self.directory_format = directory_format
         self.filename_format = filename_format
@@ -356,12 +368,14 @@ class DicomSorter():
         iterator = itertools.count(1)
 
         for _ in range(min(THREAD_COUNT, number_of_files)):
-            sorter = Sorter(self.queue, output_directory, dir_format, self.filename,
-                            self.anonymization_lookup, self.keep_filename,
-                            iterator=iterator, test=test, listener=listener,
-                            total=number_of_files, root=self.pathname,
-                            series_first=self.series_first,
-                            keep_original=self.keep_original)
+            sorter = Sorter(
+                self.queue, output_directory, dir_format, self.filename,
+                self.anonymization_lookup, self.keep_filename,
+                iterator=iterator, test=test, listener=listener,
+                total=number_of_files, root=self.pathname,
+                series_first=self.series_first,
+                keep_original=self.keep_original
+            )
 
             self.sorters.append(sorter)
 
