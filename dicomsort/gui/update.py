@@ -7,7 +7,7 @@ from six.moves.urllib.request import urlopen
 
 from dicomsort.gui import events
 
-VERSION_URL = "http://www.dicomsort.com/current"
+VERSION_URL = dicomsort.__website__ + '/current'
 
 
 def version_tuple(version):

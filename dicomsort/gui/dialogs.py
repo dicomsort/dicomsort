@@ -22,7 +22,7 @@ class AboutDlg:
         self.info.SetVersion(dicomsort.__version__)
 
         self.info.SetCopyright('(C) 2011 - 2020 Jonathan Suever')
-        self.info.SetWebSite('https://dicomsort.com')
+        self.info.SetWebSite(dicomsort.__website__)
 
         self.GenerateDescription()
 
@@ -40,7 +40,7 @@ class AboutDlg:
 
 class CrashReporter(wx.Dialog):
     TITLE = 'DICOM Sort Error'
-    ISSUE_URL = 'https://github.com/suever/dicomsort/issues/new'
+    ISSUE_URL = dicomsort.__repository__ + '/issues/new'
 
     ISSUE_TEMPLATE = '**Traceback:**\n'
 
@@ -282,9 +282,9 @@ class UpdateDlg(wx.Dialog):
         vbox.Add(txt, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
 
         self.link = hyperlink.HyperLinkCtrl(self, -1)
-        self.link.SetURL(URL='https://dicomsort.com')
+        self.link.SetURL(URL=dicomsort.__website__)
         self.link.SetLabel(label='Click here to obtain the update')
-        self.link.SetToolTip('https://dicomsort.com')
+        self.link.SetToolTip(dicomsort.__website__)
         self.link.AutoBrowse(False)
 
         self.Bind(hyperlink.EVT_HYPERLINK_LEFT, self.OnUpdate, self.link)

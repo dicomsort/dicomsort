@@ -66,7 +66,7 @@ class TestUpdateDlg(WxTestCase):
 
     def test_on_update(self, mocker):
         dlg = UpdateDlg(self.frame, '1.2.3')
-        url = 'https://dicomsort.com'
+        url = dicomsort.__website__
 
         mock = mocker.patch.object(dlg.link, 'GotoURL')
 
@@ -82,7 +82,7 @@ class TestAboutDialog(WxTestCase):
         # Just a few sanity checks
         assert dlg.info.GetVersion() == dicomsort.__version__
         assert dlg.info.GetName() == 'DICOM Sorting'
-        assert dlg.info.GetWebSiteURL() == 'https://dicomsort.com'
+        assert dlg.info.GetWebSiteURL() == dicomsort.__website__
 
 
 class TestSeriesRemoveWarningDlg(WxTestCase):

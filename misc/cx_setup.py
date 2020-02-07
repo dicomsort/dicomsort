@@ -11,8 +11,8 @@ AUTHOR_EMAIL = 'suever@gmail.com'
 MAINTAINER = AUTHOR
 MAINTAINER_EMAIL = AUTHOR_EMAIL
 DESCRIPTION = 'A DICOM Sorting Utility'
-URL = 'https://dicomsort.com'
-DOWNLOAD_URL = 'http://dicomsort.com/downloads.html'
+URL = dicomsort.__website__
+DOWNLOAD_URL = dicomsort.__website__ + '/downloads.html'
 LICENSE = 'MIT'
 VERSION = dicomsort.__version__
 
