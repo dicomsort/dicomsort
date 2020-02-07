@@ -4,3 +4,7 @@ class DicomFolderError(Exception):
 
     def __str__(self):
         return repr(self.value)
+
+
+class InvalidVersion(Exception):
+    pass
