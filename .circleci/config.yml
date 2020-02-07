@@ -5,6 +5,8 @@ workflows:
     jobs:
       - test-2.7
       - test-3.5
+      - test-3.6
+      - test-3.7
 jobs:
   test-2.7: &test-template
     docker:
@@ -43,3 +45,11 @@ jobs:
     <<: *test-template
     docker:
       - image: circleci/python:3.5-stretch-browsers
+  test-3.6:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6-stretch-browsers
+  test-3.7:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.7-stretch-browsers
