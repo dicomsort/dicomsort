@@ -96,6 +96,7 @@ if __name__ == '__main__':
         install_requires=[
             'configobj >= 5.0.6',
             'pydicom >= 1.3.0',
+            'requests >= 2.0.0',
             'wxpython >= 4.0.0',
         ],
         zip_safe=False,
