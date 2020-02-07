@@ -66,6 +66,6 @@ If you have any questions or would like to request a feature, feel free to
 provide feedback via the [Github Issues](https://github.com/suever/dicomsort/issues) page.
 
 ## License
-This software is licensed under the GNU Public License (GPL)  
+This software is licensed under the MIT License
 Copyright (C) 2011 - 2020  Jonathan Suever
 
