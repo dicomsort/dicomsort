@@ -5,7 +5,7 @@ import dicomsort
 from dicomsort.errors import InvalidVersion
 
 GITHUB_RELEASE_API = 'https://api.github.com/repos/%(repo)s/releases/latest'
-VERSION_REGEX = re.compile('^v?(\\d(\\.\\d+)*)')
+VERSION_REGEX = re.compile('^v?(\\d+(\\.\\d+)*)')
 
 
 def latest_release():
