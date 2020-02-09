@@ -51,7 +51,7 @@ class TestCrashReporter(WxTestCase):
 
         assert parsed_url.scheme == 'https'
         assert parsed_url.netloc == 'github.com'
-        assert parsed_url.path == '/suever/dicomsort/issues/new'
+        assert parsed_url.path == '/dicomsort/dicomsort/issues/new'
 
         query_params = parse_qs(parsed_url.query)
 
