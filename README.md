@@ -1,8 +1,8 @@
 # DICOM Sort
 
-[![CircleCI](https://circleci.com/gh/suever/dicomsort.svg?style=svg)](https://circleci.com/gh/suever/dicomsort)
-[![Maintainability](https://api.codeclimate.com/v1/badges/9814e4a5f1881ec25922/maintainability)](https://codeclimate.com/github/suever/dicomsort/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/9814e4a5f1881ec25922/test_coverage)](https://codeclimate.com/github/suever/dicomsort/test_coverage)
+[![CircleCI](https://circleci.com/gh/dicomsort/dicomsort.svg?style=svg)](https://circleci.com/gh/dicomsort/dicomsort)
+[![Maintainability](https://api.codeclimate.com/v1/badges/9814e4a5f1881ec25922/maintainability)](https://codeclimate.com/github/dicomsort/dicomsort/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/9814e4a5f1881ec25922/test_coverage)](https://codeclimate.com/github/dicomsort/dicomsort/test_coverage)
 [![PyPi version](https://pypip.in/v/dicomsort/badge.png)](https://pypi.org/project/dicomsort/)
 
 DICOM Sort is a utility that takes a series of DICOM images stored within an
@@ -37,7 +37,7 @@ dicomsort
 To install from source, first clone the git repository
 
 ```bash
-git clone https://github.com/suever/dicomsort.git
+git clone https://github.com/dicomsort/dicomsort.git
 ```
 
 Install the `dicomsort` script using the project's `setup.py` file. This will automatically install all project dependencies
@@ -63,7 +63,7 @@ make test
 
 ## Contributing
 If you have any questions or would like to request a feature, feel free to 
-provide feedback via the [Github Issues](https://github.com/suever/dicomsort/issues) page.
+provide feedback via the [Github Issues](https://github.com/dicomsort/dicomsort/issues) page.
 
 ## License
 This software is licensed under the MIT License
