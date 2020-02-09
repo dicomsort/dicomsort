@@ -6,6 +6,7 @@ pytest-cov==2.8.1
 pytest-mock==2.0.0
 pytest==4.6.9
 requests==2.22.0
+requests-mock==1.7.0
 six==1.14.0
 twine==1.15.0
 wxPython==4.0.7
