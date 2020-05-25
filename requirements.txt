@@ -1,5 +1,5 @@
 configobj==5.0.6
-flake8==3.7.9
+flake8==3.8.2
 mock==3.0.5
 pydicom==1.4.2
 pytest-cov==2.8.1
