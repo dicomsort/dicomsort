@@ -5,7 +5,7 @@ import sys
 
 from pydicom.errors import InvalidDicomError
 
-INVALID_FILENAME_CHARS = re.compile('[\\\\/\\:\\*\\?\\"\\<\\>\\|]+')
+INVALID_FILENAME_CHARS = re.compile('[\\\\/:*?\\"<>|]+')
 
 if sys.platform == 'win32':
     DIRECTORY_EXISTS_EXCEPTION = WindowsError
@@ -20,15 +20,15 @@ def mkdir(directory):
         return
 
 
-def recursive_replace_tokens(formatString, repobj):
+def recursive_replace_tokens(format_string, repobj):
     max_rep = 5
     rep = 0
 
-    while re.search('%\\(.*\\)', formatString) and rep < max_rep:
-        formatString = formatString % repobj
+    while re.search('%\\(.*\\)', format_string) and rep < max_rep:
+        format_string = format_string % repobj
         rep = rep + 1
 
-    return formatString
+    return format_string
 
 
 def clean_directory_name(path):
