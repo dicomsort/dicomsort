@@ -15,3 +15,9 @@ release: build
 
 release-test: build
 	twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+exe:
+	python misc/cx_setup.py bdist_msi
+
+dmg:
+	python misc/cx_setup.py bdist_dmg
