@@ -132,7 +132,7 @@ if __name__ == '__main__':
         },
         executables=[
             Executable(
-                script=os.path.join('bin', 'dicomsort'),
+                script=os.path.join('bin', 'dicomsort.py'),
                 base=None,
                 icon=ICON,
                 shortcutName='DICOM Sort'
