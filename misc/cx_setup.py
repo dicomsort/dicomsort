@@ -124,6 +124,7 @@ if __name__ == '__main__':
               'include_files': [ICO_FILE, ]
           },
           'bdist_mac': {
+              'bundle_name': NAME,
               'iconfile': ICNS_FILE
           },
           'bdist_dmg': {
