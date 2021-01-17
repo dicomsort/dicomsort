@@ -579,7 +579,7 @@ class TestDicomSorter:
     def test_is_sorting_active_sorters(self, mocker):
         sorter = DicomSorter()
 
-        patch = mocker.patch.object(Sorter, 'isAlive')
+        patch = mocker.patch.object(Sorter, 'is_alive')
         patch.return_value = True
 
         # Generate some sorters
@@ -591,7 +591,7 @@ class TestDicomSorter:
     def test_is_sorting_inactive_sorters(self, mocker):
         sorter = DicomSorter()
 
-        patch = mocker.patch.object(Sorter, 'isAlive')
+        patch = mocker.patch.object(Sorter, 'is_alive')
         patch.return_value = False
 
         # Generate some sorters

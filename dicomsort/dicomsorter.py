@@ -331,7 +331,7 @@ class DicomSorter():
 
     def is_sorting(self):
         for sorter in self.sorters:
-            if sorter.isAlive():
+            if sorter.is_alive():
                 return True
 
         return False
