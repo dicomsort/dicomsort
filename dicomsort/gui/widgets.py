@@ -379,8 +379,7 @@ class FieldSelector(wx.Panel):
         vboxOptions.Add(self.titleL, 0, wx.ALIGN_CENTER_HORIZONTAL)
         vboxOptions.Add(self.options, 1,
                         wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 10)
-        vboxOptions.Add(self.search, 0,
-                        wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
+        vboxOptions.Add(self.search, 0, wx.EXPAND | wx.ALL, 10)
 
         # BoxSizer containing the selected options
         vboxSelect = wx.BoxSizer(wx.VERTICAL)

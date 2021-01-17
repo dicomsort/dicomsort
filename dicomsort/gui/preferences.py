@@ -144,7 +144,7 @@ class FileNamePanel(PreferencePanel):
 
         self.custom = wx.TextCtrl(self, -1, '',
                                   size=(300, -1))
-        vbox.Add(self.custom, 0, wx.ALIGN_BOTTOM | wx.LEFT, 50)
+        vbox.Add(self.custom, 0, wx.LEFT, 50)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
@@ -239,8 +239,8 @@ class PreferenceDlg(wx.Dialog):
         self.cancel.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.apply.Bind(wx.EVT_BUTTON, self.OnApply)
 
-        hbox.Add(self.cancel, 0, wx.ALIGN_RIGHT, 10)
-        hbox.Add(self.apply, 0, wx.ALIGN_RIGHT | wx.LEFT, 10)
+        hbox.Add(self.cancel, 0, 0, 10)
+        hbox.Add(self.apply, 0, wx.LEFT, 10)
 
         vbox.Add(hbox, 0, wx.ALIGN_RIGHT | wx.TOP, 5)
         vbox.Add((10, 10), 0, wx.ALL | 30)
@@ -335,10 +335,8 @@ class AnonymousPanel(PreferencePanel):
         self.revert.Bind(wx.EVT_BUTTON, self.RevertState)
         self.store.Bind(wx.EVT_BUTTON, self.SaveState)
 
-        opts = wx.ALIGN_RIGHT | wx.TOP | wx.LEFT
-
-        hbox.Add(self.store, 0, opts, 10)
-        hbox.Add(self.revert, 0, opts, 10)
+        hbox.Add(self.store, 0, wx.TOP | wx.LEFT, 10)
+        hbox.Add(self.revert, 0, wx.TOP | wx.LEFT, 10)
 
         vbox.Add(self.anonList, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
         vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 15)
