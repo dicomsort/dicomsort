@@ -3,7 +3,7 @@ import re
 import wx
 
 from threading import Thread
-from six.moves.urllib.request import urlopen
+from urllib.request import urlopen
 
 from dicomsort.gui import events
 

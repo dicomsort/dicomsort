@@ -1,11 +1,10 @@
-import collections
 import itertools
 import os
 import pydicom
 import shutil
 
-from six import ensure_text
-from six.moves import queue
+from collections import abc
+from queue import Empty, Queue
 from threading import Thread
 
 from dicomsort import errors, utils
@@ -21,7 +20,7 @@ class Dicom:
         Takes a dicom filename in and returns instance that can be used to sort
         """
         # Be sure to do encoding because Windows sucks
-        self.filename = ensure_text(filename)
+        self.filename = filename
 
         # Load the DICOM object
         if dcm:
@@ -45,7 +44,7 @@ class Dicom:
         """
         try:
             item = self.overrides[attr]
-            if isinstance(item, collections.Callable):
+            if isinstance(item, abc.Callable):
                 return item()
 
             return item
@@ -300,7 +299,7 @@ class Sorter(Thread):
                 self.sort_image(filename)
                 self.increment_counter()
             # TODO: Rescue any other errors and quarantine the files
-            except queue.Empty:
+            except Empty:
                 return
 
 
@@ -318,7 +317,7 @@ class DicomSorter():
         self.folders = []
         self.filename = '%(ImageType)s (%(InstanceNumber)04d)%(FileExtension)s'
 
-        self.queue = queue.Queue()
+        self.queue = Queue()
 
         self.sorters = list()
 
@@ -331,7 +330,7 @@ class DicomSorter():
 
     def is_sorting(self):
         for sorter in self.sorters:
-            if sorter.isAlive():
+            if sorter.is_alive():
                 return True
 
         return False

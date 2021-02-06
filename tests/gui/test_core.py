@@ -1,7 +1,6 @@
 import os
 
-from dicomsort.gui.anonymizer import AnonymizeList
-from dicomsort.gui.core import MainFrame, sys, wx, QuickRenameDlg, errors
+from dicomsort.gui.core import MainFrame, sys, wx, errors
 from dicomsort.gui.events import CounterEvent, SortEvent, PathEvent
 from tests.shared import WxTestCase
 

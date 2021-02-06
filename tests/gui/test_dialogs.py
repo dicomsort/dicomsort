@@ -2,10 +2,17 @@ import dicomsort
 import os
 import sys
 
-from six.moves.urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import parse_qs, urlparse
 
 from dicomsort.gui.anonymizer import AnonymizeList
-from dicomsort.gui.dialogs import CrashReporter, webbrowser, AboutDlg, SeriesRemoveWarningDlg, UpdateDlg, QuickRenameDlg
+from dicomsort.gui.dialogs import (
+    AboutDlg,
+    CrashReporter,
+    QuickRenameDlg,
+    SeriesRemoveWarningDlg,
+    UpdateDlg,
+    webbrowser,
+)
 from tests.shared import WxTestCase
 
 

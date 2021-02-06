@@ -1,4 +1,3 @@
-import six
 import wx
 import wx.py
 import configobj
@@ -105,7 +104,7 @@ class MiscPanel(PreferencePanel):
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
-        self.revert = wx.Button(self, -1, "Revert to Default", size=(120, -1))
+        self.revert = wx.Button(self, -1, "Restore Default", size=(120, -1))
         self.Bind(wx.EVT_BUTTON, self.RevertState, self.revert)
         self.Bind(wx.EVT_BUTTON, self.SaveState, self.store)
 
@@ -144,11 +143,11 @@ class FileNamePanel(PreferencePanel):
 
         self.custom = wx.TextCtrl(self, -1, '',
                                   size=(300, -1))
-        vbox.Add(self.custom, 0, wx.ALIGN_BOTTOM | wx.LEFT, 50)
+        vbox.Add(self.custom, 0, wx.LEFT, 50)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
-        self.revert = wx.Button(self, -1, "Revert to Default", size=(120, -1))
+        self.revert = wx.Button(self, -1, "Restore Default", size=(120, -1))
         self.Bind(wx.EVT_BUTTON, self.RevertState, self.revert)
         self.Bind(wx.EVT_BUTTON, self.SaveState, self.store)
 
@@ -239,8 +238,8 @@ class PreferenceDlg(wx.Dialog):
         self.cancel.Bind(wx.EVT_BUTTON, self.OnCancel)
         self.apply.Bind(wx.EVT_BUTTON, self.OnApply)
 
-        hbox.Add(self.cancel, 0, wx.ALIGN_RIGHT, 10)
-        hbox.Add(self.apply, 0, wx.ALIGN_RIGHT | wx.LEFT, 10)
+        hbox.Add(self.cancel, 0, 0, 10)
+        hbox.Add(self.apply, 0, wx.LEFT, 10)
 
         vbox.Add(hbox, 0, wx.ALIGN_RIGHT | wx.TOP, 5)
         vbox.Add((10, 10), 0, wx.ALL | 30)
@@ -287,15 +286,15 @@ class AnonymousPanel(PreferencePanel):
         # Keep only the empty ones
         for i, val in enumerate(self.anonList.FindStrings(defFields)):
             if val is None:
-                fields.append(six.ensure_text(defFields[i]))
+                fields.append(defFields[i])
 
         # Add to this list the newly checked ones
         fields.extend(self.anonList.GetCheckedStrings(0))
 
-        dat = {'Fields': fields,
-               'Replacements': self.anonList.GetReplacementDict()}
-
-        return dat
+        return {
+            'Fields': fields,
+            'Replacements': self.anonList.GetReplacementDict()
+        }
 
     def RevertState(self, *evnt):
         # Update self.config
@@ -331,14 +330,12 @@ class AnonymousPanel(PreferencePanel):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
-        self.revert = wx.Button(self, -1, "Revert to Defaults", size=(120, -1))
+        self.revert = wx.Button(self, -1, "Restore Default", size=(120, -1))
         self.revert.Bind(wx.EVT_BUTTON, self.RevertState)
         self.store.Bind(wx.EVT_BUTTON, self.SaveState)
 
-        opts = wx.ALIGN_RIGHT | wx.TOP | wx.LEFT
-
-        hbox.Add(self.store, 0, opts, 10)
-        hbox.Add(self.revert, 0, opts, 10)
+        hbox.Add(self.store, 0, wx.TOP | wx.LEFT, 10)
+        hbox.Add(self.revert, 0, wx.TOP | wx.LEFT, 10)
 
         vbox.Add(self.anonList, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
         vbox.Add(hbox, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.BOTTOM, 15)

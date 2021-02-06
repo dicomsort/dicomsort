@@ -1,13 +1,11 @@
 import os
 import re
-import six
 import wx
 
 import wx.grid
 import wx.html
 
-from wx.lib.mixins.listctrl import CheckListCtrlMixin, TextEditMixin
-from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
+from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin, TextEditMixin
 
 from dicomsort.gui import errors, events
 from dicomsort.gui.dialogs import SeriesRemoveWarningDlg
@@ -22,7 +20,7 @@ class FileDropTarget(wx.FileDropTarget):
         self.callback(x, y, filenames)
 
 
-class CustomDataTable(wx.grid.PyGridTableBase):
+class CustomDataTable(wx.grid.GridTableBase):
     def __init__(self, data):
         super(CustomDataTable, self).__init__()
 
@@ -113,8 +111,7 @@ class CustomDataTable(wx.grid.PyGridTableBase):
         return self.CanGetValueAs(row, col, typeName)
 
 
-class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
-                    CheckListCtrlMixin, TextEditMixin):
+class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, TextEditMixin):
 
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT)
@@ -122,12 +119,13 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
 
         # The order here matter because we favor Check over Edit
         TextEditMixin.__init__(self)
-        CheckListCtrlMixin.__init__(self)
 
         self.editColumns = []
 
+        self.EnableCheckBoxes()
+
     def _GetCheckedIndexes(self):
-        return [i for i in range(self.ItemCount) if self.IsChecked(i)]
+        return [i for i in range(self.ItemCount) if self.IsItemChecked(i)]
 
     def ClearColumn(self, col):
         [self.SetItem(i, col, '') for i in range(self.ItemCount)]
@@ -165,19 +163,17 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
         return [self.GetStringItem(r, col) for r in self._GetCheckedIndexes()]
 
     def FindStrings(self, strings, col=0):
-        strings = [six.ensure_text(string) for string in strings]
-
         fields = [item.Text for item in self.GetItemList(col)]
 
-        inds = list()
+        indices = list()
 
         for string in strings:
             try:
-                inds.append(fields.index(six.ensure_text(string)))
+                indices.append(fields.index(string))
             except ValueError:
-                inds.append(None)
+                indices.append(None)
 
-        return inds
+        return indices
 
     def GetItemList(self, column=None):
         if column is None:
@@ -379,8 +375,7 @@ class FieldSelector(wx.Panel):
         vboxOptions.Add(self.titleL, 0, wx.ALIGN_CENTER_HORIZONTAL)
         vboxOptions.Add(self.options, 1,
                         wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 10)
-        vboxOptions.Add(self.search, 0,
-                        wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
+        vboxOptions.Add(self.search, 0, wx.EXPAND | wx.ALL, 10)
 
         # BoxSizer containing the selected options
         vboxSelect = wx.BoxSizer(wx.VERTICAL)

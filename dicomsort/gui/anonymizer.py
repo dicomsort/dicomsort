@@ -7,7 +7,7 @@ class AnonymizeList(widgets.CheckListCtrl):
         super(AnonymizeList, self).__init__(*args, **kwargs)
 
         self.InsertColumn(0, 'DICOM Property', width=200)
-        self.InsertColumn(1, 'Replacement Value')
+        self.InsertColumn(1, 'Replacement Value', width=-1)
 
         self.SetColumnEditable(1)
 
@@ -22,28 +22,24 @@ class AnonymizeList(widgets.CheckListCtrl):
         return res
 
     def GetAnonDict(self):
-
-        anonDict = dict()
-
-        for key, val in self.GetCheckedStrings():
-            anonDict[key] = val
-
-        return anonDict
+        return {k: v for k, v in self.GetCheckedStrings()}
 
     def SetReplacementDict(self, dictionary):
         keys = list(dictionary.keys())
-        inds = self.FindStrings(keys, 0)
+        indices = self.FindStrings(keys, 0)
 
-        for i, row in enumerate(inds):
+        for i, row in enumerate(indices):
             if row is None:
                 continue
 
             self.SetItem(row, 1, dictionary[keys[i]])
 
     def CheckStrings(self, strings, col=0):
-        inds = [ind for ind in self.FindStrings(strings, col)
-                if ind is not None]
-        self.CheckItems(inds)
+        for index in self.FindStrings(strings, col):
+            if index is None:
+                continue
+
+            self.CheckItem(index)
 
     def GetDicomField(self, row):
         return self.GetItem(row, 0).Text

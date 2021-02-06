@@ -3,7 +3,7 @@ import pydicom
 import pytest
 import time
 
-from six.moves.queue import Queue
+from queue import Queue
 
 from dicomsort.dicomsorter import Dicom, DicomSorter, Sorter
 from dicomsort.errors import DicomFolderError
@@ -95,7 +95,6 @@ class TestDicom:
         dcm.series_first = True
 
         assert dcm._series_description() == 'Series0001_My Series'
-
 
     def test_get_patient_age_with_field(self, dicom_generator):
         age = '10Y'
@@ -579,7 +578,7 @@ class TestDicomSorter:
     def test_is_sorting_active_sorters(self, mocker):
         sorter = DicomSorter()
 
-        patch = mocker.patch.object(Sorter, 'isAlive')
+        patch = mocker.patch.object(Sorter, 'is_alive')
         patch.return_value = True
 
         # Generate some sorters
@@ -591,7 +590,7 @@ class TestDicomSorter:
     def test_is_sorting_inactive_sorters(self, mocker):
         sorter = DicomSorter()
 
-        patch = mocker.patch.object(Sorter, 'isAlive')
+        patch = mocker.patch.object(Sorter, 'is_alive')
         patch.return_value = False
 
         # Generate some sorters

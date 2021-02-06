@@ -1,45 +1,60 @@
+template: &template
+  working_directory: ~/repo
+  steps:
+    - checkout
+    - restore_cache:
+        keys:
+          - pip-packages-{{ .Branch }}
+          - pip-packages-
+    - run:
+        name: Install Dependencies
+        command: |
+          sudo apt install --quiet libgtk-3-dev libnotify-dev libsdl2-dev
+          sudo pip install --progress-bar off -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/debian-10/ wxpython==4.1.1
+          sudo pip install --progress-bar off -r requirements.txt
+          sudo pip install -e .
+    - run:
+        name: Setup Code Climate test-reporter
+        command: |
+          # download test reporter as a static binary
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          chmod +x ./cc-test-reporter
+    - save_cache:
+        paths:
+          - ~/.cache/pip
+        key: pip-packages-{{ .Branch }}
+    - run:
+        name: Run tests
+        command: |
+          ./cc-test-reporter before-build
+          make test
+          ./cc-test-reporter after-build --coverage-input-type coverage.py --exit-code=$?
+
+
 version: 2
 workflows:
   version: 2
+  lint:
+    jobs:
+      - lint
   test:
     jobs:
-      - test-2.7
-      - test-3.5
+      - test-3.7
 jobs:
-  test-2.7: &test-template
+  lint:
     docker:
-      - image: circleci/python:2.7-stretch-browsers
+      - image: circleci/python:3.7
     working_directory: ~/repo
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - pip-packages-{{ .Branch }}
-            - pip-packages-
       - run:
-          name: Install Dependencies
-          command: |
-            sudo apt install --quiet libgtk-3-dev libnotify-dev libsdl1.2-dev
-            sudo pip install --progress-bar off -U -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/debian-9/ wxpython==4.0.7
-            sudo pip install --progress-bar off -r requirements.txt
-            sudo pip install -e .
+          name: Install flake8
+          command: sudo pip install flake8
       - run:
-          name: Setup Code Climate test-reporter
-          command: |
-            # download test reporter as a static binary
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-      - save_cache:
-          paths:
-            - ~/.cache/pip
-          key: pip-packages-{{ .Branch }}
-      - run:
-          name: Run tests
-          command: |
-            ./cc-test-reporter before-build
-            make test
-            ./cc-test-reporter after-build --coverage-input-type coverage.py --exit-code=$?
-  test-3.5:
-    <<: *test-template
+          name: Run flake8
+          command: flake8
+
+  test-3.7:
+    <<: *template
     docker:
-      - image: circleci/python:3.5-stretch-browsers
+      - image: circleci/python:3.7-buster-browsers

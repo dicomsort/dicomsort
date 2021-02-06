@@ -4,10 +4,11 @@ import traceback
 import webbrowser
 import wx
 
+from urllib.parse import quote
+
 from dicomsort.gui import icons
 from dicomsort.gui.help import helpHTML
 from dicomsort.gui.overrides import HtmlWindow
-from six.moves.urllib.parse import quote
 from wx.adv import AboutBox, AboutDialogInfo
 from wx.lib.agw import hyperlink
 
@@ -21,7 +22,7 @@ class AboutDlg:
         self.info.SetName('DICOM Sorting')
         self.info.SetVersion(dicomsort.__version__)
 
-        self.info.SetCopyright('(C) 2011 - 2020 Jonathan Suever')
+        self.info.SetCopyright('(C) 2011 - 2021 Jonathan Suever')
         self.info.SetWebSite(dicomsort.__website__)
 
         self.GenerateDescription()
