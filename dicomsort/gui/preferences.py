@@ -105,7 +105,7 @@ class MiscPanel(PreferencePanel):
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
-        self.revert = wx.Button(self, -1, "Revert to Default", size=(120, -1))
+        self.revert = wx.Button(self, -1, "Restore Default", size=(120, -1))
         self.Bind(wx.EVT_BUTTON, self.RevertState, self.revert)
         self.Bind(wx.EVT_BUTTON, self.SaveState, self.store)
 
@@ -148,7 +148,7 @@ class FileNamePanel(PreferencePanel):
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
-        self.revert = wx.Button(self, -1, "Revert to Default", size=(120, -1))
+        self.revert = wx.Button(self, -1, "Restore Default", size=(120, -1))
         self.Bind(wx.EVT_BUTTON, self.RevertState, self.revert)
         self.Bind(wx.EVT_BUTTON, self.SaveState, self.store)
 
@@ -331,7 +331,7 @@ class AnonymousPanel(PreferencePanel):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
         self.store = wx.Button(self, -1, "Set as Default", size=(120, -1))
-        self.revert = wx.Button(self, -1, "Revert to Defaults", size=(120, -1))
+        self.revert = wx.Button(self, -1, "Restore Default", size=(120, -1))
         self.revert.Bind(wx.EVT_BUTTON, self.RevertState)
         self.store.Bind(wx.EVT_BUTTON, self.SaveState)
 

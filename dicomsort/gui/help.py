@@ -31,7 +31,7 @@ remove sensitive patient data from the DICOM metadata. To do this, select the
 <strong>Anonymize</strong> checkbox.  Pressing this button will bring up a
 window that will allow you to select which fields you do not want included in
 the output images. You can always revert back to the default properties using
-the <strong>Revert to Defaults</strong> button.  <br><br> If you wish to change
+the <strong>Restore Default</strong> button.  <br><br> If you wish to change
 the properties that are considered to be private by default, you can edit the
 anon.inc file located in the application directory. Just edit this file using
 any text editor and make sure to include one field per line in the file. The
