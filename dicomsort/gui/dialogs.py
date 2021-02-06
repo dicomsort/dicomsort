@@ -4,10 +4,11 @@ import traceback
 import webbrowser
 import wx
 
+from urllib.parse import quote
+
 from dicomsort.gui import icons
 from dicomsort.gui.help import helpHTML
 from dicomsort.gui.overrides import HtmlWindow
-from six.moves.urllib.parse import quote
 from wx.adv import AboutBox, AboutDialogInfo
 from wx.lib.agw import hyperlink
 

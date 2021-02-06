@@ -1,6 +1,5 @@
 import os
 import re
-import six
 import wx
 
 import wx.grid
@@ -164,19 +163,17 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, TextEditMixin):
         return [self.GetStringItem(r, col) for r in self._GetCheckedIndexes()]
 
     def FindStrings(self, strings, col=0):
-        strings = [six.ensure_text(string) for string in strings]
-
         fields = [item.Text for item in self.GetItemList(col)]
 
-        inds = list()
+        indices = list()
 
         for string in strings:
             try:
-                inds.append(fields.index(six.ensure_text(string)))
+                indices.append(fields.index(string))
             except ValueError:
-                inds.append(None)
+                indices.append(None)
 
-        return inds
+        return indices
 
     def GetItemList(self, column=None):
         if column is None:

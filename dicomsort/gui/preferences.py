@@ -1,4 +1,3 @@
-import six
 import wx
 import wx.py
 import configobj
@@ -287,7 +286,7 @@ class AnonymousPanel(PreferencePanel):
         # Keep only the empty ones
         for i, val in enumerate(self.anonList.FindStrings(defFields)):
             if val is None:
-                fields.append(six.ensure_text(defFields[i]))
+                fields.append(defFields[i])
 
         # Add to this list the newly checked ones
         fields.extend(self.anonList.GetCheckedStrings(0))

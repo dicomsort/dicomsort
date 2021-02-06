@@ -2,7 +2,7 @@ import dicomsort
 import mock
 import wx
 
-from six.moves import StringIO
+from io import StringIO
 
 from dicomsort.gui import update
 from tests.shared import WxTestCase

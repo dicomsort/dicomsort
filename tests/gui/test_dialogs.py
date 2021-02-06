@@ -2,7 +2,7 @@ import dicomsort
 import os
 import sys
 
-from six.moves.urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, urlparse
 
 from dicomsort.gui.anonymizer import AnonymizeList
 from dicomsort.gui.dialogs import (

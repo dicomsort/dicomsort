@@ -6,6 +6,5 @@ pydicom==1.4.2
 pytest-cov==2.11.1
 pytest-mock==3.5.1
 pytest==6.2.2
-six==1.14.0
 twine==1.15.0
 wxpython==4.1.1
