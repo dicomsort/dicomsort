@@ -6,8 +6,7 @@ import wx
 import wx.grid
 import wx.html
 
-from wx.lib.mixins.listctrl import CheckListCtrlMixin, TextEditMixin
-from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin
+from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin, TextEditMixin
 
 from dicomsort.gui import errors, events
 from dicomsort.gui.dialogs import SeriesRemoveWarningDlg
@@ -113,8 +112,7 @@ class CustomDataTable(wx.grid.PyGridTableBase):
         return self.CanGetValueAs(row, col, typeName)
 
 
-class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
-                    CheckListCtrlMixin, TextEditMixin):
+class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, TextEditMixin):
 
     def __init__(self, parent):
         wx.ListCtrl.__init__(self, parent, -1, style=wx.LC_REPORT)
@@ -122,9 +120,10 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin,
 
         # The order here matter because we favor Check over Edit
         TextEditMixin.__init__(self)
-        CheckListCtrlMixin.__init__(self)
 
         self.editColumns = []
+
+        self.EnableCheckBoxes()
 
     def _GetCheckedIndexes(self):
         return [i for i in range(self.ItemCount) if self.IsChecked(i)]

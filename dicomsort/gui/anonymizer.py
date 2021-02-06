@@ -1,3 +1,5 @@
+import wx
+
 from dicomsort.gui import widgets
 
 
@@ -7,7 +9,7 @@ class AnonymizeList(widgets.CheckListCtrl):
         super(AnonymizeList, self).__init__(*args, **kwargs)
 
         self.InsertColumn(0, 'DICOM Property', width=200)
-        self.InsertColumn(1, 'Replacement Value')
+        self.InsertColumn(1, 'Replacement Value', width=-1)
 
         self.SetColumnEditable(1)
 

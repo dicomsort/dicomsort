@@ -292,10 +292,10 @@ class AnonymousPanel(PreferencePanel):
         # Add to this list the newly checked ones
         fields.extend(self.anonList.GetCheckedStrings(0))
 
-        dat = {'Fields': fields,
-               'Replacements': self.anonList.GetReplacementDict()}
-
-        return dat
+        return {
+            'Fields': fields,
+            'Replacements': self.anonList.GetReplacementDict()
+        }
 
     def RevertState(self, *evnt):
         # Update self.config
