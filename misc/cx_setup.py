@@ -119,7 +119,7 @@ if __name__ == '__main__':
               'include_files': [WindowsConfiguration.icons, ],
           },
           'bdist_mac': {
-              'bundle_name': meta.name,
+              'bundle_name': meta.pretty_name,
               'iconfile': MacConfiguration.icons
           },
           'bdist_dmg': {
