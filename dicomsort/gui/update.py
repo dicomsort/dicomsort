@@ -7,7 +7,7 @@ from urllib.request import urlopen
 
 from dicomsort.gui import events
 
-VERSION_URL = dicomsort.__website__ + '/current'
+meta = dicomsort.Metadata
 
 
 def version_tuple(version):
@@ -29,7 +29,7 @@ VERSION_TUPLE = version_tuple(dicomsort.__version__)
 
 def latest_version():
     try:
-        f = urlopen(VERSION_URL)
+        f = urlopen(meta.version_url)
         version = f.read().rstrip()
 
         if '404' in version:

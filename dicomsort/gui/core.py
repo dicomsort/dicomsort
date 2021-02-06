@@ -4,6 +4,7 @@ import sys
 import wx
 
 from dicomsort import config
+from dicomsort import Metadata as meta
 from dicomsort.dicomsorter import DicomSorter
 from dicomsort.errors import DicomFolderError
 from dicomsort.gui import errors, events, icons, preferences, widgets
@@ -24,7 +25,7 @@ def except_hook(exc_type, value, tb):
 class DicomSort(wx.App):
     def __init__(self, *args):
         wx.App.__init__(self, *args)
-        self.frame = MainFrame(None, -1, "DicomSort", size=(500, 500))
+        self.frame = MainFrame(None, -1, meta.pretty_name, size=(500, 500))
         self.SetTopWindow(self.frame)
         self.frame.Show()
 
@@ -67,7 +68,7 @@ class MainFrame(wx.Frame):
             self.config.write()
 
         self.prefDlg = preferences.PreferenceDlg(
-            self, -1, "DicomSort Preferences",
+            self, -1, '{} Preferences'.format(meta.pretty_name),
             config=self.config, size=(400, 400)
         )
 
@@ -210,7 +211,8 @@ class MainFrame(wx.Frame):
         pos = (pos[0] + size[0], pos[1])
 
         self.debug = wx.Frame(
-            self, -1, 'DicomSort DEBUGGER', size=(700, 500), pos=pos
+            self, -1, '{} DEBUGGER'.format(meta.pretty_name),
+            size=(700, 500), pos=pos
         )
 
         self.crust = wx.py.crust.Crust(self.debug)

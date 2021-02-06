@@ -58,7 +58,7 @@ class TestCrashReporter(WxTestCase):
 
         assert parsed_url.scheme == 'https'
         assert parsed_url.netloc == 'github.com'
-        assert parsed_url.path == '/suever/dicomsort/issues/new'
+        assert parsed_url.path == '/dicomsort/dicomsort/issues/new'
 
         query_params = parse_qs(parsed_url.query)
 
@@ -73,7 +73,7 @@ class TestUpdateDlg(WxTestCase):
 
     def test_on_update(self, mocker):
         dlg = UpdateDlg(self.frame, '1.2.3')
-        url = dicomsort.__website__
+        url = dicomsort.Metadata.website
 
         mock = mocker.patch.object(dlg.link, 'GotoURL')
 
@@ -88,8 +88,8 @@ class TestAboutDialog(WxTestCase):
 
         # Just a few sanity checks
         assert dlg.info.GetVersion() == dicomsort.__version__
-        assert dlg.info.GetName() == 'DICOM Sorting'
-        assert dlg.info.GetWebSiteURL() == dicomsort.__website__
+        assert dlg.info.GetName() == 'DICOM Sort'
+        assert dlg.info.GetWebSiteURL() == dicomsort.Metadata.website
 
 
 class TestSeriesRemoveWarningDlg(WxTestCase):
