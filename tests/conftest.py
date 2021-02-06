@@ -1,6 +1,6 @@
 import pytest
 
-from pydicom.dataset import Dataset, FileDataset, FileMetaDataset
+from pydicom.dataset import FileDataset, FileMetaDataset
 
 
 @pytest.fixture(scope='function')
