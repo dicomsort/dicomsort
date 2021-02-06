@@ -21,7 +21,7 @@ class FileDropTarget(wx.FileDropTarget):
         self.callback(x, y, filenames)
 
 
-class CustomDataTable(wx.grid.PyGridTableBase):
+class CustomDataTable(wx.grid.GridTableBase):
     def __init__(self, data):
         super(CustomDataTable, self).__init__()
 

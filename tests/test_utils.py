@@ -1,8 +1,6 @@
 import os
 import unittest
 
-from pydicom.dataset import Dataset, FileDataset
-
 from dicomsort import utils
 
 

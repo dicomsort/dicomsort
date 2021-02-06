@@ -9,7 +9,7 @@ parent = os.path.realpath(os.path.join(current, '..'))
 
 sys.path.insert(0, parent)
 
-from dicomsort.gui.core import DicomSort
+from dicomsort.gui.core import DicomSort  # noqa: E402
 
 
 def main():

@@ -1,9 +1,9 @@
-import collections
 import itertools
 import os
 import pydicom
 import shutil
 
+from collections import abc
 from six import ensure_text
 from six.moves import queue
 from threading import Thread
@@ -45,7 +45,7 @@ class Dicom:
         """
         try:
             item = self.overrides[attr]
-            if isinstance(item, collections.Callable):
+            if isinstance(item, abc.Callable):
                 return item()
 
             return item

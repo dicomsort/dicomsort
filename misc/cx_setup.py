@@ -62,18 +62,18 @@ else:
 def shortcut(name, executable, type, directory):
     target = "[TARGETDIR]{}".format(executable)
     return (
-         type,        # Shortcut
-         directory,   # Directory_
-         name,        # Name
-         "TARGETDIR", # Component_
-         target,      # Target
-         None,        # Arguments
-         None,        # Description
-         None,        # Hotkey
-         None,        # Icon
-         None,        # IconIndex
-         None,        # ShowCmd
-         'TARGETDIR'  # WkDir
+         type,         # Shortcut
+         directory,    # Directory_
+         name,         # Name
+         "TARGETDIR",  # Component_
+         target,       # Target
+         None,         # Arguments
+         None,         # Description
+         None,         # Hotkey
+         None,         # Icon
+         None,         # IconIndex
+         None,         # ShowCmd
+         'TARGETDIR'   # WkDir
      )
 
 
@@ -114,8 +114,18 @@ if __name__ == '__main__':
           'bdist_msi': {
               'data': {
                   'Shortcut': [
-                      shortcut(NAME, 'DicomSort.exe', 'DesktopShortcut', 'DesktopFolder'),
-                      shortcut(NAME, 'DicomSort.exe', 'ApplicationStartMenuShortcut', 'StartMenuFolder')
+                      shortcut(
+                          NAME,
+                          'DicomSort.exe',
+                          'DesktopShortcut',
+                          'DesktopFolder'
+                      ),
+                      shortcut(
+                          NAME,
+                          'DicomSort.exe',
+                          'ApplicationStartMenuShortcut',
+                          'StartMenuFolder'
+                      )
                   ]
               }
           },

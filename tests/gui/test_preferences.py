@@ -1,5 +1,4 @@
 import io
-import wx
 
 from configobj import ConfigObj
 from dicomsort.gui.preferences import MiscPanel, FileNamePanel, PreferenceDlg

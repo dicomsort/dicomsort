@@ -96,7 +96,6 @@ class TestDicom:
 
         assert dcm._series_description() == 'Series0001_My Series'
 
-
     def test_get_patient_age_with_field(self, dicom_generator):
         age = '10Y'
         filename, dataset = dicom_generator(PatientAge=age)

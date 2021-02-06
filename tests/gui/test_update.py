@@ -4,7 +4,7 @@ import wx
 
 from six.moves import StringIO
 
-from dicomsort.gui import events, update
+from dicomsort.gui import update
 from tests.shared import WxTestCase
 
 
@@ -16,7 +16,8 @@ class TestLatestVersion:
         assert update.latest_version() == version
 
     def test_404_endpoint(self, mocker):
-        mocker.patch.object(update, 'urlopen', return_value=StringIO('404 Page Not Found'))
+        stubbed_response = StringIO('404 Page Not Found')
+        mocker.patch.object(update, 'urlopen', return_value=stubbed_response)
 
         assert update.latest_version() is None
 
@@ -43,15 +44,17 @@ class TestUpdateAvailable:
 
     def test_new_version(self, mocker):
         current = update.VERSION_TUPLE
-        latest_version_tuple = [str(x) for x in (current[0] + 1, ) + current[1:]]
-        latest_version = '.'.join(latest_version_tuple)
-        mocker.patch.object(update, 'latest_version', return_value=latest_version)
+        latest_version_tuple = [
+            str(x) for x in (current[0] + 1, ) + current[1:]
+        ]
+        ver = '.'.join(latest_version_tuple)
+        mocker.patch.object(update, 'latest_version', return_value=ver)
 
-        assert update.update_available() == latest_version
+        assert update.update_available() == ver
 
     def test_same_version(self, mocker):
-        latest_version = dicomsort.__version__
-        mocker.patch.object(update, 'latest_version', return_value=latest_version)
+        ver = dicomsort.__version__
+        mocker.patch.object(update, 'latest_version', return_value=ver)
 
         assert update.update_available() is None
 

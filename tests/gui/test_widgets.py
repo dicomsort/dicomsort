@@ -1,8 +1,9 @@
-import dicomsort
 import wx
 
 from tests.shared import WxTestCase
-from dicomsort.gui.widgets import errors, FieldSelector, PathEditCtrl, CustomDataTable
+from dicomsort.gui.widgets import (
+    errors, FieldSelector, PathEditCtrl, CustomDataTable
+)
 
 
 class TestFieldSelector(WxTestCase):
@@ -94,7 +95,8 @@ class TestFieldSelector(WxTestCase):
         selector.SelectItem()
 
         # SeriesDescription should remain at the bottom
-        assert selector.selected.GetStrings() == ['PatientName', 'SeriesDescription']
+        expected = ['PatientName', 'SeriesDescription']
+        assert selector.selected.GetStrings() == expected
 
         # Select another field
         selector.options.SetSelection(1)
@@ -103,7 +105,8 @@ class TestFieldSelector(WxTestCase):
         selector.SelectItem()
 
         # SeriesDescription should remain at the bottom
-        assert selector.selected.GetStrings() == ['PatientName', 'PatientID', 'SeriesDescription']
+        expected = ['PatientName', 'PatientID', 'SeriesDescription']
+        assert selector.selected.GetStrings() == expected
 
     def test_set_options(self):
         original_choices = ['one', 'two', 'three']
@@ -185,7 +188,8 @@ class TestFieldSelector(WxTestCase):
 
         selector.DeselectItem()
 
-        assert selector.selected.GetStrings() == ['PatientName', 'SeriesDescription']
+        expected = ['PatientName', 'SeriesDescription']
+        assert selector.selected.GetStrings() == expected
 
     def test_deselect_item_no_selection(self):
         choices = ['PatientName', 'PatientID', 'SeriesDescription']
@@ -201,7 +205,11 @@ class TestFieldSelector(WxTestCase):
         selector = FieldSelector(self.frame, choices=choices)
         selector.selected.SetItems(choices)
 
-        expected = ['%(PatientName)s', '%(PatientID)s', '%(SeriesDescription)s']
+        expected = [
+            '%(PatientName)s',
+            '%(PatientID)s',
+            '%(SeriesDescription)s',
+        ]
         assert selector.GetFormatFields() == expected
 
     def test_filter(self):
@@ -213,6 +221,7 @@ class TestFieldSelector(WxTestCase):
         selector.Filter('atient')
 
         assert selector.options.GetStrings() == ['PatientName', 'PatientID']
+
 
 class TestPathEditCtrl(WxTestCase):
     def test_constructor(self):
@@ -254,11 +263,10 @@ class TestPathEditCtrl(WxTestCase):
         ctrl = PathEditCtrl(self.frame)
         ctrl.SetPaths([goodpath, badpath1, badpath2])
 
-        mock.assert_called_once_with(
-            'The Following directories are invalid paths: %s, %s' % (badpath1, badpath2),
-            'Invalid Paths',
-            parent=self.frame
-        )
+        msg = 'The Following directories are invalid paths: {}, {}'
+        msg = msg.format(badpath1, badpath2)
+
+        mock.assert_called_once_with(msg, 'Invalid Paths', parent=self.frame)
 
     def test_validate_path_single(self, tmpdir):
         path = str(tmpdir)
