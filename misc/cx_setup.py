@@ -123,7 +123,7 @@ if __name__ == '__main__':
               'iconfile': MacConfiguration.icons
           },
           'bdist_dmg': {
-              'volume_label': '-'.join([meta.name, meta.version])
+              'volume_label': '-'.join([meta.pretty_name, meta.version])
           }
         },
         executables=[
