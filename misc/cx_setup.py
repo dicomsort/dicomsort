@@ -1,9 +1,15 @@
-import dicomsort
 import os
 import sys
 
 from setuptools import find_packages
 from cx_Freeze import setup, Executable
+
+current = os.path.realpath(os.path.dirname(__file__))
+parent = os.path.realpath(os.path.join(current, '..'))
+
+sys.path.insert(0, parent)
+
+import dicomsort  # noqa: E402
 
 NAME = 'DICOM Sort'
 AUTHOR = 'Jonathan Suever'
