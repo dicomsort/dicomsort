@@ -31,6 +31,14 @@ ICON_DIR = 'icons'
 ICO_FILE = os.path.join(ICON_DIR, 'DSicon.ico')
 ICNS_FILE = os.path.join(ICON_DIR, 'DSicon.icns')
 
+EXCLUDED_MODULES = [
+    'numpy',
+    'PIL',
+    'pillow',
+    'test',
+    'tkinter',
+]
+
 CLASSIFIERS = [
     "License :: OSI Approved :: MIT License",
     "Intended Audience :: Developers",
@@ -115,7 +123,11 @@ if __name__ == '__main__':
         entry_points=ENTRY_POINTS,
         options={
           'build': {
-              'build_exe': OUTDIR
+              'build_exe': OUTDIR,
+
+          },
+          'build_exe': {
+              'excludes': EXCLUDED_MODULES,
           },
           'bdist_msi': {
               'data': {
