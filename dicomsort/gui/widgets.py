@@ -126,7 +126,7 @@ class CheckListCtrl(wx.ListCtrl, ListCtrlAutoWidthMixin, TextEditMixin):
         self.EnableCheckBoxes()
 
     def _GetCheckedIndexes(self):
-        return [i for i in range(self.ItemCount) if self.IsChecked(i)]
+        return [i for i in range(self.ItemCount) if self.IsItemChecked(i)]
 
     def ClearColumn(self, col):
         [self.SetItem(i, col, '') for i in range(self.ItemCount)]
