@@ -67,5 +67,4 @@ provide feedback via the [Github Issues](https://github.com/suever/dicomsort/iss
 
 ## License
 This software is licensed under the MIT License
-Copyright (C) 2011 - 2020  Jonathan Suever
-
+Copyright (C) 2011 - 2021  Jonathan Suever

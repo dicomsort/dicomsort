@@ -22,7 +22,7 @@ class AboutDlg:
         self.info.SetName('DICOM Sorting')
         self.info.SetVersion(dicomsort.__version__)
 
-        self.info.SetCopyright('(C) 2011 - 2020 Jonathan Suever')
+        self.info.SetCopyright('(C) 2011 - 2021 Jonathan Suever')
         self.info.SetWebSite(dicomsort.__website__)
 
         self.GenerateDescription()
