@@ -1,5 +1,7 @@
+from dicomsort import Metadata as meta
+
 helpHTML = """
-<span style="fontsize:9px;"> <center><h3>DICOM Sorting Help</h3></center> <br>
+<span style="fontsize:9px;"> <center><h3>{} Help</h3></center> <br>
 <strong><u>Introduction</u></strong><br> This utility will sort images based
 upon DICOM header information.  The user is able to sort by multiple fields
 which are sent to the program when a directory of DICOM images is selected.
@@ -44,4 +46,4 @@ convention. Names will be preserved when the checkbox is ticked.  <br><br>
 folders that contain more images than just DICOM images (create an
 exception).</li> <li>Implement a preview of the values of selected DICOM
 properties</li> </ul>
-"""
+""".format(meta.pretty_name)
