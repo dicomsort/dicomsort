@@ -31,7 +31,6 @@ CLASSIFIERS = [
     "Intended Audience :: Science/Research",
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -93,8 +92,8 @@ if __name__ == '__main__':
         classifiers=CLASSIFIERS,
         packages=find_packages(),
         install_requires=[
-            'configobj >= 5.0.6',
-            'pydicom >= 1.3.0',
+            'configobj >= 5.0.0',
+            'pydicom >= 2.0.0',
             'wxpython >= 4.0.0',
         ],
         zip_safe=False,
