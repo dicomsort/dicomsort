@@ -1,6 +1,6 @@
 # DICOM Sort
 
-[![CircleCI](https://circleci.com/gh/suever/dicomsort.svg?style=svg)](https://circleci.com/gh/suever/dicomsort)
+[![CircleCI](https://circleci.com/gh/dicomsort/dicomsort.svg?style=svg)](https://circleci.com/gh/dicomsort/dicomsort)
 [![Maintainability](https://api.codeclimate.com/v1/badges/9814e4a5f1881ec25922/maintainability)](https://codeclimate.com/github/suever/dicomsort/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/9814e4a5f1881ec25922/test_coverage)](https://codeclimate.com/github/suever/dicomsort/test_coverage)
 [![PyPi version](https://pypip.in/v/dicomsort/badge.png)](https://pypi.org/project/dicomsort/)
