@@ -1,10 +1,10 @@
 configobj==5.0.6
-cx-freeze==6.5.1
+cx-freeze==6.5.3
 flake8==3.8.4
 mock==4.0.3
 pydicom==1.4.2
 pytest-cov==2.11.1
 pytest-mock==3.5.1
 pytest==6.2.2
-twine==1.15.0
+twine==3.3.0
 wxpython==4.1.1
