@@ -13,17 +13,20 @@ from wx.adv import AboutBox, AboutDialogInfo
 from wx.lib.agw import hyperlink
 
 
+meta = dicomsort.Metadata
+
+
 class AboutDlg:
 
     def __init__(self, parent=None):
         self.info = AboutDialogInfo()
         self.info.SetIcon(icons.about.GetIcon())
 
-        self.info.SetName('DICOM Sorting')
-        self.info.SetVersion(dicomsort.__version__)
+        self.info.SetName(meta.pretty_name)
+        self.info.SetVersion(meta.version)
 
-        self.info.SetCopyright('(C) 2011 - 2021 Jonathan Suever')
-        self.info.SetWebSite(dicomsort.__website__)
+        self.info.SetCopyright(meta.copyright)
+        self.info.SetWebSite(meta.website)
 
         self.GenerateDescription()
 
@@ -40,14 +43,11 @@ class AboutDlg:
 
 
 class CrashReporter(wx.Dialog):
-    TITLE = 'DICOM Sort Error'
-    ISSUE_URL = dicomsort.__repository__ + '/issues/new'
-
-    ISSUE_TEMPLATE = '**Traceback:**\n'
+    title = 'DICOM Sort Error'
 
     def __init__(self, parent, **kwargs):
         super(CrashReporter, self).__init__(
-            parent, -1, self.TITLE, size=(400, 400)
+            parent, -1, self.title, size=(400, 400)
         )
 
         self.type = kwargs.pop('type', None)
@@ -62,9 +62,7 @@ class CrashReporter(wx.Dialog):
         return '\n'.join(lines)
 
     def body(self):
-        ver = dicomsort.__version__
-
-        template = \
+        return \
             '#### Describe the Issue:\n' + \
             'A clear and concise description of what the bug is.\n\n' + \
             '#### Expected Behavior:\n' + \
@@ -72,20 +70,18 @@ class CrashReporter(wx.Dialog):
             '#### Steps to Reproduce:\n' + \
             'How to reproduce the issue.\n\n' + \
             '## Environment\n' + \
-            '#### DICOM Sort Version:\n{}\n\n'.format(ver) + \
+            '#### DICOM Sort Version:\n{}\n\n'.format(meta.version) + \
             '#### Operating System:\n{}\n\n'.format(' '.join(os.uname())) + \
             '#### Traceback:\n' + \
             '```\n' + \
             self.traceback() + \
             '\n```\n'
 
-        return template
-
     def create(self):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         text = ''.join([
-            'Dicom Sorting had a problem and crashed. ',
+            'Dicom Sort had a problem and crashed. ',
             'In order to help diagnose the problem, you can submit an ',
             'issue and include the traceback below:',
         ])
@@ -116,7 +112,7 @@ class CrashReporter(wx.Dialog):
         self.SetSizer(vbox)
 
     def on_file(self, *_event):
-        webbrowser.open(self.ISSUE_URL + '?body=' + quote(self.body()))
+        webbrowser.open(meta.issue_url + '?body=' + quote(self.body()))
 
     def on_button(self, event):
         if self.IsModal():
@@ -130,7 +126,7 @@ class HelpDlg(wx.Dialog):
     def __init__(self, parent=None, **kwargs):
 
         super(HelpDlg, self).__init__(
-            parent, -1, "DICOM Sorting Help",
+            parent, -1, '{} Help'.format(meta.pretty_name),
             style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.TAB_TRAVERSAL
         )
 
@@ -265,14 +261,15 @@ class UpdateDlg(wx.Dialog):
     def __init__(self, parent, version):
         super(UpdateDlg, self).__init__(parent, size=(300, 170), style=wx.OK)
         message = ''.join([
-            "A new version of DICOM Sorting is available.\n",
-            "You are running Version %s and the newest is %s.\n"
+            'A new version of {} is available.\n'.format(meta.pretty_name),
+            'You are running Version %s and the newest is %s.\n'
         ])
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         head = wx.StaticText(
-            self, -1, label="Update Available", style=wx.ALIGN_CENTER)
+            self, -1, label='Update Available', style=wx.ALIGN_CENTER
+        )
         head.SetFont(wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD))
 
         vbox.Add(head, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 15)
@@ -283,9 +280,9 @@ class UpdateDlg(wx.Dialog):
         vbox.Add(txt, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
 
         self.link = hyperlink.HyperLinkCtrl(self, -1)
-        self.link.SetURL(URL=dicomsort.__website__)
+        self.link.SetURL(URL=meta.website)
         self.link.SetLabel(label='Click here to obtain the update')
-        self.link.SetToolTip(dicomsort.__website__)
+        self.link.SetToolTip(meta.website)
         self.link.AutoBrowse(False)
 
         self.Bind(hyperlink.EVT_HYPERLINK_LEFT, self.OnUpdate, self.link)
