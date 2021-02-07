@@ -120,7 +120,11 @@ if __name__ == '__main__':
           },
           'bdist_mac': {
               'bundle_name': meta.pretty_name,
-              'iconfile': MacConfiguration.icons
+              'iconfile': MacConfiguration.icons,
+              'plist_items': [
+                  # Necessary to support high DPI displays
+                  ('NSPrincipalClass', 'NSApplication'),
+              ]
           },
           'bdist_dmg': {
               'volume_label': '-'.join([meta.pretty_name, meta.version])
