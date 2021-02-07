@@ -2,7 +2,7 @@ import os
 
 from typing import Any, Dict, List
 
-__version__ = '3.0.0rc1'
+__version__ = '3.0.0'
 
 
 # Project metadata
