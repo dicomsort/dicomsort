@@ -1,6 +1,6 @@
 configobj==5.0.6
 cx-freeze==6.6
-flake8==3.9.0
+flake8==3.9.1
 mock==4.0.3
 pydicom==2.1.2
 pytest-cov==2.11.1
