@@ -1,0 +1,44 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: pytest
+    versions:
+    - ">= 5.3.a, < 5.4"
+  - dependency-name: pytest
+    versions:
+    - ">= 5.a, < 6"
+  - dependency-name: twine
+    versions:
+    - ">= 3.1.a, < 3.2"
+  - dependency-name: wxpython
+    versions:
+    - "> 4.0.7, < 4.1"
+  - dependency-name: pytest
+    versions:
+    - 6.2.2
+  - dependency-name: cx-freeze
+    versions:
+    - 6.5.3
+  - dependency-name: pytest-cov
+    versions:
+    - 2.11.1
+  - dependency-name: pytest-mock
+    versions:
+    - 3.5.1
+  - dependency-name: flake8
+    versions:
+    - 3.8.4
+  - dependency-name: pydicom
+    versions:
+    - 2.1.2
+  - dependency-name: wxpython
+    versions:
+    - 4.1.1
+  - dependency-name: six
+    versions:
+    - 1.15.0
