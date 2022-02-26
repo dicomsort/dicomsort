@@ -8,7 +8,10 @@ import wx.html
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin, TextEditMixin
 
 from dicomsort.gui import errors, events
-from dicomsort.gui.dialogs import SeriesRemoveOptions, SeriesRemoveWarningDialog
+from dicomsort.gui.dialogs import (
+    SeriesRemoveOptions,
+    SeriesRemoveWarningDialog
+)
 
 
 class FileDropTarget(wx.FileDropTarget):

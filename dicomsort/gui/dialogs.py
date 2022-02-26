@@ -193,8 +193,15 @@ class SeriesRemoveWarningDialog(wx.Dialog):
             lambda e: self.on_button(e, SeriesRemoveOptions.ORIGINAL)
         )
 
-        custom_button.Bind(wx.EVT_BUTTON, lambda e: self.on_button(e, SeriesRemoveOptions.CUSTOM))
-        cancel_button.Bind(wx.EVT_BUTTON, lambda e: self.on_button(e, SeriesRemoveOptions.CANCEL))
+        custom_button.Bind(
+            wx.EVT_BUTTON,
+            lambda e: self.on_button(e, SeriesRemoveOptions.CUSTOM)
+        )
+
+        cancel_button.Bind(
+            wx.EVT_BUTTON,
+            lambda e: self.on_button(e, SeriesRemoveOptions.CANCEL)
+        )
 
         vbox.Add(txt, 1, wx.ALL | wx.ALIGN_CENTER, 10)
         vbox.Add(original_button, 0, wx.ALL | wx.ALIGN_CENTER, 5)
@@ -276,7 +283,8 @@ class QuickRenameDialog(wx.Dialog):
 
 class UpdateDialog(wx.Dialog):
     def __init__(self, parent, version):
-        super(UpdateDialog, self).__init__(parent, size=(300, 170), style=wx.OK)
+        super(UpdateDialog, self)\
+            .__init__(parent, size=(300, 170), style=wx.OK)
 
         message = f'A new version of {meta.pretty_name} is available.\n'\
                   f'You are running Version {dicomsort.__version__} and '\
@@ -291,7 +299,9 @@ class UpdateDialog(wx.Dialog):
 
         vbox.Add(head, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 15)
 
-        message_ctrl = wx.StaticText(self, -1, label=message, style=wx.ALIGN_CENTER)
+        message_ctrl = wx.StaticText(
+            self, -1, label=message, style=wx.ALIGN_CENTER
+        )
         vbox.Add(message_ctrl, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
 
         self.hyperlink = hyperlink.HyperLinkCtrl(self, -1)
