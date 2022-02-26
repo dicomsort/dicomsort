@@ -31,7 +31,7 @@ template: &template
           ./cc-test-reporter after-build --coverage-input-type coverage.py --exit-code=$?
 
 
-version: 2
+version: 2.1
 workflows:
   version: 2
   lint:
