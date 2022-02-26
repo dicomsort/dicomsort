@@ -8,7 +8,7 @@ import wx.html
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin, TextEditMixin
 
 from dicomsort.gui import errors, events
-from dicomsort.gui.dialogs import SeriesRemoveOptions, SeriesRemoveWarningDlg
+from dicomsort.gui.dialogs import SeriesRemoveOptions, SeriesRemoveWarningDialog
 
 
 class FileDropTarget(wx.FileDropTarget):
@@ -433,7 +433,7 @@ class FieldSelector(wx.Panel):
 
         if inc < 0 and (self.selected.Count == 1 or index == 0):
             return
-        elif (inc > 0 and index == self.selected.Count - 1):
+        elif inc > 0 and index == self.selected.Count - 1:
             return
 
         prop = self.selected.GetStringSelection()
@@ -457,7 +457,7 @@ class FieldSelector(wx.Panel):
             return
 
         if index == self.selected.GetCount() - 1 and self.has_default():
-            dialog = SeriesRemoveWarningDlg(None)
+            dialog = SeriesRemoveWarningDialog(None)
             dialog.ShowModal()
 
             if dialog.choice == SeriesRemoveOptions.CANCEL:

@@ -9,7 +9,7 @@ from dicomsort.dicomsorter import DicomSorter
 from dicomsort.errors import DicomFolderError
 from dicomsort.gui import errors, events, icons, preferences, widgets
 from dicomsort.gui.dialogs import (
-    AboutDlg, CrashReporter, HelpDlg, QuickRenameDlg, UpdateDlg
+    AboutDlg, CrashReporter, HelpDlg, QuickRenameDialog, UpdateDialog
 )
 from dicomsort.gui.update import UpdateChecker
 
@@ -78,7 +78,7 @@ class MainFrame(wx.Frame):
         self.SetStatusText("Ready...")
 
     def OnNewVersion(self, evnt):
-        dlg = UpdateDlg(self, evnt.version)
+        dlg = UpdateDialog(self, evnt.version)
         dlg.Show()
 
     def Create(self):
@@ -220,7 +220,7 @@ class MainFrame(wx.Frame):
 
     def QuickRename(self, *_event):
         self.anonList = self.prefDlg.pages['Anonymization'].anonList
-        dlg = QuickRenameDlg(
+        dlg = QuickRenameDialog(
             self, -1, 'Anonymize', size=(250, 160), anonList=self.anonList
         )
         dlg.ShowModal()

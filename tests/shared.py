@@ -2,6 +2,9 @@ import wx
 
 
 class WxTestCase:
+    app: wx.App
+    frame: wx.Frame
+
     def setup(self):
         self.app = wx.App()
         self.frame = wx.Frame(None)
