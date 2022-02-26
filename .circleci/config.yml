@@ -39,7 +39,7 @@ workflows:
       - lint
   test:
     jobs:
-      - test-3.7
+      - test-3_7
 jobs:
   lint:
     docker:
@@ -54,7 +54,7 @@ jobs:
           name: Run flake8
           command: flake8
 
-  test-3.7:
+  test-3_7:
     <<: *template
     docker:
       - image: circleci/python:3.7-buster-browsers
