@@ -1,5 +1,5 @@
 import dicomsort
-import os
+import platform
 import traceback
 import webbrowser
 import wx
@@ -62,7 +62,7 @@ class CrashReporter(wx.Dialog):
         lines = traceback.format_exception(type, self.value, self._traceback)
         return '\n'.join(lines)
 
-    def body(self):
+    def body(self) -> str:
         return \
             '#### Describe the Issue:\n' + \
             'A clear and concise description of what the bug is.\n\n' + \
@@ -71,8 +71,8 @@ class CrashReporter(wx.Dialog):
             '#### Steps to Reproduce:\n' + \
             'How to reproduce the issue.\n\n' + \
             '## Environment\n' + \
-            '#### DICOM Sort Version:\n{}\n\n'.format(meta.version) + \
-            '#### Operating System:\n{}\n\n'.format(' '.join(os.uname())) + \
+            f'#### DICOM Sort Version:\n{meta.version}\n\n' + \
+            f'#### Operating System:\n{platform.system()} {platform.release()}\n\n' + \
             '#### Traceback:\n' + \
             '```\n' + \
             self.traceback() + \
