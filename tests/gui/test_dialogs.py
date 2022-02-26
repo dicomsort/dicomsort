@@ -9,6 +9,7 @@ from dicomsort.gui.dialogs import (
     AboutDlg,
     CrashReporter,
     QuickRenameDlg,
+    SeriesRemoveOptions,
     SeriesRemoveWarningDlg,
     UpdateDlg,
     webbrowser,
@@ -93,23 +94,26 @@ class TestAboutDialog(WxTestCase):
 
 
 class TestSeriesRemoveWarningDlg(WxTestCase):
-    def test_on_change(self):
+    def test_on_original(self):
         dlg = SeriesRemoveWarningDlg(self.frame)
-        dlg.OnChange()
+        dlg.on_button(None, SeriesRemoveOptions.ORIGINAL)
+        dlg.Destroy()
 
-        assert dlg.choice == 1
+        assert dlg.choice == SeriesRemoveOptions.ORIGINAL
 
     def test_on_cancel(self):
         dlg = SeriesRemoveWarningDlg(self.frame)
-        dlg.OnCancel()
+        dlg.on_button(None, SeriesRemoveOptions.CANCEL)
+        dlg.Destroy()
 
-        assert dlg.choice == 0
+        assert dlg.choice == SeriesRemoveOptions.CANCEL
 
-    def test_on_accept(self):
+    def test_on_custom(self):
         dlg = SeriesRemoveWarningDlg(self.frame)
-        dlg.OnAccept()
+        dlg.on_button(None, SeriesRemoveOptions.CUSTOM)
+        dlg.Destroy()
 
-        assert dlg.choice == 2
+        assert dlg.choice == SeriesRemoveOptions.CUSTOM
 
 
 class TestQuickRenameDlg(WxTestCase):

@@ -8,7 +8,7 @@ import wx.html
 from wx.lib.mixins.listctrl import ListCtrlAutoWidthMixin, TextEditMixin
 
 from dicomsort.gui import errors, events
-from dicomsort.gui.dialogs import SeriesRemoveWarningDlg
+from dicomsort.gui.dialogs import SeriesRemoveOptions, SeriesRemoveWarningDlg
 
 
 class FileDropTarget(wx.FileDropTarget):
@@ -452,21 +452,23 @@ class FieldSelector(wx.Panel):
     def DeselectItem(self, *evnt):
         index = self.selected.GetSelection()
 
+        # No-op if there is no new selection
         if index == -1:
             return
 
         if index == self.selected.GetCount() - 1 and self.has_default():
-            warn = SeriesRemoveWarningDlg(None)
-            warn.ShowModal()
+            dialog = SeriesRemoveWarningDlg(None)
+            dialog.ShowModal()
 
-            if warn.choice == 0:
+            if dialog.choice == SeriesRemoveOptions.CANCEL:
                 return
-            elif warn.choice == 1:
-                # change to original filenames
-                cfg = self.GetParent().config
-                cfg['FilenameFormat']['Selection'] = 1
+
+            elif dialog.choice == SeriesRemoveOptions.ORIGINAL:
+                # Select the configuration option to use the original filename
+                config = self.GetParent().config
+                config['FilenameFormat']['Selection'] = 1
                 page = self.GetParent().prefDlg.pages['FilenameFormat']
-                page.UpdateFromConfig(cfg)
+                page.UpdateFromConfig(config)
 
         self.selected.Delete(index)
 

@@ -4,6 +4,7 @@ import traceback
 import webbrowser
 import wx
 
+from enum import Enum
 from urllib.parse import quote
 
 from dicomsort.gui import icons
@@ -148,12 +149,17 @@ class HelpDlg(wx.Dialog):
         self.Destroy()
 
 
-class SeriesRemoveWarningDlg(wx.Dialog):
+class SeriesRemoveOptions(Enum):
+    ORIGINAL = 1
+    CUSTOM = 2
+    CANCEL = 3
 
-    def __init__(self, parent, id=-1, size=(300, 200), config=None):
-        wx.Dialog.__init__(
-            self, parent, id, 'Remove Series Description?', size=size
-        )
+
+class SeriesRemoveWarningDlg(wx.Dialog):
+    choice: SeriesRemoveOptions = SeriesRemoveOptions.CANCEL
+
+    def __init__(self, parent=None, size=(300, 200), config=None):
+        super(SeriesRemoveWarningDlg, self).__init__(parent, title='BLAH', size=size, style=wx.DEFAULT_DIALOG_STYLE)
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -164,41 +170,33 @@ class SeriesRemoveWarningDlg(wx.Dialog):
 
         txt = wx.StaticText(self, -1, inputText, style=wx.ALIGN_CENTER)
 
-        change = wx.Button(
+        original_button = wx.Button(
             self, -1, 'Yes. Use original Filenames', size=(-1, 20)
         )
 
-        accept = wx.Button(
+        custom_button = wx.Button(
             self, -1, 'Yes. Use Custom Filenames', size=(-1, 20)
         )
-        cancel = wx.Button(self, -1, 'Cancel', size=(-1, 20))
+        cancel_button = wx.Button(self, -1, 'Cancel', size=(-1, 20))
 
-        change.Bind(wx.EVT_BUTTON, self.OnChange)
-        accept.Bind(wx.EVT_BUTTON, self.OnAccept)
-        cancel.Bind(wx.EVT_BUTTON, self.OnCancel)
-
-        self.Bind(wx.EVT_CLOSE, self.OnCancel)
+        original_button.Bind(wx.EVT_BUTTON, lambda e: self.on_button(e, SeriesRemoveOptions.ORIGINAL))
+        custom_button.Bind(wx.EVT_BUTTON, lambda e: self.on_button(e, SeriesRemoveOptions.CUSTOM))
+        cancel_button.Bind(wx.EVT_BUTTON, lambda e: self.on_button(e, SeriesRemoveOptions.CANCEL))
 
         vbox.Add(txt, 1, wx.ALL | wx.ALIGN_CENTER, 10)
-        vbox.Add(change, 0, wx.ALL | wx.ALIGN_CENTER, 5)
-        vbox.Add(accept, 0, wx.ALL | wx.ALIGN_CENTER, 5)
-        vbox.Add(cancel, 0, wx.ALL | wx.ALIGN_CENTER, 5)
+        vbox.Add(original_button, 0, wx.ALL | wx.ALIGN_CENTER, 5)
+        vbox.Add(custom_button, 0, wx.ALL | wx.ALIGN_CENTER, 5)
+        vbox.Add(cancel_button, 0, wx.ALL | wx.ALIGN_CENTER, 5)
 
         self.SetSizer(vbox)
 
-        self.Destroy()
+    def on_button(self, event, choice: SeriesRemoveOptions):
+        self.choice = choice
 
-    def OnChange(self, *evnt):
-        self.choice = 1
-        self.Destroy()
-
-    def OnCancel(self, *evnt):
-        self.choice = 0
-        self.Destroy()
-
-    def OnAccept(self, *evnt):
-        self.choice = 2
-        self.Destroy()
+        if self.IsModal():
+            self.EndModal(event.EventObject.Id)
+        else:
+            self.Close()
 
 
 class QuickRenameDlg(wx.Dialog):
