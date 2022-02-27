@@ -1,9 +1,11 @@
 import dicomsort
-import os
+import platform
 import traceback
 import webbrowser
 import wx
 
+from enum import Enum
+from typing import Dict
 from urllib.parse import quote
 
 from dicomsort.gui import icons
@@ -28,11 +30,11 @@ class AboutDlg:
         self.info.SetCopyright(meta.copyright)
         self.info.SetWebSite(meta.website)
 
-        self.GenerateDescription()
+        self.update_description()
 
         AboutBox(self.info, parent=parent)
 
-    def GenerateDescription(self):
+    def update_description(self):
         description = ("      Program designed to sort DICOM images       \n" +
                        "     into directories based upon DICOM header     \n" +
                        "      information. The program also provides      \n" +
@@ -43,7 +45,7 @@ class AboutDlg:
 
 
 class CrashReporter(wx.Dialog):
-    title = 'DICOM Sort Error'
+    title: str = 'DICOM Sort Error'
 
     def __init__(self, parent, **kwargs):
         super(CrashReporter, self).__init__(
@@ -57,21 +59,23 @@ class CrashReporter(wx.Dialog):
         self.create()
         self.SetIcon(icons.main.GetIcon())
 
-    def traceback(self):
-        lines = traceback.format_exception(type, self.value, self._traceback)
-        return '\n'.join(lines)
+    def traceback(self) -> str:
+        return '\n'.join(
+            traceback.format_exception(self.type, self.value, self._traceback)
+        )
 
-    def body(self):
+    def body(self) -> str:
         return \
-            '#### Describe the Issue:\n' + \
-            'A clear and concise description of what the bug is.\n\n' + \
-            '#### Expected Behavior:\n' + \
-            'What you expected to happen.\n\n' + \
-            '#### Steps to Reproduce:\n' + \
-            'How to reproduce the issue.\n\n' + \
-            '## Environment\n' + \
-            '#### DICOM Sort Version:\n{}\n\n'.format(meta.version) + \
-            '#### Operating System:\n{}\n\n'.format(' '.join(os.uname())) + \
+            '#### Describe the Issue:\n' \
+            'A clear and concise description of what the bug is.\n\n' \
+            '#### Expected Behavior:\n' \
+            'What you expected to happen.\n\n' \
+            '#### Steps to Reproduce:\n' \
+            'How to reproduce the issue.\n\n' \
+            '## Environment\n' \
+            f'#### DICOM Sort Version:\n{meta.version}\n\n' \
+            f'#### Operating System:\n{platform.system()} '\
+            f'{platform.release()}\n\n' \
             '#### Traceback:\n' + \
             '```\n' + \
             self.traceback() + \
@@ -90,180 +94,201 @@ class CrashReporter(wx.Dialog):
         static.Wrap(380)
         vbox.Add(static, 0, wx.ALL, 10)
 
-        value = '\n'.join(
-            traceback.format_exception(type, self.value, self._traceback)
+        comments = wx.TextCtrl(
+            self, style=wx.TE_MULTILINE, value=self.traceback()
         )
-        self.comments = wx.TextCtrl(self, style=wx.TE_MULTILINE, value=value)
-        vbox.Add(self.comments, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
+        vbox.Add(comments, 1, wx.EXPAND | wx.LEFT | wx.RIGHT, 10)
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.submit = wx.Button(self, -1, 'File Issue')
-        self.submit.Bind(wx.EVT_BUTTON, self.on_file)
+        submit_button = wx.Button(self, -1, 'File Issue')
+        submit_button.Bind(wx.EVT_BUTTON, self.on_file_issue)
 
-        self.done = wx.Button(self, -1, 'Done')
-        self.done.Bind(wx.EVT_BUTTON, self.on_button)
+        cancel_button = wx.Button(self, -1, 'Cancel')
+        cancel_button.Bind(wx.EVT_BUTTON, self.on_cancel)
 
-        hbox.Add(self.submit, 0, wx.RIGHT, 10)
-        hbox.Add(self.done, 0, wx.RIGHT, 10)
+        hbox.Add(submit_button, 0, wx.RIGHT, 10)
+        hbox.Add(cancel_button, 0, wx.RIGHT, 10)
 
         vbox.Add(hbox, 0, wx.TOP | wx.BOTTOM | wx.ALIGN_RIGHT, 10)
 
         self.SetSizer(vbox)
 
-    def on_file(self, *_event):
+    def on_file_issue(self, *_event):
         webbrowser.open(meta.issue_url + '?body=' + quote(self.body()))
 
-    def on_button(self, event):
+    def close(self, event):
+        if self.IsModal():
+            self.EndModal(event.EventObject.Id)
+        else:
+            self.Close()
+
+    def on_cancel(self, event):
+        self.close(event)
+
+
+class HelpDlg(wx.Dialog):
+    def __init__(self, parent=None):
+
+        super(HelpDlg, self).__init__(
+            parent, -1, f'{meta.pretty_name} Help',
+            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.TAB_TRAVERSAL
+        )
+
+        html_ctrl = HtmlWindow(self, -1, size=(400, 200))
+
+        html_ctrl.SetPage(helpHTML)
+        irep = html_ctrl.GetInternalRepresentation()
+
+        html_ctrl.SetSize((irep.GetWidth(), int(irep.GetHeight() / 4)))
+        self.Show()
+
+        self.SetClientSize(html_ctrl.GetSize())
+        self.CenterOnParent(wx.BOTH)
+        self.SetFocus()
+
+        self.Bind(wx.EVT_CLOSE, self.close)
+
+    def close(self, event):
         if self.IsModal():
             self.EndModal(event.EventObject.Id)
         else:
             self.Close()
 
 
-class HelpDlg(wx.Dialog):
-
-    def __init__(self, parent=None, **kwargs):
-
-        super(HelpDlg, self).__init__(
-            parent, -1, '{} Help'.format(meta.pretty_name),
-            style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.TAB_TRAVERSAL
-        )
-
-        self.hwin = HtmlWindow(self, -1, size=(400, 200))
-
-        self.hwin.SetPage(helpHTML)
-        irep = self.hwin.GetInternalRepresentation()
-
-        self.hwin.SetSize((irep.GetWidth(), int(irep.GetHeight() / 4)))
-        self.Show()
-
-        self.SetClientSize(self.hwin.GetSize())
-        self.CenterOnParent(wx.BOTH)
-        self.SetFocus()
-
-        self.Bind(wx.EVT_CLOSE, self.close)
-
-    def close(self, *_):
-        self.Destroy()
+class SeriesRemoveOptions(Enum):
+    ORIGINAL = 1
+    CUSTOM = 2
+    CANCEL = 3
 
 
-class SeriesRemoveWarningDlg(wx.Dialog):
+class SeriesRemoveWarningDialog(wx.Dialog):
+    choice: SeriesRemoveOptions = SeriesRemoveOptions.CANCEL
 
-    def __init__(self, parent, id=-1, size=(300, 200), config=None):
-        wx.Dialog.__init__(
-            self, parent, id, 'Remove Series Description?', size=size
+    def __init__(self, parent=None, size=(300, 200), config=None):
+        super(SeriesRemoveWarningDialog, self).__init__(
+            parent, title='BLAH', size=size, style=wx.DEFAULT_DIALOG_STYLE
         )
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        inputText = ''.join(['Are you sure you want to remove the default\n',
-                             'attribute SeriesDescription?\n\n',
-                             'This may cause filename conflicts unless you\n',
-                             'use the original filenames.'])
+        message = 'Are you sure you want to remove the default\n' \
+                  'attribute SeriesDescription?\n\n' \
+                  'This may cause filename conflicts unless you\n' \
+                  'use the original filenames.'
 
-        txt = wx.StaticText(self, -1, inputText, style=wx.ALIGN_CENTER)
+        txt = wx.StaticText(self, -1, message, style=wx.ALIGN_CENTER)
 
-        change = wx.Button(
+        original_button = wx.Button(
             self, -1, 'Yes. Use original Filenames', size=(-1, 20)
         )
 
-        accept = wx.Button(
+        custom_button = wx.Button(
             self, -1, 'Yes. Use Custom Filenames', size=(-1, 20)
         )
-        cancel = wx.Button(self, -1, 'Cancel', size=(-1, 20))
+        cancel_button = wx.Button(self, -1, 'Cancel', size=(-1, 20))
 
-        change.Bind(wx.EVT_BUTTON, self.OnChange)
-        accept.Bind(wx.EVT_BUTTON, self.OnAccept)
-        cancel.Bind(wx.EVT_BUTTON, self.OnCancel)
+        original_button.Bind(
+            wx.EVT_BUTTON,
+            lambda e: self.on_button(e, SeriesRemoveOptions.ORIGINAL)
+        )
 
-        self.Bind(wx.EVT_CLOSE, self.OnCancel)
+        custom_button.Bind(
+            wx.EVT_BUTTON,
+            lambda e: self.on_button(e, SeriesRemoveOptions.CUSTOM)
+        )
+
+        cancel_button.Bind(
+            wx.EVT_BUTTON,
+            lambda e: self.on_button(e, SeriesRemoveOptions.CANCEL)
+        )
 
         vbox.Add(txt, 1, wx.ALL | wx.ALIGN_CENTER, 10)
-        vbox.Add(change, 0, wx.ALL | wx.ALIGN_CENTER, 5)
-        vbox.Add(accept, 0, wx.ALL | wx.ALIGN_CENTER, 5)
-        vbox.Add(cancel, 0, wx.ALL | wx.ALIGN_CENTER, 5)
+        vbox.Add(original_button, 0, wx.ALL | wx.ALIGN_CENTER, 5)
+        vbox.Add(custom_button, 0, wx.ALL | wx.ALIGN_CENTER, 5)
+        vbox.Add(cancel_button, 0, wx.ALL | wx.ALIGN_CENTER, 5)
 
         self.SetSizer(vbox)
 
-        self.Destroy()
+    def close(self, event):
+        if self.IsModal():
+            self.EndModal(event.EventObject.Id)
+        else:
+            self.Close()
 
-    def OnChange(self, *evnt):
-        self.choice = 1
-        self.Destroy()
-
-    def OnCancel(self, *evnt):
-        self.choice = 0
-        self.Destroy()
-
-    def OnAccept(self, *evnt):
-        self.choice = 2
-        self.Destroy()
+    def on_button(self, event, choice: SeriesRemoveOptions):
+        self.choice = choice
+        self.close(event)
 
 
-class QuickRenameDlg(wx.Dialog):
+class QuickRenameDialog(wx.Dialog):
 
     def __init__(self, *args, **kwargs):
-        tmp = kwargs.pop('anonList')
-        wx.Dialog.__init__(self, *args, **kwargs)
-        self.anonList = tmp
-        self.values = dict()
+        anon_list = kwargs.pop('anonList')
+
+        super(QuickRenameDialog, self).__init__(*args, **kwargs)
+
+        self.anon_list = anon_list
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        self.values = self.anonList.GetReplacementDict()
-        if 'PatientName' in self.values:
-            initial = self.values['PatientName']
-        else:
-            initial = ''
+        self.values = self.anon_list.GetReplacementDict()
+        initial_value = self.values.get('PatientName', '')
 
         txt = wx.StaticText(self, -1, 'PatientName')
         vbox.Add(txt, 0, wx.TOP | wx.ALIGN_CENTER, 15)
 
-        self.patientName = wx.TextCtrl(self, -1, initial, size=(200, 20),
-                                       style=wx.TE_PROCESS_ENTER)
+        self.patient_name_text = wx.TextCtrl(
+            self, -1, initial_value, size=(200, 20), style=wx.TE_PROCESS_ENTER
+        )
 
-        self.Bind(wx.EVT_TEXT_ENTER, self.OnAccept, self.patientName)
+        self.Bind(wx.EVT_TEXT_ENTER, self.on_accept, self.patient_name_text)
 
-        vbox.Add(self.patientName, 0, wx.TOP | wx.ALIGN_CENTER, 5)
+        vbox.Add(self.patient_name_text, 0, wx.TOP | wx.ALIGN_CENTER, 5)
 
-        self.samecheck = wx.CheckBox(self, -1, 'Use as Patient ID')
-        self.samecheck.SetValue(True)
+        self.use_as_patient_id = wx.CheckBox(self, -1, 'Use as Patient ID')
+        self.use_as_patient_id.SetValue(True)
 
-        vbox.Add(self.samecheck, 0, wx.TOP | wx.ALIGN_CENTER, 10)
+        vbox.Add(self.use_as_patient_id, 0, wx.TOP | wx.ALIGN_CENTER, 10)
 
-        self.btnOK = wx.Button(self, -1, 'Ok')
-        self.btnOK.Bind(wx.EVT_BUTTON, self.OnAccept)
+        ok_button = wx.Button(self, -1, 'Ok')
+        ok_button.Bind(wx.EVT_BUTTON, self.on_accept)
 
-        vbox.Add(self.btnOK, 0, wx.TOP | wx.ALIGN_CENTER, 15)
+        vbox.Add(ok_button, 0, wx.TOP | wx.ALIGN_CENTER, 15)
 
         self.SetSizer(vbox)
 
-        self.patientName.SetFocus()
+        self.patient_name_text.SetFocus()
 
-    def GetValues(self):
-        res = dict()
-        res['PatientName'] = self.patientName.GetValue()
+    def get_values(self) -> Dict[str, str]:
+        result = {'PatientName': self.patient_name_text.GetValue()}
 
-        if self.samecheck.IsChecked():
-            res['PatientID'] = '%(PatientName)s'
+        if self.use_as_patient_id.IsChecked():
+            result['PatientID'] = '%(PatientName)s'
 
-        return res
+        return result
 
-    def OnAccept(self, *evnt):
-        oldDict = self.anonList.GetReplacementDict()
-        oldDict.update(self.GetValues())
-        self.anonList.SetReplacementDict(oldDict)
-        self.Close()
+    def on_accept(self, *event):
+        replacements = self.anon_list.GetReplacementDict()
+        replacements.update(self.get_values())
+        self.anon_list.SetReplacementDict(replacements)
+        self.close(event)
+
+    def close(self, event):
+        if self.IsModal():
+            self.EndModal(event.EventObject.Id)
+        else:
+            self.Close()
 
 
-class UpdateDlg(wx.Dialog):
+class UpdateDialog(wx.Dialog):
     def __init__(self, parent, version):
-        super(UpdateDlg, self).__init__(parent, size=(300, 170), style=wx.OK)
-        message = ''.join([
-            'A new version of {} is available.\n'.format(meta.pretty_name),
-            'You are running Version %s and the newest is %s.\n'
-        ])
+        super(UpdateDialog, self)\
+            .__init__(parent, size=(300, 170), style=wx.OK)
+
+        message = f'A new version of {meta.pretty_name} is available.\n'\
+                  f'You are running Version {dicomsort.__version__} and '\
+                  f'the newest is {version}.'
 
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -274,31 +299,34 @@ class UpdateDlg(wx.Dialog):
 
         vbox.Add(head, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, 15)
 
-        txt = wx.StaticText(
-            self, -1, label=message % (dicomsort.__version__, version),
-            style=wx.ALIGN_CENTER)
-        vbox.Add(txt, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+        message_ctrl = wx.StaticText(
+            self, -1, label=message, style=wx.ALIGN_CENTER
+        )
+        vbox.Add(message_ctrl, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
 
-        self.link = hyperlink.HyperLinkCtrl(self, -1)
-        self.link.SetURL(URL=meta.website)
-        self.link.SetLabel(label='Click here to obtain the update')
-        self.link.SetToolTip(meta.website)
-        self.link.AutoBrowse(False)
+        self.hyperlink = hyperlink.HyperLinkCtrl(self, -1)
+        self.hyperlink.SetURL(URL=meta.website)
+        self.hyperlink.SetLabel(label='Click here to obtain the update')
+        self.hyperlink.SetToolTip(meta.website)
+        self.hyperlink.AutoBrowse(False)
 
-        self.Bind(hyperlink.EVT_HYPERLINK_LEFT, self.OnUpdate, self.link)
+        self.Bind(hyperlink.EVT_HYPERLINK_LEFT, self.on_update, self.hyperlink)
 
-        vbox.Add(self.link, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 0)
+        vbox.Add(self.hyperlink, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 0)
 
-        ok = wx.Button(self, -1, "OK")
-        vbox.Add(ok, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 15)
-        self.Bind(wx.EVT_BUTTON, self.OnClose, ok)
+        ok_button = wx.Button(self, -1, 'OK')
+        vbox.Add(ok_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 15)
+        self.Bind(wx.EVT_BUTTON, self.close, ok_button)
 
         self.SetSizer(vbox)
         self.CenterOnParent()
 
-    def OnUpdate(self, *evnt):
-        self.link.GotoURL(self.link.GetURL())
-        self.Destroy()
+    def close(self, event):
+        if self.IsModal():
+            self.EndModal(event.EventObject.Id)
+        else:
+            self.Close()
 
-    def OnClose(self, *evnt):
-        self.Destroy()
+    def on_update(self, *event):
+        self.hyperlink.GotoURL(self.hyperlink.GetURL())
+        self.close(event)

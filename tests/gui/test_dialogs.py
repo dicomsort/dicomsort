@@ -1,16 +1,18 @@
-import dicomsort
-import os
+import platform
 import sys
 
 from urllib.parse import parse_qs, urlparse
+
+import dicomsort
 
 from dicomsort.gui.anonymizer import AnonymizeList
 from dicomsort.gui.dialogs import (
     AboutDlg,
     CrashReporter,
-    QuickRenameDlg,
-    SeriesRemoveWarningDlg,
-    UpdateDlg,
+    QuickRenameDialog,
+    SeriesRemoveOptions,
+    SeriesRemoveWarningDialog,
+    UpdateDialog,
     webbrowser,
 )
 from tests.shared import WxTestCase
@@ -39,16 +41,15 @@ class TestCrashReporter(WxTestCase):
         # Has the expected information
         assert dicomsort.__version__ in body
 
-        platform = ' '.join(os.uname())
-        assert platform in body
-
+        assert platform.system() in body
+        assert platform.release() in body
         assert reporter.traceback() in body
 
-    def test_on_file(self, mocker):
+    def test_on_file_issue(self, mocker):
         mock = mocker.patch.object(webbrowser, 'open')
         reporter = CrashReporter(self.frame)
 
-        reporter.on_file()
+        reporter.on_file_issue()
 
         assert mock.call_count == 1
 
@@ -67,17 +68,13 @@ class TestCrashReporter(WxTestCase):
 
 
 class TestUpdateDlg(WxTestCase):
-    def test_on_close(self):
-        dlg = UpdateDlg(self.frame, '1.2.3')
-        dlg.OnClose()
-
     def test_on_update(self, mocker):
-        dlg = UpdateDlg(self.frame, '1.2.3')
+        dlg = UpdateDialog(self.frame, '1.2.3')
         url = dicomsort.Metadata.website
 
-        mock = mocker.patch.object(dlg.link, 'GotoURL')
+        mock = mocker.patch.object(dlg.hyperlink, 'GotoURL')
 
-        dlg.OnUpdate()
+        dlg.on_update()
 
         mock.assert_called_once_with(url)
 
@@ -93,36 +90,39 @@ class TestAboutDialog(WxTestCase):
 
 
 class TestSeriesRemoveWarningDlg(WxTestCase):
-    def test_on_change(self):
-        dlg = SeriesRemoveWarningDlg(self.frame)
-        dlg.OnChange()
+    def test_on_original(self):
+        dlg = SeriesRemoveWarningDialog(self.frame)
+        dlg.on_button(None, SeriesRemoveOptions.ORIGINAL)
+        dlg.Destroy()
 
-        assert dlg.choice == 1
+        assert dlg.choice == SeriesRemoveOptions.ORIGINAL
 
     def test_on_cancel(self):
-        dlg = SeriesRemoveWarningDlg(self.frame)
-        dlg.OnCancel()
+        dlg = SeriesRemoveWarningDialog(self.frame)
+        dlg.on_button(None, SeriesRemoveOptions.CANCEL)
+        dlg.Destroy()
 
-        assert dlg.choice == 0
+        assert dlg.choice == SeriesRemoveOptions.CANCEL
 
-    def test_on_accept(self):
-        dlg = SeriesRemoveWarningDlg(self.frame)
-        dlg.OnAccept()
+    def test_on_custom(self):
+        dlg = SeriesRemoveWarningDialog(self.frame)
+        dlg.on_button(None, SeriesRemoveOptions.CUSTOM)
+        dlg.Destroy()
 
-        assert dlg.choice == 2
+        assert dlg.choice == SeriesRemoveOptions.CUSTOM
 
 
 class TestQuickRenameDlg(WxTestCase):
     def test_no_patient_name_anonlist(self):
         a = AnonymizeList(self.frame)
-        dlg = QuickRenameDlg(self.frame, anonList=a)
+        dlg = QuickRenameDialog(self.frame, anonList=a)
 
         expected = {
             'PatientName': '',
             'PatientID': '%(PatientName)s',
         }
 
-        assert dlg.GetValues() == expected
+        assert dlg.get_values() == expected
 
     def test_patient_name_anonlist(self):
         name = 'Patient0'
@@ -130,14 +130,14 @@ class TestQuickRenameDlg(WxTestCase):
         a.SetStringItems(['PatientName'])
         a.SetReplacementDict({'PatientName': name})
 
-        dlg = QuickRenameDlg(self.frame, anonList=a)
+        dlg = QuickRenameDialog(self.frame, anonList=a)
 
         expected = {
             'PatientName': name,
             'PatientID': '%(PatientName)s',
         }
 
-        assert dlg.GetValues() == expected
+        assert dlg.get_values() == expected
 
     def test_on_accept(self):
         name = 'Patient0'
@@ -145,9 +145,11 @@ class TestQuickRenameDlg(WxTestCase):
         a.SetStringItems(['PatientName', 'PatientID'])
         a.SetReplacementDict({'PatientName': name, 'PatientID': 'ignored'})
 
-        dlg = QuickRenameDlg(self.frame, anonList=a)
+        dlg = QuickRenameDialog(self.frame, anonList=a)
 
-        dlg.OnAccept()
+        dlg.on_accept()
 
-        assert a.GetReplacementDict()['PatientID'] == '%(PatientName)s'
-        assert a.GetReplacementDict()['PatientName'] == name
+        replacements = a.GetReplacementDict()
+
+        assert replacements['PatientID'] == '%(PatientName)s'
+        assert replacements['PatientName'] == name
