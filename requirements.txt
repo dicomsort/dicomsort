@@ -4,7 +4,7 @@ flake8==3.9.2
 mock==4.0.3
 pydicom==2.2.1
 pytest-cov==2.12.1
-pytest-mock==3.6.1
+pytest-mock==3.8.1
 pytest==6.2.5
 twine==3.4.2
 wxpython==4.1.1
